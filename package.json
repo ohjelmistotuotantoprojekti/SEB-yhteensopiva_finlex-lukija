@@ -1,0 +1,25 @@
+{
+  "name": "seb-yhteensopiva_finlex-lukija",
+  "version": "1.0.0",
+  "description": "- ominaisuus on suunniteltu - ominaisuus on toimiva - yksikkötestit menee läpi - ei linttausvirheitä - koodikatselmointi tehty - status kirjattu",
+  "homepage": "https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija#readme",
+  "bugs": {
+    "url": "https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija.git"
+  },
+  "license": "MIT",
+  "contributors": ["Eva-Maria Asplund", "Lauri Huldin", "Arttu Kankaanpää", "Ville Salmela", "Ville Suonurmi"],
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.9.0",
+    "express": "^5.1.0"
+  }
+}
