@@ -1,6 +1,7 @@
 import express from 'express';
 const app = express()
 import axios from 'axios';
+import { parseStringPromise } from 'xml2js';
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
@@ -29,8 +30,45 @@ app.get('/api/statute-consolidated/year/:year', (request, response) => {
     headers: { Accept: 'application/xml' }
   })
 
-  result.then(res => {
-    response.send(res.data)
+  result.then(async res => {
+    try {
+      const xmlData = res.data;
+      // Parsi XML data JSON-muotoon
+      const jsonData = await parseStringPromise(xmlData, { explicitArray: false })
+
+      // Poimi results-lista akomantoso-elementistä
+      const resultsNode = jsonData?.AknXmlList?.Results?.akomaNtoso
+      if (!resultsNode) {
+        return response.status(400).json({ error: "Unexpected data structure" })
+      }
+
+      // Varmista, että tosiaan saatiin listamuotoinen data
+      const resultsArray = Array.isArray(resultsNode) ? resultsNode : [resultsNode]
+
+      // Poimi docTitle ja docNumber preface-elementistä
+      const extractedDocs = resultsArray.map((result) => {
+        const p = result?.act?.preface?.p
+        const docNumber = p?.docNumber || null
+        if (!docNumber) {
+          throw new Error('docNumber not found')
+        }
+        const docNumberId = docNumber.split('/')[0]
+        const docYear = docNumber.split('/')[1]
+        const docTitle = p?.docTitle || null
+        if (!docTitle) {
+          throw new Error('docTitle not found')
+        }
+
+        return { docYear: docYear, docNumber: docNumberId, docTitle: docTitle }
+      });
+
+      // Palauta JSON-muotoinen vastaus
+      response.json(extractedDocs)
+
+    } catch (error) {
+      console.error('Error during XML parsing:', error)
+      response.status(500).json({ error: 'Failed to parse XML' })
+    }
   })
 })
 
