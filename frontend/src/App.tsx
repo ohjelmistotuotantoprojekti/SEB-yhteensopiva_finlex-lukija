@@ -1,57 +1,8 @@
-interface Law {
-  docYear:  string,
-  docNumber: number,
-  docTitle: string
-}
-
-interface Props {
-  search: string,
-  handleSearchInputChange: (event: React.SyntheticEvent) => void,
-  handleSearchEvent: (event: React.SyntheticEvent) => void
-
-}
-
-
-import axios from 'axios'
+//import axios from 'axios'
 import { useState } from 'react'
-
-
-
-const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props ) => {
-
-  return (
-       <div>
-        <form id="searchForm" onSubmit={handleSearchEvent}>
-          <input type="text" id="searchField" 
-         onChange={handleSearchInputChange}
-          value={search}
-          placeholder="Search"
-          />
-        </form>
-      </div>
-   )
-}
-
-
-
-const LawList = ({laws}: {laws: Law[]}) => {
-
-  const listStyle = {
-    width: "500px",
-    backgroundColor: "#eeeeee",
-    padding: '10px',
-    margin: '4px',
-  }
-
-  return (
-    <>
-   
-    { laws.map((law) =><div style={listStyle} key={law.docNumber}>{law.docYear}/{law.docNumber} {law.docTitle}</div>) }
-  
-    </>
-  )
-
-}
+import SearchForm from './components/SearchForm'
+import LawList from './components/LawList'
+import type {Law} from './types'
 
 
 const App = () => {
@@ -78,17 +29,7 @@ const App = () => {
   const [search, setSearch] = useState<string>('')
 
 
-  const handleSearchEvent = (event: React.SyntheticEvent) => {
-    event.preventDefault()
-    console.log(search)
-  
-  }
-  const handleSearchInputChange = (event: React.SyntheticEvent) => {
-    setSearch(event.target.value)
-  }
-
-
-  /**  Hakee backendiltä dataa
+/**  Hakee backendiltä dataa
   const getJson = async () => {
     const url: string = 'http://localhost:3001/notes'
     await axios.get(url).then(response => {
@@ -97,7 +38,14 @@ const App = () => {
   }
   */
 
-
+  const handleSearchEvent = (event: React.SyntheticEvent) => {
+    event.preventDefault()
+    console.log(search)
+  
+  }
+  const handleSearchInputChange = (event: React.SyntheticEvent) => {
+    setSearch(event.target.value)
+  }
 
 
   return (
