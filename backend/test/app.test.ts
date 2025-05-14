@@ -23,7 +23,7 @@ test('list of laws is returned as valid json', async () => {
 })
 
 
-test('the law is returned as html', async () => {
+test('a single law is returned as html', async () => {
   await api
     .get('/api/statute-consolidated/id/2023/9')
     .expect(200)
