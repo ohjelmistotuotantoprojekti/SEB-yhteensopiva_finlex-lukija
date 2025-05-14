@@ -1,6 +1,6 @@
-const express = require('express')
+import express from 'express';
 const app = express()
-const axios = require('axios')
+import axios from 'axios';
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
@@ -25,9 +25,9 @@ app.get('/api/statute-consolidated/year/:year', (request, response) => {
   }
 
   const result = axios.get(`${baseURL}${path}`, {
-      params: queryParams,
-      headers: { Accept: 'application/xml' }
-    })
+    params: queryParams,
+    headers: { Accept: 'application/xml' }
+  })
 
   result.then(res => {
     response.send(res.data)
@@ -45,10 +45,10 @@ app.get('/api/statute-consolidated/id/:year/:number', (request, response) => {
   }
 
   const result = axios.get(`${baseURL}${path}`, {
-      params: queryParams,
-      headers: { Accept: 'application/xml' }
-    })
-    
+    params: queryParams,
+    headers: { Accept: 'application/xml' }
+  })
+
   result.then(res => {
     console.log(res.data)
     response.send(res.data)

@@ -11,15 +11,37 @@
     "url": "git+https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija.git"
   },
   "license": "MIT",
-  "contributors": ["Eva-Maria Asplund", "Lauri Huldin", "Arttu Kankaanpää", "Ville Salmela", "Ville Suonurmi"],
+  "contributors": [
+    "Eva-Maria Asplund",
+    "Lauri Huldin",
+    "Arttu Kankaanpää",
+    "Ville Salmela",
+    "Ville Suonurmi"
+  ],
   "type": "commonjs",
-  "main": "index.js",
+  "main": "index.ts",
   "scripts": {
-    "start": "node index.js",
+    "start": "ts-node index.ts",
+    "dev": "ts-node-dev index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "axios": "^1.9.0",
     "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.18",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "eslint": "^9.26.0",
+    "globals": "^16.1.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.32.1"
   }
 }
