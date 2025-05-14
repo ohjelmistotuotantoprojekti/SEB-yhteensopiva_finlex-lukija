@@ -1,7 +1,7 @@
 {
   "name": "seb-yhteensopiva_finlex-lukija",
   "version": "1.0.0",
-  "description": "- ominaisuus on suunniteltu - ominaisuus on toimiva - yksikkötestit menee läpi - ei linttausvirheitä - koodikatselmointi tehty - status kirjattu",
+  "description": "SEB-yhteensopiva Finlex-lukija",
   "homepage": "https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija#readme",
   "bugs": {
     "url": "https://github.com/ohjelmistotuotantoprojekti/SEB-yhteensopiva_finlex-lukija/issues"
