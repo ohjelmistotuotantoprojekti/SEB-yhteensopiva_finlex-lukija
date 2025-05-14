@@ -1,7 +1,7 @@
  
  export interface Law {
   docYear:  string,
-  docNumber: number,
+  docNumber: string,
   docTitle: string
 }
 
