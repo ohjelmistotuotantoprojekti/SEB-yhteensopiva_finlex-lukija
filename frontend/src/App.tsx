@@ -1,13 +1,15 @@
-//import axios from 'axios'
+import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import LawList from './components/LawList'
-import type {Law} from './types'
+import type {Law, Props} from './types'
 
 
 const App = () => {
 
-  const laws: Law[] = [
+  const server: string = "http://localhost:3001"
+
+  const lawsDev: Law[] = [
     {
       docYear: "2024",
       docNumber: "244",
@@ -30,18 +32,20 @@ const App = () => {
   const [search, setSearch] = useState<string>('')
   const [year, setYear] = useState<string>('')
   const [number, setNumber] = useState<string>('')
+  const [laws, setLaws] = useState<Law[]>([])
 
 
 
 
-/**  Hakee backendiltä dataa
-  const getJson = async () => {
-    const url: string = 'http://localhost:3001/notes'
+  // Hakee backendiltä dataa
+  const getJson = async (path: string) => {
+    const url: string = `${server}${path}`
+    console.log("url", url)
     await axios.get(url).then(response => {
         console.log(response.data)
     })
   }
-  */
+  
 
 
   const updateYearNumber = () => {
@@ -65,6 +69,9 @@ const App = () => {
   const handleSearchEvent = (event: React.SyntheticEvent) => {
     event.preventDefault()
     updateYearNumber()
+   
+    getJson(`/api/statute-consolidated/year/:${year}`)
+   
   
   }
 
@@ -114,7 +121,7 @@ const App = () => {
                 handleSearchEvent={handleSearchEvent} 
     />
 
-    <LawList laws={searchLaws()} />
+    <LawList laws={laws} />
     </div>
   )
 }
