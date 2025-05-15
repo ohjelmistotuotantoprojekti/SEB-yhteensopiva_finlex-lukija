@@ -16,7 +16,7 @@ const LawPage = ({server}: Props) => {
   
   const [year, setYear] = useState<string>('')
   const [number, setNumber] = useState<string>('')
-  const [law, setLaw] = useState<Law>(null)
+  const [law, setLaw] = useState<string>('')
 
 
 

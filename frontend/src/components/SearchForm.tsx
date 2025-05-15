@@ -18,7 +18,7 @@ const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props
           <input type="text" id="searchField" 
          onChange={handleSearchInputChange}
           value={search}
-          placeholder="Search year / number"
+          placeholder="Search year"
           />
         </form>
       </div>
