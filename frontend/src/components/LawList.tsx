@@ -1,4 +1,6 @@
 import type {Law} from "../types"
+import {nanoid} from 'nanoid'
+
 
 
 const LawList = ({laws}: {laws: Law[]}) => {
@@ -9,11 +11,17 @@ const LawList = ({laws}: {laws: Law[]}) => {
     padding: '10px',
     margin: '4px',
   }
-
+  
   return (
     <>
-   
-    { laws.map((law) =><div style={listStyle} key={law.docNumber}>{law.docYear}/{law.docNumber} {law.docTitle}</div>) }
+  
+    { laws.map((law) => 
+         
+        <div style={listStyle} key={`${law.docYear}${law.docNumber}${nanoid(2)}`} >{law.docYear}/{law.docNumber} {law.docTitle}</div>
+      )
+    }
+
+
   
     </>
   )

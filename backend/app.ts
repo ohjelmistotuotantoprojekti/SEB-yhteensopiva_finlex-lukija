@@ -1,9 +1,16 @@
 import express from 'express';
 const app = express()
+import cors from 'cors'
 import axios from 'axios';
 import { parseStringPromise } from 'xml2js';
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
+
+const corsOptions = {
+  origin: 'http://localhost:5173',
+}
+
+app.use(cors(corsOptions))
 
 // Etusivu
 app.get('/', (request, response) => {

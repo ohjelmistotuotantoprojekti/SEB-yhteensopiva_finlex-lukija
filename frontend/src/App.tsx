@@ -1,32 +1,15 @@
 import axios from 'axios'
+import cors from 'cors'
 import { useState } from 'react'
 import SearchForm from './components/SearchForm'
 import LawList from './components/LawList'
-import type {Law, Props} from './types'
+import type {Law} from './types'
 
 
 const App = () => {
 
   const server: string = "http://localhost:3001"
 
-  const lawsDev: Law[] = [
-    {
-      docYear: "2024",
-      docNumber: "244",
-      docTitle: "law about averages",
-    },
-    {
-      docYear: "2024",
-      docNumber: "245",
-      docTitle: "law about bananas",
-    },
-    {
-      docYear: "2025",
-      docNumber: "246",
-      docTitle: "law about something",
-    },
-   
-  ]
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
@@ -41,9 +24,10 @@ const App = () => {
   const getJson = async (path: string) => {
     const url: string = `${server}${path}`
     console.log("url", url)
-    await axios.get(url).then(response => {
-        console.log(response.data)
-    })
+    const response = await axios.get(url)
+    setLaws(response.data)
+    console.log(response.data)
+    
   }
   
 
@@ -70,7 +54,7 @@ const App = () => {
     event.preventDefault()
     updateYearNumber()
    
-    getJson(`/api/statute-consolidated/year/:${year}`)
+    getJson(`/api/statute-consolidated/year/${year}`)
    
   
   }
