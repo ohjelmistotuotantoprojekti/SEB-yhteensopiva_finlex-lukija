@@ -21,7 +21,6 @@ const App = () => {
     server = `${url}:${port}` 
   }
 
-  
   return (
     <Router>
     <div>
