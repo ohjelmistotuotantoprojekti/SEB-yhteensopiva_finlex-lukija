@@ -8,7 +8,18 @@ import LawPage from './components/LawPage'
 
 const App = () => {
 
-  const server: string = "http://localhost:3001"
+  let port: string =  ''
+  let url: string =  ''
+  let server: string = ''
+
+  if (import.meta.env.DEV) {
+    port = '3001'
+    url = 'http://localhost'
+  }
+  
+  if (url != "") {
+    server = `${url}:${port}` 
+  }
 
   return (
     <Router>
