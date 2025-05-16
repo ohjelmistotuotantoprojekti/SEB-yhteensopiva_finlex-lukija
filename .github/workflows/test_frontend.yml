@@ -13,11 +13,6 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
-      - name: Use React
-        uses: actions/setup-react@v4
-        with:
-          node-version: '24.x'
       - name: Install dependencies
         run: npm install
       - name: Lint code
