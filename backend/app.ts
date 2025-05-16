@@ -11,6 +11,7 @@ const corsOptions = {
 }
 
 app.use(cors(corsOptions))
+app.use(express.static('dist'))
 
 // Etusivu
 app.get('/', (request, response) => {
