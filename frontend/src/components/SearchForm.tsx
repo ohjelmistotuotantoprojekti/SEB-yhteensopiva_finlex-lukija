@@ -13,13 +13,14 @@ const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props
 
 
   return (
-       <div id="searchdiv" style={searchStyle}>
-        <form id="searchForm" onSubmit={handleSearchEvent}>
-          <input type="text" id="searchField" 
+       <div key="searchdiv" style={searchStyle}>
+        <form key="searchForm" onSubmit={handleSearchEvent}>
+          <input type="text" key="searchField" 
          onChange={handleSearchInputChange}
           value={search}
           placeholder="Search year"
           />
+          <button type="submit">Hae</button>
         </form>
       </div>
    )
