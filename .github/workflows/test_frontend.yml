@@ -1,0 +1,28 @@
+name: Test frontend
+on:
+  push:
+    branches:
+      - frontend
+    paths:
+      - 'frontend/**'
+
+jobs:
+  test_frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use React
+        uses: actions/setup-react@v4
+        with:
+          node-version: '24.x'
+      - name: Install dependencies
+        run: npm install
+      - name: Lint code
+        run: npm run lint
+      - name: Run tests
+        run: npm test
+      - name: Run build
+        run: npm build
