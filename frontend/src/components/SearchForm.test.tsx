@@ -2,14 +2,13 @@ import { render, screen } from '@testing-library/react'
 import SearchForm from './SearchForm'
 
 
-
 test('renders content', () => {
 
     const search: string =  '' 
-    const handleInput = (event: React.SyntheticEvent) => {
+    const handleInput = () => {
         return
     }
-    const handleSubmit = (event: React.SyntheticEvent) => {
+    const handleSubmit = () => {
         return
     }
    
@@ -18,6 +17,4 @@ test('renders content', () => {
     const element = screen.getByPlaceholderText('Search year')
     expect(element).toBeDefined()
     
-
-
 })

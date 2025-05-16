@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import {Law} from '../types'
+import type {Law} from '../types'
 import LawList from './LawList'
-
 
 
 test('renders content', () => {
@@ -18,7 +17,6 @@ test('renders content', () => {
         docTitle: 'Title2'
     },]
    
-
     render(<LawList laws={laws} />)
     const element = screen.getByText('Title')
     expect(element).toBeDefined()

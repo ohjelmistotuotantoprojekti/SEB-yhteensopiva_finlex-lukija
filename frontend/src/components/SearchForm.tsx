@@ -10,8 +10,6 @@ const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props
     margin: '4px',
   }
 
-
-
   return (
        <div key="searchdiv" style={searchStyle}>
         <form key="searchForm" onSubmit={handleSearchEvent}>

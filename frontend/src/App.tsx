@@ -1,11 +1,7 @@
-
-
-
 import { 
         BrowserRouter as Router,
-        Routes, Route, Link
+        Routes, Route,
  } from 'react-router-dom'   
-
 import ListPage from './components/ListPage'
 import LawPage from './components/LawPage'
 
@@ -13,7 +9,6 @@ import LawPage from './components/LawPage'
 const App = () => {
 
   const server: string = "http://localhost:3001"
-
 
   return (
     <Router>

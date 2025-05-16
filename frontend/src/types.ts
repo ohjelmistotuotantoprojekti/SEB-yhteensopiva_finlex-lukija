@@ -7,8 +7,10 @@
 
 export interface Props {
   search: string,
-  server: string,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
   handleSearchEvent: (event: React.SyntheticEvent) => void,
- 
+}
+
+export interface Server {
+  server: string,
 }
