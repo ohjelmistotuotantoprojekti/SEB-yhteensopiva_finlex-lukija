@@ -13,7 +13,7 @@ const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props
 
 
   return (
-       <div style={searchStyle}>
+       <div id="searchdiv" style={searchStyle}>
         <form id="searchForm" onSubmit={handleSearchEvent}>
           <input type="text" id="searchField" 
          onChange={handleSearchInputChange}

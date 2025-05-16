@@ -42,7 +42,7 @@ const ListPage = ({server}: Props) => {
   
   return (
 
-    <div>
+    <div id="lawpagediv">
     <h3>Lakitekstit:</h3>
     
    
