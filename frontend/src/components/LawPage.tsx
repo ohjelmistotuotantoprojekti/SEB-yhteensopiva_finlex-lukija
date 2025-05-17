@@ -2,7 +2,6 @@ import axios from 'axios'
 import { useState } from 'react'
 import type {Server} from '../types'
 import { useParams } from 'react-router-dom'
-//import XMLParser from 'react-xml-parser'
 
 
 const LawPage = ({server}: Server) => {
@@ -27,12 +26,7 @@ const LawPage = ({server}: Server) => {
 
       // Parsi XML data JSON-muotoon
       const xmlData: string = response.data as string
-      //const parser = new DOMParser()
-      //const xmlDoc = parser.parseFromString(xmlData, "application/xml");
-    //  const bodyNode = xmlDoc.getElementsByTagName("akn:body")[0];
-
-    // const jsonData = xmlToJson(bodyNode) // new XMLParser().parseFromString(xmlDoc, "application/xml")
-    // console.log(jsonData)
+   
       setLaw(xmlData)
     }
     catch (error) {
