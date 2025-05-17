@@ -13,6 +13,9 @@ dist-ssr
 coverage
 *.local
 
+# Coverage report
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
