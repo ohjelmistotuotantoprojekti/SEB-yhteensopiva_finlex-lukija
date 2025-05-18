@@ -91,6 +91,7 @@ app.get('/api/statute-consolidated/id/:year/:number', async (request, response) 
     params: queryParams,
     headers: { Accept: 'application/xml' }
   })
+  response.setHeader('Content-Type', 'application/xml')
   response.send(result.data)
 
 })

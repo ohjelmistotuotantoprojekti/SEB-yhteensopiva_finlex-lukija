@@ -23,9 +23,9 @@ test('list of laws is returned as valid json', async () => {
 })
 
 
-test('a single law is returned as html', async () => {
+test('a single law is returned as xml', async () => {
   await api
     .get('/api/statute-consolidated/id/2023/9')
     .expect(200)
-    .expect('Content-Type', /text\/html/)
+    .expect('Content-Type', /application\/xml/)
 })
