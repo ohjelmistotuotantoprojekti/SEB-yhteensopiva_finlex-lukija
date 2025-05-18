@@ -2,10 +2,10 @@ import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
 import LawList from './LawList'
-import type {Law, Server} from '../types'
+import type {Law} from '../types'
 
 
-const ListPage = ({server}: Server) => {
+const ListPage = () => {
    
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
@@ -14,8 +14,7 @@ const ListPage = ({server}: Server) => {
 
   // Hakee backendiltä dataa
   const getJson = async (path: string) => {
-    const url: string = `${server}${path}`
-    const response = await axios.get(url)
+    const response = await axios.get(path)
     setLaws(response.data)
   }
   
