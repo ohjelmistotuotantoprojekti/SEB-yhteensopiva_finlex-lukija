@@ -1,16 +1,14 @@
 import express from 'express';
 const app = express()
-import cors from 'cors'
 import axios from 'axios';
+import path from 'path';
 import { parseStringPromise } from 'xml2js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
-
-const corsOptions = {
-  origin: 'http://localhost:5173',
-}
-
-app.use(cors(corsOptions))
 app.use(express.static('dist'))
 
 // Etusivu
@@ -95,6 +93,11 @@ app.get('/api/statute-consolidated/id/:year/:number', async (request, response) 
   })
   response.send(result.data)
 
+})
+
+// Kaikki muut ohjataan frontendille
+app.get("*params", (request, response) => {
+  response.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
 export default app
