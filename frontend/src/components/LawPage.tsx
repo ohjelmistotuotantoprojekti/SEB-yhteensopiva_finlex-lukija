@@ -1,10 +1,9 @@
 import axios from 'axios'
 import { useState } from 'react'
-import type {Server} from '../types'
 import { useParams } from 'react-router-dom'
 
 
-const LawPage = ({server}: Server) => {
+const LawPage = () => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
@@ -18,30 +17,44 @@ const LawPage = ({server}: Server) => {
   }
 
   // Hakee backendiltä dataa
-  const getJson = async (path: string) => {
+  const getHtml = async (path: string) => {
 
     try {
-      const url: string = `${server}${path}`
-      const response = await axios.get(url)
-
-      // Parsi XML data JSON-muotoon
-      const xmlData: string = response.data as string
-   
-      setLaw(xmlData)
+      // Hae XML (APIsta)
+      const xmlResp = await axios.get(path)
+      const xmlText: string = xmlResp.data
+      
+      // Hae XSLT (tiedostosta)
+      const xsltResp = await axios.get('/akomo_ntoso.xsl')
+      const xsltText: string = xsltResp.data
+      
+      // Parsi XML ja XSLT
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+      const xsltDoc = parser.parseFromString(xsltText, 'text/xml');
+      
+      // Muunna XML HTML:ksi
+      const xsltProcessor = new XSLTProcessor();
+      xsltProcessor.importStylesheet(xsltDoc);
+      const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document);
+      const container = document.createElement('div');
+      container.appendChild(resultDocumentFragment);
+      const transformedHtml = container.innerHTML;
+      
+      // Tallenna HTML tilaan
+      setLaw(transformedHtml)
     }
     catch (error) {
       console.error(error)
     }
   }
 
-  getJson(`/api/statute-consolidated/id/${docyear}/${docnumber}`) 
+  getHtml(`/api/statute-consolidated/id/${docyear}/${docnumber}`) 
   
   return (
     <div>
-    <h3>Lakiteksti:</h3>
     <p><a href="/">Takaisin etusivulle</a></p>
-
-   {law}
+     <div dangerouslySetInnerHTML={{ __html: law }} />
     </div>
   )
 }
