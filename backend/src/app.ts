@@ -9,12 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
-app.use(express.static('dist'))
-
-// Etusivu
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
+app.use(express.static(path.join(__dirname, 'frontend')))
 
 // Listaa kaikki lait tietyltä vuodelta
 app.get('/api/statute-consolidated/year/:year', async (request: express.Request, response: express.Response): Promise<void> => {
@@ -98,7 +93,7 @@ app.get('/api/statute-consolidated/id/:year/:number', async (request, response) 
 
 // Kaikki muut ohjataan frontendille
 app.get("*params", (request, response) => {
-  response.sendFile(path.join(__dirname, 'dist', 'index.html'))
+  response.sendFile(path.join(__dirname, 'frontend', 'index.html'))
 })
 
 export default app
