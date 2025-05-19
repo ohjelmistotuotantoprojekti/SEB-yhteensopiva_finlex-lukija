@@ -18,6 +18,12 @@ WORKDIR /app/backend
 
 EXPOSE 3001
 
+WORKDIR /app
+
+RUN chmod -R 777 .
+
+WORKDIR /app/backend
+
 CMD npm start
 
 

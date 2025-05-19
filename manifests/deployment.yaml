@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: "*"
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"finlex-lukija:staging","namespace":"ohtuprojekti-staging"},"fieldPath":"spec.template.spec.containers[?(@.name==\"finlex-lukija\")].image","pause":"false"}]
+  name: finlex-lukija
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finlex-lukija
+  template:
+    metadata:
+      labels:
+        app: finlex-lukija
+    spec:
+      containers:
+        - name: finlex-lukija
+          image: finlex-lukija:staging
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
