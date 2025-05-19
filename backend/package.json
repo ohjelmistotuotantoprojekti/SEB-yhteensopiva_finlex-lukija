@@ -19,24 +19,23 @@
     "Ville Suonurmi"
   ],
   "type": "module",
-  "main": "index.ts",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "tsx index.ts",
-    "dev": "tsx --watch index.ts",
+    "start": "node dist/index.js",
+    "build": "rm -rf dist && tsc && cp -r src/frontend dist/frontend",
+    "dev": "tsx --watch src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "tsx test/*.test.ts"
   },
   "dependencies": {
     "axios": "^1.9.0",
-    "cors": "^2.8.5",
     "express": "^5.1.0",
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
     "@types/axios": "^0.9.36",
-    "@types/cors": "^2.8.18",
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.18",
     "@types/supertest": "^6.0.3",
