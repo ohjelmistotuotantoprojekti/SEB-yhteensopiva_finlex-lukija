@@ -1,30 +1,15 @@
 FROM node:24
+USER node
+WORKDIR /home/node/app
 
-WORKDIR /app
-
-COPY . .
-
-WORKDIR /app/backend
-
-RUN npm ci
-
-WORKDIR /app/frontend
-
-RUN npm ci
-
-RUN npm run build
-
-WORKDIR /app/backend
+COPY --chown=node:node ./backend/dist .
+COPY --chown=node:node ./backend/package.json .
+COPY --chown=node:node ./backend/package-lock.json .
+RUN npm --omit=dev --no-fund --no-audit --no-update-notifier ci
 
 EXPOSE 3001
 
-WORKDIR /app
-
-RUN chmod -R 777 .
-
-WORKDIR /app/backend
-
-CMD npm start
+CMD ["node", "index.js"]
 
 
 
