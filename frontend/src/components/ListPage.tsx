@@ -21,7 +21,7 @@ const ListPage = () => {
   // Käsittelee SearchForm-komponentin submit-aktionia.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
-    getJson(`/api/statute-consolidated/year/${year}`) 
+    getJson(`/api/statute/year/${year}`) 
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
