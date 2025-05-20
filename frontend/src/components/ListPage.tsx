@@ -9,7 +9,6 @@ const ListPage = () => {
    
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
-  const [year, setYear] = useState<string>('')
   const [laws, setLaws] = useState<Law[]>([])
 
   // Hakee backendiltä dataa
@@ -21,13 +20,24 @@ const ListPage = () => {
   // Käsittelee SearchForm-komponentin submit-aktionia.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
-    getJson(`/api/statute-consolidated/year/${year}`) 
+    if (search.includes("/")) {
+      const law_number = search.split("/")[0]
+      const year = search.split("/")[1]
+      const response = await axios.get(`/api/statute-consolidated/id/${year}/${law_number}`)
+      if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
+        window.location.href = `/lainsaadanto/${year}/${law_number}`
+      } else {
+        console.log("Ei löydy mitään")
+      }
+    }
+    else {
+      getJson(`/api/statute-consolidated/year/${search}`)
+    } 
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
   const handleSearchInputChange = (event: React.SyntheticEvent) => {
     setSearch((event.target as HTMLInputElement).value)
-    setYear((event.target as HTMLInputElement).value)
   }
   
   return (
