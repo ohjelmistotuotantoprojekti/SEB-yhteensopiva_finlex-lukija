@@ -16,7 +16,7 @@ const SearchForm = ({search, handleSearchInputChange, handleSearchEvent} : Props
           <input type="text" key="searchField" 
          onChange={handleSearchInputChange}
           value={search}
-          placeholder="Search year"
+          placeholder="Vuosi tai numero/vuosi"
           />
           <button type="submit">Hae</button>
         </form>
