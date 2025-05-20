@@ -14,7 +14,7 @@ test('renders content', () => {
    
     // tests that the search input field is rendered.
     render(<SearchForm search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
-    const element = screen.getByPlaceholderText('Search year')
+    const element = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
     expect(element).toBeDefined()
     
 })
