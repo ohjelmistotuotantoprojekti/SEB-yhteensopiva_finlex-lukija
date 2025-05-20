@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-async function parseXMLtoJSON(result: Axios.AxiosXHR<'application/xml'>){
+async function parseXMLtoJSON(result: Axios.AxiosXHR<unknown>){
   // Parsi XML data JSON-muotoon
   const xmlData: string = result.data as string;
   const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
