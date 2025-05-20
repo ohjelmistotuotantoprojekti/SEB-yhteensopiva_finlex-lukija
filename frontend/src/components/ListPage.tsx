@@ -30,9 +30,12 @@ const ListPage = () => {
         console.log("Ei löydy mitään")
       }
     }
-    else {
+    else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
       getJson(`/api/statute-consolidated/year/${search}`)
     } 
+    else {
+      console.log("Hakusana")
+    }
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
