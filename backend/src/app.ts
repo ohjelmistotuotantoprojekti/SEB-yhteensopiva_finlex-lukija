@@ -103,7 +103,6 @@ app.get('/api/statute/id/:year/:number', async (request, response) => {
 
 // Hae lakien otsikoista
 app.get('/api/statute/keyword/:keyword', async (request, response) => {
-  console.log('keyword', request.params.keyword)
   const path = '/akn/fi/act/statute/'
   const queryParams = {
     page: 1,
