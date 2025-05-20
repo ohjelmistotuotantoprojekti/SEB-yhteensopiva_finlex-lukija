@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import supertest from 'supertest'
-import app from '../app.js'
+import app from '../src/app.js'
 
 const api = supertest(app)
 
