@@ -18,6 +18,7 @@ const ListPage = () => {
   }
   
   // Käsittelee SearchForm-komponentin submit-aktionia.
+  // Jos haussa on "/", haetaan yksittäistä lakia, jos se on vuosiluku, haetaan vuodella, muutoin haetaan hakusanalla
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
@@ -35,7 +36,7 @@ const ListPage = () => {
       getJson(`/api/statute/year/${search}`) 
     } 
     else {
-      console.log("Hakusana")
+      getJson(`/api/statute/keyword/${search}`)
     }
 
 
