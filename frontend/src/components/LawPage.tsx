@@ -49,7 +49,7 @@ const LawPage = () => {
     }
   }
 
-  getHtml(`/api/statute-consolidated/id/${docyear}/${docnumber}`) 
+  getHtml(`/api/statute/id/${docyear}/${docnumber}`) 
   
   return (
     <div>

@@ -20,10 +20,11 @@ const ListPage = () => {
   // Käsittelee SearchForm-komponentin submit-aktionia.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
+
     if (search.includes("/")) {
       const law_number = search.split("/")[0]
       const year = search.split("/")[1]
-      const response = await axios.get(`/api/statute-consolidated/id/${year}/${law_number}`)
+      const response = await axios.get(`/api/statute/id/${year}/${law_number}`)
       if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
         window.location.href = `/lainsaadanto/${year}/${law_number}`
       } else {
@@ -31,11 +32,13 @@ const ListPage = () => {
       }
     }
     else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-      getJson(`/api/statute-consolidated/year/${search}`)
+      getJson(`/api/statute/year/${search}`) 
     } 
     else {
       console.log("Hakusana")
     }
+
+
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
