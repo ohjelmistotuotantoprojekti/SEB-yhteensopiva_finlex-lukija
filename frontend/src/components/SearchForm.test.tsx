@@ -1,6 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
+import { useState } from 'react'
 import SearchForm from './SearchForm'
+import userEvent from '@testing-library/user-event'
 
 
 test('renders content', () => {
@@ -29,8 +31,29 @@ test('call handleInput', () => {
     render(<SearchForm search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
     const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
    
-    // Testaa että hakukentän toimintaa.
+    // Testaa hakukentän toimintaa.
     fireEvent.change(searchInput, { target: {value: "Test"}})
     expect(handleInput).toHaveBeenCalled()
+    
+})
+
+test('call handleInput', async () => {
+    const user = userEvent.setup()
+    const handleInput = vi.fn()
+    const handleSubmit = vi.fn()
+
+    const [search, setSearch] = useState<string>('') 
+
+    render(<SearchForm search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
+    const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
+    const button = screen.getByText("Hae")
+   
+    // Testaa että hakukentän toimintaa.
+    await user.type(searchInput, "Testi")
+    await user.click(button)
+    console.log(handleSubmit.mock.calls[0][0].target)
+    console.log("hei",search)
+    expect(handleSubmit.mock.calls).toHaveLength(1)
+    expect(handleSubmit.mock.calls[0][0].content).toBe("Testi")
     
 })
