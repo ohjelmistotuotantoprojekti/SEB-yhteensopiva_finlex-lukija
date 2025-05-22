@@ -20,49 +20,36 @@ if (!process.env.PGDATABASE) {
 }
 const { PGHOST, PGUSER, PGPASSWORD, PGPORT, PGDATABASE } = process.env;
 
-
-async function createDb(): Promise<void> {
-
-  const client = new Client({
+function getClient(database: string): Client {
+  return new Client({
     host: PGHOST,
     user: PGUSER,
     password: PGPASSWORD,
     port: parseInt(PGPORT),
-    database: 'postgres'
+    database: database
   });
+}
 
+
+async function resetDb(): Promise<void> {
+  let client = getClient('postgres');
   try {
     await client.connect();
+    await client.query(`DROP DATABASE IF EXISTS "${PGDATABASE}"`);
+    await client.query(`CREATE DATABASE "${PGDATABASE}"`);
+  } finally {
+    await client.end();
+  }
 
-    const result = await client.query(
-      'SELECT 1 FROM pg_database WHERE datname = $1',
-      [PGDATABASE]
-    );
-
-    if (result.rowCount === 0) {
-      await client.query(`CREATE DATABASE "${PGDATABASE}"`);
-    }
+  client = getClient(PGDATABASE);
+  try {
+    await client.connect();
+    await client.query(`CREATE TABLE laws (uuid UUID PRIMARY KEY, title TEXT, number INT, year INT, language TEXT, content XML)`);
   } finally {
     await client.end();
   }
 }
 
-async function createTables(): Promise<void> {
-  const client = new Client({
-    host: PGHOST,
-    user: PGUSER,
-    password: PGPASSWORD,
-    port: parseInt(PGPORT),
-    database: PGDATABASE
-  });
-
-  try {
-    await client.connect();
-    await client.query(`CREATE TABLE IF NOT EXISTS laws (uuid UUID PRIMARY KEY, title TEXT, number INT, year INT, language TEXT, content XML)`);
-  } finally {
-    await client.end();
-  }
-}
 
 const pool = new Pool({
   host: PGHOST,
@@ -86,4 +73,4 @@ function closePool() {
   return pool.end();
 }
 
-export { query, createDb, createTables, closePool };
+export { query, resetDb, closePool };
