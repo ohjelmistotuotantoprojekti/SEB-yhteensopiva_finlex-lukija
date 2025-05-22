@@ -26,7 +26,8 @@
     "dev": "tsx --watch src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "tsx test/*.test.ts"
+    "test": "tsx test/*.test.ts",
+    "db:reset": "tsx db_tool.ts"
   },
   "dependencies": {
     "axios": "^1.9.0",

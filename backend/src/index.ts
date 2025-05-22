@@ -1,6 +1,6 @@
 import app from './app.js'
-import { resetDb, closePool } from './db/db.js'
-import { setStatutesByYear } from './db/load.js';
+import { closePool } from './db/db.js'
+
 
 async function gracefulShutdown() {
   try {
@@ -15,15 +15,7 @@ async function gracefulShutdown() {
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-try {
-  //await resetDb();
-  console.log(`Database is ready.`);
-} catch (error) {
-  console.error('Error creating database:', error);
-}
 
-// Täytä tietokanta ???
-//setStatutesByYear(2023, 'fin')
 
 const PORT = 3001
 app.listen(PORT, () => {

@@ -37,6 +37,9 @@ async function resetDb(): Promise<void> {
     await client.connect();
     await client.query(`DROP DATABASE IF EXISTS "${PGDATABASE}"`);
     await client.query(`CREATE DATABASE "${PGDATABASE}"`);
+  } catch (error) {
+    console.error('Error creating database:', error);
+    throw error;
   } finally {
     await client.end();
   }
@@ -45,6 +48,9 @@ async function resetDb(): Promise<void> {
   try {
     await client.connect();
     await client.query(`CREATE TABLE laws (uuid UUID PRIMARY KEY, title TEXT, number INT, year INT, language TEXT, content XML)`);
+  } catch (error) {
+    console.error('Error creating table:', error);
+    throw error;
   } finally {
     await client.end();
   }
