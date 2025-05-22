@@ -16,7 +16,7 @@ process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
 try {
-  await resetDb();
+  //await resetDb();
   console.log(`Database is ready.`);
 } catch (error) {
   console.error('Error creating database:', error);

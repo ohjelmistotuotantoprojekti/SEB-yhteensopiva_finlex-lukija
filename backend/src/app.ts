@@ -1,7 +1,7 @@
 import express from 'express';
 const app = express()
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent } from './db/akoma.js';
 
 import { fileURLToPath } from 'url';
 
@@ -39,10 +39,21 @@ app.get('/api/statute/id/:year/:number/:language', async (request: express.Reque
 
 })
 
-// Hae lakien otsikoista
-//app.get('/api/statute/keyword/:keyword/:language', async (request: express.Request, response: express.Response) Promise<void> => {
-// //TBD
-//})
+// Hae lakien sisällöstä
+app.get('/api/statute/keyword/:keyword/:language', async (request: express.Request, response: express.Response): Promise<void> => {
+  const keyword = request.params.keyword
+  const language = request.params.language
+  const results = await getLawsByContent(keyword, language)
+  const preparedResults = results.map((result) => {
+    return {
+      docYear: result.year,
+      docNumber: result.number,
+      docTitle: result.title
+    }
+  })
+
+  response.json(preparedResults)
+})
 
 // Kaikki muut ohjataan frontendille
 app.get("*params", async (request: express.Request, response: express.Response): Promise<void> => {

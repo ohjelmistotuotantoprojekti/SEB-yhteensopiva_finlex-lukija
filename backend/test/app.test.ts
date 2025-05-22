@@ -6,7 +6,7 @@ const api = supertest(app)
 
 test('list of laws per year is returned as valid json', async () => {
   await api
-    .get('/api/statute/year/2023')
+    .get('/api/statute/year/2023/fin')
     .expect(200)
     .expect('Content-Type', /application\/json/)
     .expect((response) => {
@@ -24,7 +24,7 @@ test('list of laws per year is returned as valid json', async () => {
 
 test('list of laws per keyword is returned as valid json', async () => {
   await api
-    .get('/api/statute/keyword/Tieliikennelaki')
+    .get('/api/statute/keyword/luonnonsuo/fin')
     .expect(200)
     .expect('Content-Type', /application\/json/)
     .expect((response) => {
@@ -43,7 +43,7 @@ test('list of laws per keyword is returned as valid json', async () => {
 
 test('a single law is returned as xml', async () => {
   await api
-    .get('/api/statute/id/2023/9')
+    .get('/api/statute/id/2023/9/fin')
     .expect(200)
     .expect('Content-Type', /application\/xml/)
 })
