@@ -47,7 +47,16 @@ async function resetDb(): Promise<void> {
   client = getClient(PGDATABASE);
   try {
     await client.connect();
-    await client.query(`CREATE TABLE laws (uuid UUID PRIMARY KEY, title TEXT, number INT, year INT, language TEXT, content XML)`);
+    await client.query(
+      "CREATE TABLE laws ("
+      + "uuid UUID PRIMARY KEY,"
+      + "title TEXT NOT NULL,"
+      + "number INTEGER NOT NULL,"
+      + "year INTEGER NOT NULL,"
+      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "content XML NOT NULL,"
+      + "CONSTRAINT unique_document UNIQUE (number, year, language)"
+      + ")");
   } catch (error) {
     console.error('Error creating table:', error);
     throw error;
