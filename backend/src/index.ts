@@ -23,7 +23,7 @@ try {
 }
 
 // Täytä tietokanta ???
-setStatutesByYear(2023, 'fin')
+//setStatutesByYear(2023, 'fin')
 
 const PORT = 3001
 app.listen(PORT, () => {

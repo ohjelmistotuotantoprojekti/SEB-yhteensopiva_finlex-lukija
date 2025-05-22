@@ -77,25 +77,30 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
   const path = '/akn/fi/act/statute/list'
   const queryParams = {
     page: 1,
-    limit: 4,
+    limit: 10,
+    sortBy: 'number',
     langAndVersion: language + '@',
     typeStatute: 'act',
     startYear: year,
     endYear: year,
   }
 
-  const result = await axios.get(`${baseURL}${path}`, {
-    params: queryParams,
-    headers: { Accept: 'application/json' }
-  })
-
   const uris: string[] = []
 
-  for (const item of result.data as Array<{ akn_uri: string }>) {
-    const uri = item.akn_uri
-    uris.push(uri)
-  }
+  let result: Axios.AxiosXHR<Array<{ akn_uri: string }>>
+  do {
+    result = await axios.get(`${baseURL}${path}`, {
+      params: queryParams,
+      headers: { Accept: 'application/json' , 'Accept-Encoding': 'gzip'}
+    })
 
+    for (const item of result.data) {
+      const uri = item.akn_uri
+      uris.push(uri)
+    }
+    queryParams.page += 1
+  } while (result.data.length > 0)
+  console.log(`Found ${uris.length} statutes for year ${year} in language ${language}`)
   return uris
 }
 
@@ -105,6 +110,7 @@ async function setStatutesByYear(year: number, language: string) {
   for (const uri of uris) {
     await setSingleStatute(uri)
   }
+  console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
 }
 
 export { setStatutesByYear }
