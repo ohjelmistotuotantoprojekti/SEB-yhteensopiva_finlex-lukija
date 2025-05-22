@@ -41,7 +41,6 @@ async function createDb(): Promise<void> {
 
     if (result.rowCount === 0) {
       await client.query(`CREATE DATABASE "${PGDATABASE}"`);
-      await client.query(`CREATE TABLE laws (uuid UUID PRIMARY KEY, title TEXT, number INT, year INT, language TEXT, content XML)`);
     }
   } finally {
     await client.end();
