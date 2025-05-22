@@ -27,7 +27,7 @@
         </style>
       </head>
       <body>
-        <xsl:apply-templates select="/AknXmlList/Results/akn:akomaNtoso"/>
+        <xsl:apply-templates select="/akn:akomaNtoso"/>
       </body>
     </html>
   </xsl:template>
