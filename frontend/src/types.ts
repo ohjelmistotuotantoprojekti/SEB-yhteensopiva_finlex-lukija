@@ -14,3 +14,8 @@ export interface Props {
 export interface Server {
   server: string,
 }
+
+export interface Lang {
+  language: string,
+  setLanguage: (Status: string) => void
+}

@@ -1,9 +1,10 @@
 import axios from 'axios'
+import type {Lang, Law} from "../types"
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 
-const LawPage = () => {
+const LawPage = ({language, setLanguage} :Lang) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""

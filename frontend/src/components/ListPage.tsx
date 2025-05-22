@@ -2,10 +2,11 @@ import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
 import LawList from './LawList'
-import type {Law} from '../types'
+import type {Law, Lang} from '../types'
+import LanguageSelection from './LanguageSelection'
 
 
-const ListPage = () => {
+const ListPage = ({language, setLanguage} : Lang) => {
    
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
@@ -49,6 +50,7 @@ const ListPage = () => {
   
   return (
     <div id="lawpagediv">
+    <LanguageSelection language={language} setLanguage={setLanguage}/>
     <h3>Lakitekstit:</h3>
     <SearchForm search={search}  
                 handleSearchInputChange={handleSearchInputChange}
