@@ -1,52 +1,18 @@
 
-import { Client, Pool, QueryResult } from 'pg';
-import dotenv from 'dotenv';
+import { Pool, QueryResult } from 'pg';
 
-dotenv.config();
-if (!process.env.PGPORT) {
-  throw new Error('Environment variable PGPORT must be defined.');
-}
-if (!process.env.PGHOST) {
-  throw new Error('Environment variable PGHOST must be defined.');
-}
-if (!process.env.PGUSER) {
-  throw new Error('Environment variable PGUSER must be defined.');
-}
-if (!process.env.PGPASSWORD) {
-  throw new Error('Environment variable PGPASSWORD must be defined.');
-}
-if (!process.env.PGDATABASE) {
-  throw new Error('Environment variable PGDATABASE must be defined.');
-}
-const { PGHOST, PGUSER, PGPASSWORD, PGPORT, PGDATABASE } = process.env;
+let pool: Pool;
 
-function getClient(database: string): Client {
-  return new Client({
-    host: PGHOST,
-    user: PGUSER,
-    password: PGPASSWORD,
-    port: parseInt(PGPORT),
-    database: database
+async function setPool(uri: string) {
+  pool = new Pool({
+    connectionString: uri
   });
 }
 
-
 async function resetDb(): Promise<void> {
-  let client = getClient('postgres');
   try {
-    await client.connect();
-    await client.query(`DROP DATABASE IF EXISTS "${PGDATABASE}"`);
-    await client.query(`CREATE DATABASE "${PGDATABASE}"`);
-  } catch (error) {
-    console.error('Error creating database:', error);
-    throw error;
-  } finally {
-    await client.end();
-  }
-
-  client = getClient(PGDATABASE);
-  try {
-    await client.connect();
+    const client = await pool.connect();
+    await client.query("DROP TABLE IF EXISTS laws");
     await client.query(
       "CREATE TABLE laws ("
       + "uuid UUID PRIMARY KEY,"
@@ -57,35 +23,33 @@ async function resetDb(): Promise<void> {
       + "content XML NOT NULL,"
       + "CONSTRAINT unique_document UNIQUE (number, year, language)"
       + ")");
+    client.release();
   } catch (error) {
     console.error('Error creating table:', error);
     throw error;
-  } finally {
-    await client.end();
   }
 }
 
-
-const pool = new Pool({
-  host: PGHOST,
-  user: PGUSER,
-  password: PGPASSWORD,
-  port: parseInt(PGPORT),
-  database: PGDATABASE
-});
-
-
 async function query(text: string, params?: unknown[]): Promise<QueryResult> {
   try {
-    return await pool.query(text, params);
+    const client = await pool.connect();
+    const result = await client.query(text, params);
+    client.release();
+    return result;
   } catch (error) {
     console.error(`Error executing query '${text}': '${error}'`);
     throw error;
   }
 }
 
-function closePool() {
-  return pool.end();
+async function closePool() {
+  try {
+    await pool.end();
+  } catch (error) {
+    console.error('Error closing database connection:', error);
+    throw error;
+  }
 }
 
-export { query, resetDb, closePool };
+
+export { query, setPool, closePool, resetDb };

@@ -1,8 +1,30 @@
-import { test } from 'node:test'
+import { test, before, after } from 'node:test'
 import supertest from 'supertest'
 import app from '../src/app.js'
 
 const api = supertest(app)
+
+import { PostgreSqlContainer } from '@testcontainers/postgresql';
+import { setPool, resetDb, closePool } from '../src/db/db.js'
+import { setSingleStatute } from '../src/db/load.js'
+
+let container;
+let databaseUrl: string;
+
+before(async () => {
+  container = await new PostgreSqlContainer().start();
+  databaseUrl = container.getConnectionUri();
+  await setPool(databaseUrl);
+  await resetDb();
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/9/fin@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/4/fin@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/5/fin@")
+});
+
+after(async () => {
+  await closePool();
+  await container.stop();
+});
 
 test('list of laws per year is returned as valid json', async () => {
   await api
