@@ -7,7 +7,7 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
     float: "right",
     }
 
-    useEffect(() => {
+    /*useEffect(() => {
         const langSelect = document.getElementById("lan")
         langSelect?.addEventListener("change", handleSelect)
         return () => {
@@ -16,17 +16,24 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
             }
         
         }
-        }, [])
+        }, []) */
 
-    function handleSelect(event) {
-        const currentValue = event.target.value
+    function handleSelect(event: React.SyntheticEvent) {
+        const currentValue = (event.target as HTMLInputElement).value
         setLanguage(currentValue)
-        console.log(language)
+        localStorage.setItem("language", currentValue)
+        console.log(currentValue)
     }
 
   return (
        <div className="dropdown" key="searchdiv" style={menuStyle}>
-            <select data-placeholder="Choose a Language..." id="lan">
+            <select 
+            data-placeholder="Choose a Language..." 
+            id="lan"
+            value={language}
+            onChange={handleSelect}
+            >
+
                 <option value="fin">Suomi</option>
                 <option value="swe">Ruotsi</option>
             </select>

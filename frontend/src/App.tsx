@@ -8,7 +8,9 @@ import { useState } from 'react'
 
 
 const App = () => {
-  const [language, setLanguage] = useState<string>("fin")
+  const [language, setLanguage] = useState<string>(() => {
+    return localStorage.getItem("language") || "fin"
+  })
 
   return (
     <Router>
