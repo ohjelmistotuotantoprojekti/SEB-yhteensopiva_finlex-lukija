@@ -1,6 +1,10 @@
 FROM node:24
-USER node
 WORKDIR /home/node/app
+RUN apt update
+RUN apt -y install postgresql-client
+RUN chmod -R 700 /home/node/ 
+RUN chown -R node:node /home/node/
+USER node
 
 COPY --chown=node:node ./backend/dist .
 COPY --chown=node:node ./backend/package.json .
