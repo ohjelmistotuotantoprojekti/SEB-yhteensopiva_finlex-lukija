@@ -5,7 +5,7 @@ metadata:
     alpha.image.policy.openshift.io/resolve-names: "*"
     image.openshift.io/triggers: >-
       [{"from":{"kind":"ImageStreamTag","name":"finlex-lukija:staging","namespace":"ohtuprojekti-staging"},"fieldPath":"spec.template.spec.containers[?(@.name==\"finlex-lukija\")].image","pause":"false"}]
-  name: finlex-lukija
+  name: finlex-lukija-dep
 spec:
   replicas: 1
   selector:
