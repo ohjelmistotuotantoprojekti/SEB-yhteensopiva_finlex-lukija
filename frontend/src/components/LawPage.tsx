@@ -1,10 +1,10 @@
 import axios from 'axios'
-import type {Lang, Law} from "../types"
+import type {Lang } from "../types"
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 
 
-const LawPage = ({language, setLanguage} :Lang) => {
+const LawPage = ({language} :Lang) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
@@ -50,11 +50,11 @@ const LawPage = ({language, setLanguage} :Lang) => {
     }
   }
 
-  getHtml(`/api/statute/id/${docyear}/${docnumber}`) 
+  getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
   
   return (
     <div>
-    <p><a href="/">Takaisin etusivulle</a></p>
+    <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}Takaisin etusivulle</a></p>
      <div dangerouslySetInnerHTML={{ __html: law }} />
     </div>
   )
