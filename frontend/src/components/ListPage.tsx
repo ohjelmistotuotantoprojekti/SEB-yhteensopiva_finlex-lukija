@@ -26,18 +26,18 @@ const ListPage = ({language, setLanguage} : Lang) => {
     if (search.includes("/")) {
       const law_number = search.split("/")[0]
       const year = search.split("/")[1]
-      const response = await axios.get(`/api/statute/id/${year}/${law_number}`)
+      const response = await axios.get(`/api/statute/id/${year}/${law_number}/${language}`)
       if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
-        window.location.href = `/lainsaadanto/${year}/${law_number}`
+        window.location.href = `/lainsaadanto/${year}/${law_number}/${language}`
       } else {
         console.log("Ei löydy mitään")
       }
     }
     else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-      getJson(`/api/statute/year/${search}`) 
+      getJson(`/api/statute/year/${search}/${language}`) 
     } 
     else {
-      getJson(`/api/statute/keyword/${search}`)
+      getJson(`/api/statute/keyword/${search}/${language}`)
     }
 
 
@@ -51,8 +51,9 @@ const ListPage = ({language, setLanguage} : Lang) => {
   return (
     <div id="lawpagediv">
     <LanguageSelection language={language} setLanguage={setLanguage}/>
-    <h3>Lakitekstit:</h3>
-    <SearchForm search={search}  
+    <h3>{language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}</h3>
+    <SearchForm search={search}
+                language={language}  
                 handleSearchInputChange={handleSearchInputChange}
                 handleSearchEvent={handleSearchEvent} 
     />

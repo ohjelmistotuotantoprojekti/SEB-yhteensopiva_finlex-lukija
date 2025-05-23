@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+//import { useEffect } from 'react'
 import type {Lang} from "../types"
 
 const LanguageSelection = ({language, setLanguage} : Lang) => {
 
     const menuStyle = {
-    float: "right",
+        border: 0, 
+        
     }
 
     /*useEffect(() => {
@@ -26,7 +27,7 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
     }
 
   return (
-       <div className="dropdown" key="searchdiv" style={menuStyle}>
+       <div key="searchdiv" style={menuStyle}>
             <select 
             data-placeholder="Choose a Language..." 
             id="lan"
