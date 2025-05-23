@@ -70,7 +70,7 @@ async function setSingleStatute(uri: string) {
     language: docLanguage,
     content: result.data as string,
   }
-  setLaw(law)
+  await setLaw(law)
 }
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
@@ -113,4 +113,4 @@ async function setStatutesByYear(year: number, language: string) {
   console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
 }
 
-export { setStatutesByYear }
+export { setStatutesByYear, setSingleStatute }
