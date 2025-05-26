@@ -5,7 +5,7 @@ import app from '../src/app.js'
 const api = supertest(app)
 
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { setPool, resetDb, closePool } from '../src/db/db.js'
+import { setPool, createTables, closePool } from '../src/db/db.js'
 import { setSingleStatute } from '../src/db/load.js'
 
 let container;
@@ -15,7 +15,7 @@ before(async () => {
   container = await new PostgreSqlContainer().start();
   databaseUrl = container.getConnectionUri();
   await setPool(databaseUrl);
-  await resetDb();
+  await createTables();
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/9/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/4/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute/2023/5/fin@")

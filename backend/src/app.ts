@@ -2,6 +2,7 @@ import express from 'express';
 const app = express()
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent } from './db/akoma.js';
+import { getImageByName } from './db/image.js';
 
 import { fileURLToPath } from 'url';
 
@@ -10,6 +11,19 @@ const __dirname = path.dirname(__filename);
 
 
 app.use(express.static(path.join(__dirname, 'frontend')))
+
+
+app.get('/media/:filename', async (request: express.Request, response: express.Response): Promise<void> => {
+  const filename = request.params.filename;
+  try{
+    const {content, mimeType} = await getImageByName(filename);
+    response.setHeader('Content-Type', mimeType);
+    response.send(content);
+  } catch {
+    response.status(404).send('File not found');
+    return;
+  }
+})
 
 // Listaa kaikki lait tietyltä vuodelta
 app.get('/api/statute/year/:year/:language', async (request: express.Request, response: express.Response): Promise<void> => {

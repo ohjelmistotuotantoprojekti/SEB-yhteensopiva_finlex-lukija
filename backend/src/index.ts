@@ -1,5 +1,5 @@
 import app from './app.js'
-import { setPool } from './db/db.js'
+import { setPool, dbIsReady, fillDb, createTables } from './db/db.js'
 import { exit } from 'process';
 import dotenv from 'dotenv'
 dotenv.config()
@@ -19,10 +19,31 @@ if (process.env.NODE_ENV === 'production') {
   setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'test') {
   console.log('Running in test mode')
+  // testit asettavat poolin osana testiajoa
 } else {
   console.log('Running in unknown mode')
   exit(1)
 }
+
+// Alusta tietokanta
+async function initDatabase() {
+  try {
+    if (!await dbIsReady()) {
+      console.log('Database is not ready, creating tables...')
+      await createTables()
+      console.log('Filling database...')
+      await fillDb()
+      console.log('Database is ready.')
+    } else {
+      console.log('Database is ready.')
+    }
+  } catch (error) {
+    console.error('Error initializing database:', error)
+    exit(1)
+  }
+}
+
+await initDatabase()
 
 const PORT = 3001
 app.listen(PORT, () => {

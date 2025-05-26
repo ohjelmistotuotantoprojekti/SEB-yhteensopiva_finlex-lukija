@@ -1,5 +1,4 @@
-import { setStatutesByYear } from './src/db/load.js';
-import { setPool, resetDb } from './src/db/db.js'
+import { setPool, fillDb, createTables, dropTables } from './src/db/db.js'
 import { exit } from 'process';
 import dotenv from 'dotenv'
 dotenv.config()
@@ -12,20 +11,10 @@ if (!process.env.PG_URI) {
 // nollaa tietokanta
 try {
   await setPool(process.env.PG_URI)
-  await resetDb();
+  await dropTables();
+  await createTables();
+  await fillDb();
   console.log(`Database is ready.`);
 } catch {
-  exit(1);
-}
-
-// täytä tietokanta
-try {
-  await setStatutesByYear(2023, 'fin')
-  await setStatutesByYear(2023, 'swe')
-  await setStatutesByYear(2024, 'fin')
-  await setStatutesByYear(2024, 'swe')
-  console.log("Database is filled")
-} catch (error) {
-  console.error('Error filling database:', error);
   exit(1);
 }
