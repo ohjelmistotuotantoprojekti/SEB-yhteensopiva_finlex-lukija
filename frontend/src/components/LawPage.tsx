@@ -54,7 +54,7 @@ const LawPage = ({language} :Lang) => {
   
   return (
     <div>
-    <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}Takaisin etusivulle</a></p>
+    <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}</a></p>
      <div dangerouslySetInnerHTML={{ __html: law }} />
     </div>
   )
