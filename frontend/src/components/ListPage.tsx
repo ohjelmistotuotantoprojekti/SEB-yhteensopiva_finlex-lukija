@@ -28,7 +28,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
       const year = search.split("/")[1]
       const response = await axios.get(`/api/statute/id/${year}/${law_number}/${language}`)
       if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
-        window.location.href = `/lainsaadanto/${year}/${law_number}/${language}`
+        window.location.href = `/lainsaadanto/${year}/${law_number}`
       } else {
         console.log("Ei löydy mitään")
       }
