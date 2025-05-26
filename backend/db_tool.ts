@@ -20,10 +20,10 @@ try {
 
 // täytä tietokanta
 try {
+  await setStatutesByYear(2018, 'fin')
+  await setStatutesByYear(2018, 'swe')
   await setStatutesByYear(2023, 'fin')
   await setStatutesByYear(2023, 'swe')
-  await setStatutesByYear(2024, 'fin')
-  await setStatutesByYear(2024, 'swe')
   console.log("Database is filled")
 } catch (error) {
   console.error('Error filling database:', error);

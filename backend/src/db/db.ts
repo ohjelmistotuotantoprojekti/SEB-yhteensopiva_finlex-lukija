@@ -12,6 +12,14 @@ async function setPool(uri: string) {
 async function resetDb(): Promise<void> {
   try {
     const client = await pool.connect();
+    await client.query("DROP TABLE IF EXISTS images");
+    await client.query(
+      "CREATE TABLE images ("
+      + "uuid UUID PRIMARY KEY,"
+      + "name TEXT NOT NULL UNIQUE,"
+      + "mime_type TEXT NOT NULL,"
+      + "content BYTEA NOT NULL"
+      + ")");
     await client.query("DROP TABLE IF EXISTS laws");
     await client.query(
       "CREATE TABLE laws ("
