@@ -27,7 +27,7 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: finlex-lukija-config
-                  key: PG_URI 
+                  key: PG_URI
             - name: NODE_ENV
               value: "production"
           resources:
