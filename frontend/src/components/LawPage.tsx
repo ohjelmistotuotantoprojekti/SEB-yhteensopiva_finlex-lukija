@@ -10,6 +10,23 @@ const LawPage = ({language} :Lang) => {
   const docyear: string = useParams().year ?? ""
   const [law, setLaw] = useState<string>('')
 
+  const topStyle = {
+    display: 'flex',
+    justifyContent: 'flex-start',
+    alignContent: 'center',
+    width: '100%',
+    height: '50px',
+    backgroundColor: '#0C6FC0',
+    padding: '2px',
+  }
+
+  const contentStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '5px',
+  }
+
   if (docnumber === "" ) {
     throw new Error("Unexpected error: Missing docnumber");
   }
@@ -53,10 +70,15 @@ const LawPage = ({language} :Lang) => {
   getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
   
   return (
-    <div>
+    <>
+    <div id="topId" style={topStyle}>
     <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}</a></p>
-     <div dangerouslySetInnerHTML={{ __html: law }} />
     </div>
+    <div id="contentDiv" style={contentStyle}>
+     <div dangerouslySetInnerHTML={{ __html: law}} >
+    </div>
+    </div>
+    </>
   )
 }
 
