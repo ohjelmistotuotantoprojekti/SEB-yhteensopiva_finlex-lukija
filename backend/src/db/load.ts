@@ -9,7 +9,7 @@ import xmldom from '@xmldom/xmldom';
 
 
 
-function parseFinlexUrl(url: string): { docYear: number; docNumber: number; docLanguage: string } {
+function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string } {
   try {
     const urlObj = new URL(url);
 
@@ -26,7 +26,7 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: number; docL
 
     // Poimi vuosi ja numero
     const docYear = parseInt(segments[7]);
-    const docNumber = parseInt(segments[8]);
+    const docNumber = segments[8];
 
     // Poimi kieli
     const docLanguage = segments[9].replace('@', '');
@@ -78,28 +78,33 @@ async function parseImagesfromXML(result: Axios.AxiosXHR<unknown>): Promise<stri
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
-async function setImages(docYear: number, docNumber: number, language: string, uris: string[]) {
+async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
   for (const uri of uris) {
-    const path = `/akn/fi/act/statute/${docYear}/${docNumber}/${language}@/${uri}`
+    const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@/${uri}`
     const url = `${baseURL}${path}`
-    const result = await axios.get(url, {
-      headers: { 'Accept': 'image/*', 'Accept-Encoding': 'gzip' },
-      responseType: 'arraybuffer'
-    })
+    try {
+      const result = await axios.get(url, {
+        headers: { 'Accept': 'image/*', 'Accept-Encoding': 'gzip' },
+        responseType: 'arraybuffer'
+      })
 
-    const name = uri.split('/').pop()
-    if (!name) {
-      console.error(`Failed to extract name from URI: ${uri}`);
-      continue;
-    }
-    const image: Image = {
-      uuid: uuidv4(),
-      name: name,
-      mime_type: result.headers['content-type'],
-      content: result.data as Buffer,
-    }
+      const name = uri.split('/').pop()
+      if (!name) {
+        console.error(`Failed to extract name from URI: ${uri}`);
+        continue;
+      }
+      const image: Image = {
+        uuid: uuidv4(),
+        name: name,
+        mime_type: result.headers['content-type'],
+        content: result.data as Buffer,
+      }
 
-    setImage(image)
+      setImage(image)
+    }
+    catch {
+      console.error(`Failed to fetch image from ${url}:`);
+    }
   }
 }
 
@@ -129,7 +134,7 @@ async function setSingleStatute(uri: string) {
 }
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
-  const path = '/akn/fi/act/statute/list'
+  const path = '/akn/fi/act/statute-consolidated/list'
   const queryParams = {
     page: 1,
     limit: 10,
