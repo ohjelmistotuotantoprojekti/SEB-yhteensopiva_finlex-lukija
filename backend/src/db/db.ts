@@ -12,10 +12,15 @@ async function setPool(uri: string) {
 
 async function fillDb(): Promise<void> {
   try {
-    await setStatutesByYear(2018, 'fin')
-    await setStatutesByYear(2018, 'swe')
-    await setStatutesByYear(2023, 'fin')
-    await setStatutesByYear(2023, 'swe')
+    const currentYear = new Date().getFullYear();
+    for (let i = 1900; i <= currentYear; i++) {
+      await setStatutesByYear(i, 'fin')
+      await setStatutesByYear(i, 'swe')
+    }
+    for (const i of [1898, 1896, 1895, 1894, 1893, 1892, 1889, 1886, 1883, 1873, 1872, 1868, 1864, 1734]) {
+      await setStatutesByYear(i, 'fin')
+      await setStatutesByYear(i, 'swe')
+    }
     console.log("Database is filled")
   } catch (error) {
     console.error('Error filling database:', error);
