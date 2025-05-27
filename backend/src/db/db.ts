@@ -1,6 +1,7 @@
 
 import { Pool, QueryResult } from 'pg';
 import { setStatutesByYear } from './load.js';
+import { getLatestYearLaw, getLawCountByYear, getLawsByYear } from './akoma.js';
 
 let pool: Pool;
 
@@ -10,14 +11,17 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(): Promise<void> {
+async function fillDb(startYear: number = 1900): Promise<void> {
   try {
     const currentYear = new Date().getFullYear();
-    for (let i = 1900; i <= currentYear; i++) {
+    for (let i = startYear; i <= currentYear; i++) {
       await setStatutesByYear(i, 'fin')
       await setStatutesByYear(i, 'swe')
     }
     for (const i of [1898, 1896, 1895, 1894, 1893, 1892, 1889, 1886, 1883, 1873, 1872, 1868, 1864, 1734]) {
+      if (i < startYear) {
+        continue;
+      }
       await setStatutesByYear(i, 'fin')
       await setStatutesByYear(i, 'swe')
     }
@@ -51,6 +55,27 @@ async function dbIsReady(): Promise<boolean> {
   }
 }
 
+async function dbIsUpToDate(): Promise<{upToDate: boolean, latestYear: number}> {
+  try {
+    const latestYear = await getLatestYearLaw();
+    const currentYear = new Date().getFullYear();
+    if (latestYear == currentYear) {
+      const numberOfLaws = await getLawCountByYear(currentYear);
+      const expectedFin = await getLawsByYear(currentYear, 'fin');
+      const expectedSwe = await getLawsByYear(currentYear, 'swe');
+      const exprectedNumberOfLaws = expectedFin.length + expectedSwe.length;
+      if (numberOfLaws != exprectedNumberOfLaws) {
+        return { upToDate: false, latestYear };
+      } else {
+        return { upToDate: true, latestYear };
+      }
+    } else { return { upToDate: false, latestYear };}
+  } catch (error) {
+    console.error('Error checking if database is up to date:', error);
+    throw error;
+  }
+}
+
 async function createTables(): Promise<void> {
   try {
     const client = await pool.connect();
@@ -63,7 +88,7 @@ async function createTables(): Promise<void> {
     await client.query("CREATE TABLE IF NOT EXISTS laws ("
       + "uuid UUID PRIMARY KEY,"
       + "title TEXT NOT NULL,"
-      + "number INTEGER NOT NULL,"
+      + "number TEXT NOT NULL,"
       + "year INTEGER NOT NULL,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
       + "content XML NOT NULL,"
@@ -111,4 +136,4 @@ async function closePool() {
 }
 
 
-export { query, setPool, closePool, createTables, dropTables, dbIsReady, fillDb };
+export { query, setPool, closePool, createTables, dropTables, dbIsReady, fillDb, dbIsUpToDate };

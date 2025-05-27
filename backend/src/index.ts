@@ -1,5 +1,5 @@
 import app from './app.js'
-import { setPool, dbIsReady, fillDb, createTables } from './db/db.js'
+import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate } from './db/db.js'
 import { exit } from 'process';
 import dotenv from 'dotenv'
 dotenv.config()
@@ -36,6 +36,14 @@ async function initDatabase() {
       console.log('Database is ready.')
     } else {
       console.log('Database is ready.')
+      const { upToDate, latestYear } = await dbIsUpToDate()
+      if (!upToDate) {
+        console.log('Database is not up to date, filling database...')
+        await fillDb(latestYear)
+        console.log('Database is now up to date.')
+      } else {
+        console.log('Database is up to date.')
+      }
     }
   } catch (error) {
     console.error('Error initializing database:', error)

@@ -45,7 +45,7 @@ app.get('/api/statute/year/:year/:language', async (request: express.Request, re
 app.get('/api/statute/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
   const year = parseInt(request.params.year)
   const language = request.params.language
-  const number = parseInt(request.params.number)
+  const number = request.params.number
   const content = await getLawByNumberYear(number, year, language)
 
   response.setHeader('Content-Type', 'application/xml')
