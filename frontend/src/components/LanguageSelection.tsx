@@ -5,7 +5,8 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
 
     const menuStyle = {
         border: 0, 
-        
+        marginRight: '10px',
+        marginTop: '11px',
     }
 
     /*useEffect(() => {

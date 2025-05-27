@@ -12,6 +12,28 @@ const ListPage = ({language, setLanguage} : Lang) => {
   const [search, setSearch] = useState<string>('')
   const [laws, setLaws] = useState<Law[]>([])
 
+  const topStyle = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignContent: 'center',
+    width: '100%',
+    height: '50px',
+    backgroundColor: '#0C6FC0',
+    padding: '2px',
+  }
+
+  const contentStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '5px',
+  }
+
+  const contentContainerStyle = {
+    width: '700px',
+    border: '0px solid black',
+  }
+
   // Hakee backendiltä dataa
   const getJson = async (path: string) => {
     const response = await axios.get(path)
@@ -50,7 +72,11 @@ const ListPage = ({language, setLanguage} : Lang) => {
   
   return (
     <div id="lawpagediv">
+      <div style={topStyle} id="topdiv">
     <LanguageSelection language={language} setLanguage={setLanguage}/>
+    </div>
+    <div style={contentStyle} id="contentdiv">
+      <div id="ccDiv" style={contentContainerStyle}>
     <h3>{language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}</h3>
     <SearchForm search={search}
                 language={language}  
@@ -58,6 +84,8 @@ const ListPage = ({language, setLanguage} : Lang) => {
                 handleSearchEvent={handleSearchEvent} 
     />
     <LawList laws={laws} />
+    </div>
+    </div>
     </div>
   )
 }
