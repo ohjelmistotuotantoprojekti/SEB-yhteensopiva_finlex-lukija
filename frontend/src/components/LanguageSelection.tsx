@@ -9,16 +9,6 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
         marginTop: '11px',
     }
 
-    /*useEffect(() => {
-        const langSelect = document.getElementById("lan")
-        langSelect?.addEventListener("change", handleSelect)
-        return () => {
-        if (langSelect) {
-            langSelect.removeEventListener("change", handleSelect)
-            }
-        
-        }
-        }, []) */
 
     function handleSelect(event: React.SyntheticEvent) {
         const currentValue = (event.target as HTMLInputElement).value
