@@ -137,5 +137,21 @@
     <p><xsl:apply-templates/></p>
   </xsl:template>
 
+  <xsl:template match="akn:content">
+    <p><xsl:apply-templates/></p>
+  </xsl:template>
+
+  <xsl:template match="akn:block">
+    <p><xsl:apply-templates/></p>
+  </xsl:template>
+
+  <!-- images -->
+  <xsl:template match="akn:img">
+    <img src="/{@src}"/>
+  </xsl:template>
+
+  <!-- span -->
+  <xsl:template match="akn:block[@name='image']//akn:span"/>
+
 
 </xsl:stylesheet>
