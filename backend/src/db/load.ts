@@ -5,7 +5,7 @@ import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
 import { setLaw } from './akoma.js';
 import { setImage } from './image.js';
-import { DOMParser } from 'xmldom';
+import xmldom from '@xmldom/xmldom';
 
 
 
@@ -62,14 +62,14 @@ async function parseTitlefromXML(result: Axios.AxiosXHR<unknown>): Promise<strin
 async function parseImagesfromXML(result: Axios.AxiosXHR<unknown>): Promise<string[]> {
   // Parsi XML data
   const xmlData = await result.data as string;
-  const doc = new DOMParser().parseFromString(xmlData, 'text/xml');
+  const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
 
   // Poimi image-elementit
   const imageNodes = doc.getElementsByTagNameNS('*', 'img');
   const imageLinks: string[] = [];
 
   // Hae src-attribuutit
-  Array.from(imageNodes).forEach((node: Element) => {
+  Array.from(imageNodes).forEach((node: xmldom.Element) => {
     imageLinks.push(node.getAttribute('src') || '');
   });
 
