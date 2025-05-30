@@ -18,20 +18,22 @@ const LawPage = ({language} :Lang) => {
     height: '50px',
     backgroundColor: '#0C6FC0',
     padding: '2px',
+    margin: '2px',
   }
 
   const contentStyle = {
     display: 'flex',
     justifyContent: 'center',
-    width: '100%',
+    width: '80%',
     padding: '5px',
+    margin: '10px',
   }
 
   if (docnumber === "" ) {
-    throw new Error("Unexpected error: Missing docnumber");
+    throw new Error("Unexpected error: Missing docnumber")
   }
   if (docyear === "" ) {
-    throw new Error("Unexpected error: Missing docyear");
+    throw new Error("Unexpected error: Missing docyear")
   }
 
   // Hakee backendiltä dataa
@@ -48,26 +50,33 @@ const LawPage = ({language} :Lang) => {
       
       // Parsi XML ja XSLT
       const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-      const xsltDoc = parser.parseFromString(xsltText, 'text/xml');
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+      const xsltDoc = parser.parseFromString(xsltText, 'text/xml')
       
       // Muunna XML HTML:ksi
-      const xsltProcessor = new XSLTProcessor();
-      xsltProcessor.importStylesheet(xsltDoc);
-      const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document);
-      const container = document.createElement('div');
-      container.appendChild(resultDocumentFragment);
-      const transformedHtml = container.innerHTML;
+      const xsltProcessor = new XSLTProcessor()
+      xsltProcessor.importStylesheet(xsltDoc)
+      const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document)
+      const container = document.createElement('div')
+      container.appendChild(resultDocumentFragment)
       
+      const bodyarr = Array.from (container.querySelectorAll("article"))
+      if(bodyarr.length >= 1) {
+          const body = bodyarr[0].innerHTML
       // Tallenna HTML tilaan
-      setLaw(transformedHtml)
+        setLaw(body)
+      }
+      else {
+        setLaw("no text")
+      }
     }
     catch (error) {
       console.error(error)
     }
   }
-
+   
   getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+
   
   return (
     <>
@@ -75,7 +84,7 @@ const LawPage = ({language} :Lang) => {
     <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}</a></p>
     </div>
     <div id="contentDiv" style={contentStyle}>
-     <div dangerouslySetInnerHTML={{ __html: law}} >
+     <div dangerouslySetInnerHTML={{ __html: law}}>
     </div>
     </div>
     </>
