@@ -2,6 +2,7 @@ import axios from 'axios'
 import type {Lang } from "../types"
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
+import TableOfContent from './TableOfContent'
 
 
 const LawPage = ({language} :Lang) => {
@@ -24,9 +25,24 @@ const LawPage = ({language} :Lang) => {
   const contentStyle = {
     display: 'flex',
     justifyContent: 'center',
-    width: '80%',
+    width: '100%',
     padding: '5px',
     margin: '10px',
+  }
+
+   const contentBlockStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '50px',
+    margin: '10px',
+  }
+   const tocStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '0px',
+    margin: '0px',
   }
 
   if (docnumber === "" ) {
@@ -65,10 +81,10 @@ const LawPage = ({language} :Lang) => {
           const body = bodyarr[0].innerHTML
       // Tallenna HTML tilaan
         setLaw(body)
-      }
+      }/*
       else {
         setLaw("no text")
-      }
+      }*/
     }
     catch (error) {
       console.error(error)
@@ -76,15 +92,23 @@ const LawPage = ({language} :Lang) => {
   }
    
   getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
-
+  /*const toc = [{'Ylätason otskko':['Alaotsikko 1', 'alaotsikko 2']},
+  {'Ylätason otskko 2':['Alaotsikko 1', 'alaotsikko 2']}
+]*/
   
   return (
     <>
     <div id="topId" style={topStyle}>
     <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}</a></p>
     </div>
+
+  
     <div id="contentDiv" style={contentStyle}>
-     <div dangerouslySetInnerHTML={{ __html: law}}>
+
+    <div id="contentBlock" style={contentBlockStyle}>
+      <div id="leftMargin" style={tocStyle}><TableOfContent /></div>
+      <div dangerouslySetInnerHTML={{ __html: law}}>
+      </div>
     </div>
     </div>
     </>
