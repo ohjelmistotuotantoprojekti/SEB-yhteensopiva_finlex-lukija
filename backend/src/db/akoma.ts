@@ -1,5 +1,6 @@
 import { query } from './db.js';
 import { Akoma } from '../types/akoma.js';
+import { Judgment } from '../types/judgment.js';
 
 async function getLawByNumberYear(number: string, year: number, language: string): Promise<string | null> {
   const sql = 'SELECT content FROM laws WHERE number = $1 AND year = $2 AND language = $3';
@@ -25,6 +26,11 @@ async function setLaw(law: Akoma) {
   await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content]);
 }
 
+async function setJudgment(judgment: Judgment) {
+  const sql = 'INSERT INTO judgments (uuid, level, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (number, year, language) DO NOTHING';
+  await query(sql, [judgment.uuid, judgment.level, judgment.number, judgment.year, judgment.language, judgment.content, judgment.is_empty]);
+}
+
 async function getLawCountByYear(year: number): Promise<number> {
   const sql = 'SELECT COUNT(*) FROM laws where year = $1';
   const result = await query(sql, [year]);
@@ -37,4 +43,4 @@ async function getLatestYearLaw() : Promise<number> {
   return parseInt(result.rows[0].latest_year, 10);
 }
 
-export { getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw };
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw };

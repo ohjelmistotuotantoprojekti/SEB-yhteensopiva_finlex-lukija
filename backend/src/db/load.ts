@@ -1,11 +1,16 @@
 import { parseStringPromise } from 'xml2js';
 import axios from 'axios';
 import { Akoma } from '../types/akoma.js';
+import { Judgment } from '../types/judgment.js';
 import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
-import { setLaw } from './akoma.js';
+import { setJudgment, setLaw } from './akoma.js';
 import { setImage } from './image.js';
 import xmldom from '@xmldom/xmldom';
+import { JSDOM } from 'jsdom';
+import fs from 'fs';
+import path, { parse } from 'path';
+import { fileURLToPath } from 'url';
 
 
 
@@ -76,6 +81,69 @@ async function parseImagesfromXML(result: Axios.AxiosXHR<unknown>): Promise<stri
   return imageLinks
 }
 
+
+function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
+  const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
+  const courtID = language === 'fin' ? courtLevel.fin : courtLevel.swe;
+  const re = new RegExp(`${courtID}:\\d{4}(:\\d+|-[A-Za-z]+-\\d+)`, 'g');
+  const matches = inputHTML.matchAll(re);
+  return Array.from(matches, match => match[0]);
+}
+
+function parseURLfromJudgmentID(judgmentID: string): string {
+  const parts = judgmentID.split(':');
+  let IDparts: string[];
+
+  if (parts[1].includes("-")) {
+    const [year, number] = parts[1].split(/-(.+)/);
+    IDparts = [parts[0], year, number];
+  } else {
+    IDparts = [parts[0], parts[1], parts[2]];
+  }
+
+  if (parts[0] === 'KHO') {
+    return `https://finlex.fi/fi/oikeuskaytanto/korkein-hallinto-oikeus/ennakkopaatokset/${IDparts[1]}/${IDparts[2]}`;
+  } else if (IDparts[0] === 'KKO') {
+    return `https://finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/${IDparts[1]}/${IDparts[2]}`;
+  } else if (IDparts[0] === 'HFD') {
+    return `https://finlex.fi/sv/rattspraxis/hogsta-forvaltningsdomstolen/prejudikat/${IDparts[1]}/${IDparts[2]}`;
+  }
+  else if (IDparts[0] === 'HD') {
+    return `https://finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/${IDparts[1]}/${IDparts[2]}`;
+  } else {
+    throw new Error(`Unknown court level: ${IDparts[0]}`);
+  }
+}
+
+async function parseAkomafromURL(inputURL: string): Promise<{ content: string; is_empty: boolean }> {
+  const rawResult = await fetch(inputURL);
+  const inputHTML = await rawResult.text();
+  const dom = new JSDOM(inputHTML);
+  const doc = dom.window.document;
+  const section = doc.querySelector('section[class*="akomaNtoso"]');
+
+  let is_empty = true;
+
+  if (section) {
+    const paragraphs = section.querySelectorAll('p');
+    is_empty = !Array.from(paragraphs).some(p => p.textContent.trim() !== '');
+  }
+
+  const sectionHTML = section ? section.outerHTML : '';
+  const content = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Ennakkopäätös</title>
+</head>
+<body>
+  ${sectionHTML}
+</body>
+</html>`;
+
+  return { content, is_empty };
+}
+
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
 async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
@@ -133,6 +201,36 @@ async function setSingleStatute(uri: string) {
   await setLaw(law)
 }
 
+async function setSingleJudgment(uri: string): Promise<Judgment> {
+  let parts = uri.split('/');
+  let courtLevel = 'kko'
+  if (parts.includes('korkein-hallinto-oikeus')) {
+    courtLevel = 'kho'
+  }
+  else if (parts.includes('hogsta-forvaltningsdomstolen')) {
+    courtLevel = 'kho'
+  }
+
+  let language = 'fin'
+  if (parts[parts.length - 6] === 'sv') {
+    language = 'swe'
+  }
+
+  const html = await parseAkomafromURL(uri)
+
+  const judgment: Judgment = {
+    uuid: uuidv4(),
+    level: courtLevel,
+    number: parts[parts.length - 1],
+    year: parts[parts.length - 2],
+    language: language,
+    content: html.content,
+    is_empty: html.is_empty,
+  }
+
+  await setJudgment(judgment)
+}
+
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list'
   const queryParams = {
@@ -165,6 +263,26 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
 }
 
 
+async function listJudgmentNumbersByYear(year: number, language: string, level: string): Promise<string[]> {
+  let courtLevel = {
+    fi: '',
+    sv: ''
+  };
+    if (level === 'kho') {
+    courtLevel = {fi: 'korkein-hallinto-oikeus', sv: 'hogsta-forvaltningsdomstolen'};
+  } else if (level === 'kko') {
+    courtLevel = {fi: 'korkein-oikeus', sv: 'hogsta-domstolen'};
+  }
+  const inputUrl = language === 'fin'
+    ? `https://finlex.fi/fi/oikeuskaytanto/${courtLevel.fi}/ennakkopaatokset/${year}`
+    : `https://finlex.fi/sv/rattspraxis/${courtLevel.sv}/prejudikat/${year}`;
+  const rawResult =  await fetch(inputUrl);
+  const inputHTML = await rawResult.text();
+  const parsedList = parseJudgmentList(inputHTML, language, level);
+  return parsedList
+}
+
+
 async function setStatutesByYear(year: number, language: string) {
   const uris = await listStatutesByYear(year, language)
   for (const uri of uris) {
@@ -173,4 +291,4 @@ async function setStatutesByYear(year: number, language: string) {
   console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
 }
 
-export { setStatutesByYear, setSingleStatute }
+export { setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }
