@@ -5,6 +5,8 @@ import type {Headings } from "../types"
 const TableOfContent = ({headings}: {headings: Headings[]}) => {
     
     const data = headings 
+   
+    console.log("headinngs", data)
 
     const tocStyle: React.CSSProperties = {
         display: 'flow',
@@ -14,24 +16,26 @@ const TableOfContent = ({headings}: {headings: Headings[]}) => {
         left: '0pn',
         border: '0px solid red',
     }
+     if (data.length < 1 ) {
+        console.log("headings empty")
+        return <></>
+    }
+    else { 
+        return (
+            <div key="tocdiv" style={tocStyle}>
 
-    return (
-        <div key="tocdiv" style={tocStyle}>
+                {data.map((section) => {
+                        return (<><div id={section.name}><a href={`#${section.id}`}>{section.name}</a></div>
 
-    {data.map((section) => {
-
-
-            return (<><div id={section.name}><a href={`#${section.id}`}>{section.name}</a></div>
-        
-
-            {section.content.map((item) => {
-            return (<div id={item.name}><a href={`#${item.id}`}>{item.name}</a></div>)
-            })} 
-        </>
+                        {section.content.map((item) => {
+                        return (<div id={item.name}><a href={`#${item.id}`}>{item.name}</a></div>)
+                        })} 
+                    </>
+                    )
+                })} 
+            </div>
         )
-    })} 
-        </div>
-    )
+    }
 }
 
 export default TableOfContent

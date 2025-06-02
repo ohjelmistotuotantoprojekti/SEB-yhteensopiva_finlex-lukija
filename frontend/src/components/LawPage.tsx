@@ -1,9 +1,8 @@
 import axios from 'axios'
-import type {Lang } from "../types"
+import type {Lang, Headings } from "../types"
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import TableOfContent from './TableOfContent'
-
 
 
 const LawPage = ({language} :Lang) => {
@@ -11,82 +10,8 @@ const LawPage = ({language} :Lang) => {
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
   const [law, setLaw] = useState<string>('')
+  const [headings, setHeadings] = useState<Headings[]>([])
 
-  
-    const headings = [
-    {
-        "name": "1 luku - Yleiset säännökset",
-        "id": "chp_1__heading",
-        "content": [
-            {
-                "name": "1 § - Lain tavoite",
-                "id": "chp_1__sec_1__heading",
-                "content": []
-            },
-            {
-                "name": "2 § - Lain soveltamisala",
-                "id": "chp_1__sec_2__heading",
-                "content": []
-            },
-            {
-                "name": "3 § - Määritelmät",
-                "id": "chp_1__sec_3__heading",
-                "content": []
-            },
-            {
-                "name": "4 § - Kansainväliset sopimukset",
-                "id": "chp_1__sec_4__heading",
-                "content": []
-            },
-            {
-                "name": "5 § - Euroopan unionin direktiivit",
-                "id": "chp_1__sec_5__heading",
-                "content": []
-            },
-            {
-                "name": "6 § - Saamelaiskulttuurin suoja",
-                "id": "chp_1__sec_6__heading",
-                "content": []
-            },
-            {
-                "name": "7 § - Varovaisuusperiaate",
-                "id": "chp_1__sec_7__heading",
-                "content": []
-            },
-            {
-                "name": "8 § - Ympäristötietoisuuden edistäminen",
-                "id": "chp_1__sec_8__heading",
-                "content": []
-            }
-        ]
-    },
-    {
-        "name": "2 luku - Luonnonsuojelun viranomaiset ja muut toimijat",
-        "id": "chp_2__heading",
-        "content": [
-            {
-                "name": "9 § - Luonnonsuojelun valtion viranomaiset",
-                "id": "chp_2__sec_9__heading",
-                "content": []
-            },
-            {
-                "name": "10 § - Luonnonsuojelun asiantuntijaviranomaiset",
-                "id": "chp_2__sec_10__heading",
-                "content": []
-            },
-            {
-                "name": "11 § - Kunta",
-                "id": "chp_2__sec_11__heading",
-                "content": []
-            },
-            {
-                "name": "12 § - Suomen luontopaneeli",
-                "id": "chp_2__sec_12__heading",
-                "content": []
-            }
-        ]
-    }
-]
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -166,9 +91,24 @@ const LawPage = ({language} :Lang) => {
     }
   }
    
-  getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+   // Hakee backendiltä sisällysluettelon
+  const getHeadings = async () => {
 
-  
+    try {
+      console.log("getting ", docyear,"/", docnumber," ", language)
+      const response = await axios.get(`/api/statute/structure/id/${docyear}/${docnumber}/${language}`)
+      console.log("response", response.data)
+      setHeadings(response.data)
+    } catch(error) {
+      console.error(error)
+    }
+  }
+
+  // getHeadings()
+  getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+ 
+ 
+
   return (
     <>
     <div id="topId" style={topStyle}>
