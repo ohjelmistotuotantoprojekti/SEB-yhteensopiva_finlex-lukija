@@ -47,19 +47,31 @@ const ListPage = ({language, setLanguage} : Lang) => {
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
+    const msg = "Haulla ei löytynyt hakutuloksia"
     if (search === "") {
-      const msg = "haulla ei löydy mitään"
       setErrorMessage(msg)
-      showError(errorMessage)
+      showError(msg)
     }
-    else if (search.includes("/") && search.match(/[0-9]\d*\/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-      const law_number = search.split("/")[0]
-      const year = search.split("/")[1]
-      const response = await axios.get(`/api/statute/id/${year}/${law_number}/${language}`)
-      if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
-        window.location.href = `/lainsaadanto/${year}/${law_number}`
-      } else {
-        console.log("error: haulla ei löydy mitään")
+    else if (search.includes("/")) {
+      if (search.match(/[0-9]\d*\/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
+        const law_number = search.split("/")[0]
+        const year = search.split("/")[1]
+
+        try {const response = await axios.get(`/api/statute/id/${year}/${law_number}/${language}`)
+          if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
+            window.location.href = `/lainsaadanto/${year}/${law_number}`
+          } else {
+            setErrorMessage(msg)
+            showError(msg)
+        }} catch (error) {
+          console.log(error)
+            setErrorMessage(msg)
+            showError(msg)
+        }
+      }
+      else {
+        setErrorMessage(msg)
+        showError(msg)
       }
     }
     else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
@@ -79,10 +91,9 @@ const ListPage = ({language, setLanguage} : Lang) => {
     setErrorMessage(
           errorMessage
         )
-    console.log(errorMessage)
         setTimeout(() => {
           setErrorMessage("")
-        }, 5000)
+        }, 2000)
   }
   
   return (
