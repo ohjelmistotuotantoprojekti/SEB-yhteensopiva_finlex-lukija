@@ -5,4 +5,5 @@ export interface Akoma {
     year: number;
     language: string;
     content: string;
+    is_empty: boolean;
 }

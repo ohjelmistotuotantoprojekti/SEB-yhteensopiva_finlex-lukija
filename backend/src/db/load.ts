@@ -186,6 +186,7 @@ async function setSingleStatute(uri: string) {
     console.log(imageLinks.length)
     console.log(imageLinks)
   }
+  console.log(result.data)
 
   const { docYear, docNumber, docLanguage } = parseFinlexUrl(uri)
   const lawUuid = uuidv4()
@@ -196,12 +197,13 @@ async function setSingleStatute(uri: string) {
     year: docYear,
     language: docLanguage,
     content: result.data as string,
+    is_empty: false
   }
-  setImages(docYear, docNumber, docLanguage, imageLinks)
-  await setLaw(law)
+  // setImages(docYear, docNumber, docLanguage, imageLinks)
+  // await setLaw(law)
 }
 
-async function setSingleJudgment(uri: string): Promise<Judgment> {
+async function setSingleJudgment(uri: string) {
   let parts = uri.split('/');
   let courtLevel = 'kko'
   if (parts.includes('korkein-hallinto-oikeus')) {
@@ -282,6 +284,16 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
   return parsedList
 }
 
+async function listJudgmentsByYear(year: number, language: string, level: string): Promise<string[]> {
+  const judgmentNumbers = await listJudgmentNumbersByYear(year, language, level);
+  let judgmentURLs = [];
+  for (const judgmentID of judgmentNumbers) {
+    const url = parseURLfromJudgmentID(judgmentID);
+    judgmentURLs.push(url);
+  }
+  return judgmentURLs;
+}
+
 
 async function setStatutesByYear(year: number, language: string) {
   const uris = await listStatutesByYear(year, language)
@@ -291,4 +303,12 @@ async function setStatutesByYear(year: number, language: string) {
   console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
 }
 
-export { setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }
+async function setJudgmentsByYear(year: number, language: string, level: string) {
+  const uris = await listJudgmentsByYear(year, language, level)
+  for (const uri of uris) {
+    await setSingleJudgment(uri)
+  }
+  console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
+}
+
+export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }

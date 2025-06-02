@@ -1,6 +1,6 @@
 
 import { Pool, QueryResult } from 'pg';
-import { setStatutesByYear } from './load.js';
+import { setStatutesByYear, setJudgmentsByYear } from './load.js';
 import { getLatestYearLaw, getLawCountByYear, getLawsByYear } from './akoma.js';
 
 let pool: Pool;
@@ -17,6 +17,10 @@ async function fillDb(startYear: number = 1900): Promise<void> {
     for (let i = startYear; i <= currentYear; i++) {
       await setStatutesByYear(i, 'fin')
       await setStatutesByYear(i, 'swe')
+      await setJudgmentsByYear(i, 'fin', 'kho')
+      await setJudgmentsByYear(i, 'fin', 'kko')
+      await setJudgmentsByYear(i, 'swe', 'kho')
+      await setJudgmentsByYear(i, 'swe', 'kko')
     }
     for (const i of [1898, 1896, 1895, 1894, 1893, 1892, 1889, 1886, 1883, 1873, 1872, 1868, 1864, 1734]) {
       if (i < startYear) {
