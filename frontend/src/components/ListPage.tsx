@@ -2,6 +2,7 @@ import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
 import LawList from './LawList'
+import Notification  from './Notification'
 import type {Law, Lang} from '../types'
 import LanguageSelection from './LanguageSelection'
 
@@ -11,6 +12,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
   const [laws, setLaws] = useState<Law[]>([])
+  const [errorMessage, setErrorMessage] = useState<string>("")
 
   const topStyle = {
     display: 'flex',
@@ -46,7 +48,9 @@ const ListPage = ({language, setLanguage} : Lang) => {
     event.preventDefault()
 
     if (search === "") {
-      console.log("error: haulla ei löytynyt mitään")
+      const msg = "haulla ei löydy mitään"
+      setErrorMessage(msg)
+      showError(errorMessage)
     }
     else if (search.includes("/") && search.match(/[0-9]\d*\/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
       const law_number = search.split("/")[0]
@@ -64,13 +68,21 @@ const ListPage = ({language, setLanguage} : Lang) => {
     else {
       getJson(`/api/statute/keyword/${search}/${language}`)
     }
-
-
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
   const handleSearchInputChange = (event: React.SyntheticEvent) => {
     setSearch((event.target as HTMLInputElement).value)
+  }
+
+  function showError(errorMessage: string) {
+    setErrorMessage(
+          errorMessage
+        )
+    console.log(errorMessage)
+        setTimeout(() => {
+          setErrorMessage("")
+        }, 5000)
   }
   
   return (
@@ -86,6 +98,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
                 handleSearchInputChange={handleSearchInputChange}
                 handleSearchEvent={handleSearchEvent} 
     />
+    <Notification message={errorMessage} />
     <LawList laws={laws} />
     </div>
     </div>
