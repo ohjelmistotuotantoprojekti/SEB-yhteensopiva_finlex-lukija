@@ -1,5 +1,4 @@
 import express from 'express';
-import xml2js from 'xml2js';
 import { parseStringPromise } from 'xml2js';
 import { Structure, HeadingList } from './types/structure.js';
 const app = express()
@@ -50,28 +49,28 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   const language = request.params.language
   const number = request.params.number
   const content = await getLawByNumberYear(number, year, language)
-  let headings : HeadingList[] = []
+  const headings : HeadingList[] = []
 
   if (content === null) return;
   const parsed_xml = await parseStringPromise(content)
 
   function search(parsed_xml : Structure) {
-    var obj = parsed_xml.akomaNtoso.act[0].body[0].hcontainer[0]
+    const obj = parsed_xml.akomaNtoso.act[0].body[0].hcontainer[0]
 
     if (obj === null) return;
 
     for (const key in obj) {
       if (key === 'chapter') {
-          for (let chap of Array.from(obj.chapter)) {
-            let sub_headings = []
-            for (let sec of chap.section) {
-              let sub_heading_name = sec.num[0]
-              sub_headings.push(sub_heading_name + " - " + sec.heading[0]._)
-            }
-            let heading_name = chap.heading[0]._ as string
-            let chapter_num = chap.num[0] as string
-            headings.push({[chapter_num + " - " + heading_name]:sub_headings})
+        for (const chap of Array.from(obj.chapter)) {
+          const sub_headings = []
+          for (const sec of chap.section) {
+            const sub_heading_name = sec.num[0]
+            sub_headings.push(sub_heading_name + " - " + sec.heading[0]._)
           }
+          const heading_name = chap.heading[0]._ as string
+          const chapter_num = chap.num[0] as string
+          headings.push({[chapter_num + " - " + heading_name]:sub_headings})
+        }
       }
     }
   }
