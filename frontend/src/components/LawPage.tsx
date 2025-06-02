@@ -43,8 +43,8 @@ const LawPage = ({language} :Lang) => {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
-    padding: '0px',
-    margin: '0px',
+    padding: '10px',
+    margin: '10px',
   }
 
   if (docnumber === "" ) {
@@ -104,10 +104,12 @@ const LawPage = ({language} :Lang) => {
     }
   }
 
-  // getHeadings()
-  getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
- 
- 
+  if (law === '') {
+    getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+  }
+  if (headings.length < 1) {
+    getHeadings()
+  }
 
   return (
     <>
