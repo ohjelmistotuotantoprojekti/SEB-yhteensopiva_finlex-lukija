@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseStringPromise } from 'xml2js';
-import { Structure, HeadingList } from './types/structure.js';
+import { Structure, Headings, subHeadingEntry } from './types/structure.js';
 const app = express()
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent } from './db/akoma.js';
@@ -49,33 +49,53 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   const language = request.params.language
   const number = request.params.number
   const content = await getLawByNumberYear(number, year, language)
-  const headings : HeadingList[] = []
+  const headings : Headings = {}
 
   if (content === null) return;
-  const parsed_xml = await parseStringPromise(content)
+  const parsed_xml = await parseStringPromise(content, { explicitArray: false })
 
   function search(parsed_xml : Structure) {
-    const obj = parsed_xml.akomaNtoso.act[0].body[0].hcontainer[0]
+    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
 
     if (obj === null) return;
 
     for (const key in obj) {
       if (key === 'chapter') {
-        for (const chap of Array.from(obj.chapter)) {
-          const sub_headings = []
+        let i = 0
+        for (const chap of obj.chapter) {
+          ++i
+          const sub_headings : subHeadingEntry[] = []
+          let j = 0
           for (const sec of chap.section) {
-            const sub_heading_name = sec.num[0].trim()
-            sub_headings.push(sub_heading_name + " - " + sec.heading[0]._.trim())
+            ++j
+            const sub_heading_num = sec.num.trim()
+            let sub_heading_name = sec.heading._
+            if (sub_heading_name === undefined) {
+              sub_heading_name = `_${j}`
+            }
+            else {
+              sub_heading_name = sub_heading_name.trim()
+            }
+
+            sub_headings.push({[sub_heading_num + " - " + sub_heading_name]: {id: sec.heading['$'].eId, content:[]}})
           }
-          const heading_name = chap.heading[0]._.trim() as string
-          const chapter_num = chap.num[0].trim() as string
-          headings.push({[chapter_num + " - " + heading_name]:sub_headings})
+          let heading_name = chap.heading._
+          if (heading_name === undefined) {
+            heading_name = `_${i}`
+          }
+          else {
+            heading_name = heading_name.trim()
+          }
+          const chapter_num = chap.num.trim()
+          const key = chapter_num + " - " + heading_name
+          headings[key] = {id: chap.heading['$'].eId, content: sub_headings}
         }
       }
     }
   }
   //response.setHeader('Content-Type', 'application/json')
   search(parsed_xml)
+
   response.json(headings)
 
 })
