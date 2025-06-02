@@ -110,7 +110,7 @@
   <!-- hierarchy -->
   <xsl:template match="akn:chapter">
     <div class="chapter">
-      <h2><xsl:value-of select="akn:num"/><br/><xsl:value-of select="akn:heading"/></h2>
+      <h2 id="{@eId}"><xsl:value-of select="akn:num"/><br/><xsl:value-of select="akn:heading"/></h2>
       <xsl:apply-templates
          select="*[not(self::akn:num or self::akn:heading)]"/>
     </div>
@@ -118,7 +118,7 @@
 
   <xsl:template match="akn:section">
     <div class="section">
-      <h3><xsl:value-of select="akn:num"/><xsl:text>  </xsl:text><xsl:value-of select="akn:heading"/></h3>
+      <h3 id="{@eId}"><xsl:value-of select="akn:num"/><xsl:text>  </xsl:text><xsl:value-of select="akn:heading"/></h3>
       <xsl:apply-templates
          select="*[not(self::akn:num or self::akn:heading)]"/>
     </div>
