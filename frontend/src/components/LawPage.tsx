@@ -5,13 +5,90 @@ import { useParams } from 'react-router-dom'
 import TableOfContent from './TableOfContent'
 
 
+
 const LawPage = ({language} :Lang) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
   const [law, setLaw] = useState<string>('')
 
-  const topStyle = {
+  
+    const headings = [
+    {
+        "name": "1 luku - Yleiset säännökset",
+        "id": "chp_1__heading",
+        "content": [
+            {
+                "name": "1 § - Lain tavoite",
+                "id": "chp_1__sec_1__heading",
+                "content": []
+            },
+            {
+                "name": "2 § - Lain soveltamisala",
+                "id": "chp_1__sec_2__heading",
+                "content": []
+            },
+            {
+                "name": "3 § - Määritelmät",
+                "id": "chp_1__sec_3__heading",
+                "content": []
+            },
+            {
+                "name": "4 § - Kansainväliset sopimukset",
+                "id": "chp_1__sec_4__heading",
+                "content": []
+            },
+            {
+                "name": "5 § - Euroopan unionin direktiivit",
+                "id": "chp_1__sec_5__heading",
+                "content": []
+            },
+            {
+                "name": "6 § - Saamelaiskulttuurin suoja",
+                "id": "chp_1__sec_6__heading",
+                "content": []
+            },
+            {
+                "name": "7 § - Varovaisuusperiaate",
+                "id": "chp_1__sec_7__heading",
+                "content": []
+            },
+            {
+                "name": "8 § - Ympäristötietoisuuden edistäminen",
+                "id": "chp_1__sec_8__heading",
+                "content": []
+            }
+        ]
+    },
+    {
+        "name": "2 luku - Luonnonsuojelun viranomaiset ja muut toimijat",
+        "id": "chp_2__heading",
+        "content": [
+            {
+                "name": "9 § - Luonnonsuojelun valtion viranomaiset",
+                "id": "chp_2__sec_9__heading",
+                "content": []
+            },
+            {
+                "name": "10 § - Luonnonsuojelun asiantuntijaviranomaiset",
+                "id": "chp_2__sec_10__heading",
+                "content": []
+            },
+            {
+                "name": "11 § - Kunta",
+                "id": "chp_2__sec_11__heading",
+                "content": []
+            },
+            {
+                "name": "12 § - Suomen luontopaneeli",
+                "id": "chp_2__sec_12__heading",
+                "content": []
+            }
+        ]
+    }
+]
+
+  const topStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'flex-start',
     alignContent: 'center',
@@ -22,7 +99,7 @@ const LawPage = ({language} :Lang) => {
     margin: '2px',
   }
 
-  const contentStyle = {
+  const contentStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
@@ -30,14 +107,14 @@ const LawPage = ({language} :Lang) => {
     margin: '10px',
   }
 
-   const contentBlockStyle = {
+   const contentBlockStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
-    padding: '50px',
+    padding: '10px',
     margin: '10px',
   }
-   const tocStyle = {
+   const tocStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
@@ -92,9 +169,7 @@ const LawPage = ({language} :Lang) => {
   }
    
   getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
-  /*const toc = [{'Ylätason otskko':['Alaotsikko 1', 'alaotsikko 2']},
-  {'Ylätason otskko 2':['Alaotsikko 1', 'alaotsikko 2']}
-]*/
+
   
   return (
     <>
@@ -106,7 +181,7 @@ const LawPage = ({language} :Lang) => {
     <div id="contentDiv" style={contentStyle}>
 
     <div id="contentBlock" style={contentBlockStyle}>
-      <div id="leftMargin" style={tocStyle}><TableOfContent /></div>
+      <div id="leftMargin" style={tocStyle}><TableOfContent headings={headings} /></div>
       <div dangerouslySetInnerHTML={{ __html: law}}>
       </div>
     </div>

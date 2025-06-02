@@ -1,34 +1,15 @@
 
+import type {Headings } from "../types"
 
-const TableOfContent = () => {
 
-    const data = [
-        {
-        id: 15,
-        name: '5 § Tarkemmat säännökset ja määräykset',
-        content:  [{
-            id: 11,
-            name: 'Alaotsikko 1a',
-            content: []
-        }]
-        },
-        {
-        id: 35,
-        name: '5 § jotain',
-        content:  [{
-            id: 11,
-            name: 'Alaotsikko 1b',
-            content: []
-        }]
-        },
-            
- 
-    ]
+const TableOfContent = ({headings}: {headings: Headings[]}) => {
+    
+    const data = headings 
 
     const tocStyle: React.CSSProperties = {
         display: 'flow',
         position: 'fixed',
-        width: '200px',
+        width: '250px',
         top: '0pn',
         left: '0pn',
         border: '0px solid red',
@@ -40,11 +21,11 @@ const TableOfContent = () => {
     {data.map((section) => {
 
 
-            return (<><h2 id={section.name}><a href={`#${encodeURIComponent(section.id)}`}>{section.name}</a></h2>
+            return (<><div id={section.name}><a href={`#${section.id}`}>{section.name}</a></div>
         
 
             {section.content.map((item) => {
-            return (<h2 id={item.name}><a href={`#${encodeURIComponent(item.id)}`}>{item.name}</a></h2>)
+            return (<div id={item.name}><a href={`#${item.id}`}>{item.name}</a></div>)
             })} 
         </>
         )
