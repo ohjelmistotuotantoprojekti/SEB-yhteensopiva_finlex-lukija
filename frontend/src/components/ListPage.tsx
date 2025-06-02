@@ -36,10 +36,29 @@ const ListPage = ({language, setLanguage} : Lang) => {
     border: '0px solid black',
   }
 
+  const errorStyle = {
+    width: '640px',
+    font: 'arial',
+    backgroundColor: 'rgb(243, 248, 252)',
+    border: 'solid #0C6FC0',
+  }
+
   // Hakee backendiltä dataa
+  const msg = "Haulla ei löytynyt hakutuloksia"
   const getJson = async (path: string) => {
-    const response = await axios.get(path)
-    setLaws(response.data)
+    try {
+        const response = await axios.get(path)
+        if (response.data.length === 0) {
+          setErrorMessage(msg)
+          showError(msg)
+        } else {
+          setLaws(response.data)
+        }
+    } catch (error) {
+      console.log("error1" + error)
+      setErrorMessage(msg)
+      showError(msg)
+    }
   }
   
   // Käsittelee SearchForm-komponentin submit-aktionia.
@@ -47,7 +66,6 @@ const ListPage = ({language, setLanguage} : Lang) => {
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
-    const msg = "Haulla ei löytynyt hakutuloksia"
     if (search === "") {
       setErrorMessage(msg)
       showError(msg)
@@ -64,18 +82,17 @@ const ListPage = ({language, setLanguage} : Lang) => {
             setErrorMessage(msg)
             showError(msg)
         }} catch (error) {
-          console.log(error)
-            setErrorMessage(msg)
-            showError(msg)
+          console.log("error2" + error)
+          setErrorMessage(msg)
+          showError(msg)
         }
-      }
-      else {
+      } else {
         setErrorMessage(msg)
         showError(msg)
       }
     }
     else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-      getJson(`/api/statute/year/${search}/${language}`) 
+      getJson(`/api/statute/year/${search}/${language}`)
     } 
     else {
       getJson(`/api/statute/keyword/${search}/${language}`)
@@ -93,7 +110,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
         )
         setTimeout(() => {
           setErrorMessage("")
-        }, 2000)
+        }, 2500)
   }
   
   return (
@@ -109,7 +126,9 @@ const ListPage = ({language, setLanguage} : Lang) => {
                 handleSearchInputChange={handleSearchInputChange}
                 handleSearchEvent={handleSearchEvent} 
     />
-    <Notification message={errorMessage} />
+    <div style={errorStyle}>
+      <Notification message={errorMessage} />
+    </div>
     <LawList laws={laws} />
     </div>
     </div>
