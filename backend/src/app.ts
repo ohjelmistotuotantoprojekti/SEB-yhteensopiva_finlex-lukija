@@ -64,11 +64,11 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
         for (const chap of Array.from(obj.chapter)) {
           const sub_headings = []
           for (const sec of chap.section) {
-            const sub_heading_name = sec.num[0]
-            sub_headings.push(sub_heading_name + " - " + sec.heading[0]._)
+            const sub_heading_name = sec.num[0].trim()
+            sub_headings.push(sub_heading_name + " - " + sec.heading[0]._.trim())
           }
-          const heading_name = chap.heading[0]._ as string
-          const chapter_num = chap.num[0] as string
+          const heading_name = chap.heading[0]._.trim() as string
+          const chapter_num = chap.num[0].trim() as string
           headings.push({[chapter_num + " - " + heading_name]:sub_headings})
         }
       }
@@ -76,7 +76,6 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   }
   //response.setHeader('Content-Type', 'application/json')
   search(parsed_xml)
-  console.log(headings)
   response.json(headings)
 
 })
