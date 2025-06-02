@@ -6,10 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { setLaw } from './akoma.js';
 import { setImage } from './image.js';
 import xmldom from '@xmldom/xmldom';
-// import { JSDOM } from 'jsdom';
-// import fs from 'fs';
-// import path from 'path';
-// import { fileURLToPath } from 'url';
 
 
 
@@ -80,34 +76,6 @@ async function parseImagesfromXML(result: Axios.AxiosXHR<unknown>): Promise<stri
   return imageLinks
 }
 
-// function parseAkomafromURL(html) {
-//   const dom = new JSDOM(html);
-//   const doc = dom.window.document;
-//   const section = doc.querySelector('section[class*="akomaNtoso"]');
-//   const sectionHTML = section.outerHTML;
-
-//   const newDoc = `<!DOCTYPE html>
-// <html lang="en">
-// <head>
-//   <meta charset="utf-8">
-//   <title>Ennakkopäätös</title>
-// </head>
-// <body>
-//   ${sectionHTML}
-// </body>
-// </html>`;
-
-//   return newDoc;
-// }
-
-function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
-    const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
-    const courtID = language === 'fin' ? courtLevel.fin : courtLevel.swe;
-    const re = new RegExp(`/${courtID}:\d\d\d\d:\d+/`, 'g');
-    const matches = inputHTML.matchAll(re);
-    return Array.from(matches, match => match[0]);
-}
-
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
 async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
@@ -165,13 +133,6 @@ async function setSingleStatute(uri: string) {
   await setLaw(law)
 }
 
-async function setSingleJudgment(uri: string) {
-  const result = await axios.get(`${uri}`, {
-    headers: { 'Accept': 'application/xml', 'Accept-Encoding': 'gzip' }
-  })
-
-}
-
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list'
   const queryParams = {
@@ -203,29 +164,6 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
   return uris
 }
 
-async function listJudgmentNumbersByYear(year: number, language: string, level: string): Promise<string[]> {
-  let courtLevel = {
-    fi: '',
-    sv: ''
-  };
-
-    if (level === 'kho') {
-    courtLevel = {fi: 'korkein-hallinto-oikeus', sv: 'hogsta-forvaltningsdomstolen'};
-  } else if (level === 'kko') {
-    courtLevel = {fi: 'korkein-oikeus', sv: 'hogsta-domstolen'};
-  }
-
-  const inputUrl = language === 'fin'
-    ? `https://finlex.fi/fi/oikeuskaytanto/${courtLevel.fi}/ennakkopaatokset/${year}`
-    : `https://finlex.fi/sv/rattspraxis/${courtLevel.sv}/prejudikat/${year}`;
-
-  const rawResult =  await fetch(inputUrl);
-  const inputHTML = await rawResult.text();
-  const parsedList = parseJudgmentList(inputHTML, language, level);
-  console.log(parsedList);
-  return parsedList
-}
-
 
 async function setStatutesByYear(year: number, language: string) {
   const uris = await listStatutesByYear(year, language)
@@ -235,4 +173,4 @@ async function setStatutesByYear(year: number, language: string) {
   console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
 }
 
-export { setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear }
+export { setStatutesByYear, setSingleStatute }

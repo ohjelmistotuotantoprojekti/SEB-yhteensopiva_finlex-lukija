@@ -1,7 +1,7 @@
 
 import { Pool, QueryResult } from 'pg';
 import { setStatutesByYear } from './load.js';
-import { getLatestYearLaw, getLawCountByYear, getLawsByYear  } from './akoma.js';
+import { getLatestYearLaw, getLawCountByYear, getLawsByYear } from './akoma.js';
 
 let pool: Pool;
 
@@ -92,18 +92,7 @@ async function createTables(): Promise<void> {
       + "year INTEGER NOT NULL,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
       + "content XML NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_act UNIQUE (number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS judgments ("
-      + "uuid UUID PRIMARY KEY,"
-      + "level TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "content XML NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_judgment UNIQUE (number, year, language)"
+      + "CONSTRAINT unique_document UNIQUE (number, year, language)"
       + ")");
     client.release();
   }
@@ -118,7 +107,6 @@ async function dropTables(): Promise<void> {
     const client = await pool.connect();
     await client.query("DROP TABLE IF EXISTS images");
     await client.query("DROP TABLE IF EXISTS laws");
-    await client.query("DROP TABLE IF EXISTS judgments");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);
