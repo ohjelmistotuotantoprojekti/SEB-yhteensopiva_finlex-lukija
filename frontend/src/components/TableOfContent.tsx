@@ -2,14 +2,33 @@
 
 const TableOfContent = () => {
 
-    const data = [{'1 § Toimiala ja hallinnollinen asema': ['Alaotsikko 1a', 'alaotsikko 2a']},
-  {'Ylätason otskko 2': ['Alaotsikko 1b', '7 § Siirtymäsäännökset']},
-]
+    const data = [
+        {
+        id: 15,
+        name: '5 § Tarkemmat säännökset ja määräykset',
+        content:  [{
+            id: 11,
+            name: 'Alaotsikko 1a',
+            content: []
+        }]
+        },
+        {
+        id: 35,
+        name: '5 § jotain',
+        content:  [{
+            id: 11,
+            name: 'Alaotsikko 1b',
+            content: []
+        }]
+        },
+            
+ 
+    ]
 
     const tocStyle: React.CSSProperties = {
-        display: 'block',
+        display: 'flow',
         position: 'fixed',
-        width: '250px',
+        width: '200px',
         top: '0pn',
         left: '0pn',
         border: '0px solid red',
@@ -19,18 +38,17 @@ const TableOfContent = () => {
         <div key="tocdiv" style={tocStyle}>
 
     {data.map((section) => {
-            const title: string = Object.keys(section)[0]
-           
-            return (<>
-            <h2 id={title}><a href={`#:~:text=${encodeURIComponent(title)}`}>{title}</a></h2>
-            
-            {Object.values(section).map((item)=>  <p id={item}><a href={`#:~:text=${encodeURIComponent(item)}`}>{item}</a></p> )}
 
-               
-            </>
-        )
-    })}
+
+            return (<><h2 id={section.name}><a href={`#${encodeURIComponent(section.id)}`}>{section.name}</a></h2>
         
+
+            {section.content.map((item) => {
+            return (<h2 id={item.name}><a href={`#${encodeURIComponent(item.id)}`}>{item.name}</a></h2>)
+            })} 
+        </>
+        )
+    })} 
         </div>
     )
 }
