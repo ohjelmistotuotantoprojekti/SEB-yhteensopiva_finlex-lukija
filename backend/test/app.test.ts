@@ -69,3 +69,23 @@ test('a single law is returned as xml', async () => {
     .expect(200)
     .expect('Content-Type', /application\/xml/)
 })
+
+
+test('headings, ids and subheadings are returned', async () => {
+  await api
+    .get('/api/statute/structure/id/2023/9/fin')
+    .expect((response) => {
+      if (! ("1 luku - Yleiset säännökset" in response.body)) {
+        throw new Error("Heading name does not match")
+      }
+      if (response.body['1 luku - Yleiset säännökset'].id !== "chp_1__heading") {
+        throw new Error("Heading id does not match")
+      }
+      if (! ("1 § - Lain tavoite" in response.body['1 luku - Yleiset säännökset'].content[0])) {
+        throw new Error("Subheading does not match")
+      }
+      if (response.body['1 luku - Yleiset säännökset'].content[0]["1 § - Lain tavoite"].id !== "chp_1__sec_1__heading") {
+        throw new Error("Subheading id does not match")
+      }
+    })
+})

@@ -1,4 +1,6 @@
 import express from 'express';
+import { parseStringPromise } from 'xml2js';
+import { Structure, Headings, subHeadingEntry } from './types/structure.js';
 const app = express()
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent } from './db/akoma.js';
@@ -41,6 +43,63 @@ app.get('/api/statute/year/:year/:language', async (request: express.Request, re
   response.json(preparedResults)
 })
 
+// Hae tietyn lain struktuurin eli otsikot ja otsikkojen alaotsikot
+app.get('/api/statute/structure/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
+  const year = parseInt(request.params.year)
+  const language = request.params.language
+  const number = request.params.number
+  const content = await getLawByNumberYear(number, year, language)
+  const headings : Headings = {}
+
+  if (content === null) return;
+  const parsed_xml = await parseStringPromise(content, { explicitArray: false })
+
+  function search(parsed_xml : Structure) {
+    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
+
+    if (obj === null) return;
+
+    for (const key in obj) {
+      if (key === 'chapter') {
+        let i = 0
+        for (const chap of obj.chapter) {
+          ++i
+          const sub_headings : subHeadingEntry[] = []
+          let j = 0
+          for (const sec of chap.section) {
+            ++j
+            const sub_heading_num = sec.num.trim()
+            let sub_heading_name = sec.heading._
+            if (sub_heading_name === undefined) {
+              sub_heading_name = `_${j}`
+            }
+            else {
+              sub_heading_name = sub_heading_name.trim()
+            }
+
+            sub_headings.push({[sub_heading_num + " - " + sub_heading_name]: {id: sec.heading['$'].eId, content:[]}})
+          }
+          let heading_name = chap.heading._
+          if (heading_name === undefined) {
+            heading_name = `_${i}`
+          }
+          else {
+            heading_name = heading_name.trim()
+          }
+          const chapter_num = chap.num.trim()
+          const key = chapter_num + " - " + heading_name
+          headings[key] = {id: chap.heading['$'].eId, content: sub_headings}
+        }
+      }
+    }
+  }
+  //response.setHeader('Content-Type', 'application/json')
+  search(parsed_xml)
+
+  response.json(headings)
+
+})
+
 // Hae tietty laki vuodella ja numerolla
 app.get('/api/statute/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
   const year = parseInt(request.params.year)
@@ -49,6 +108,7 @@ app.get('/api/statute/id/:year/:number/:language', async (request: express.Reque
   const content = await getLawByNumberYear(number, year, language)
 
   response.setHeader('Content-Type', 'application/xml')
+
   response.send(content)
 
 })
