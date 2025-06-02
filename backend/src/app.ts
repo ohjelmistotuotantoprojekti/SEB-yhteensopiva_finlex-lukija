@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseStringPromise } from 'xml2js';
-import { Structure, Headings, subHeadingEntry } from './types/structure.js';
+import { Structure, Heading } from './types/structure.js';
 const app = express()
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent } from './db/akoma.js';
@@ -49,7 +49,7 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   const language = request.params.language
   const number = request.params.number
   const content = await getLawByNumberYear(number, year, language)
-  const headings : Headings = {}
+  const headings: Heading[] = []
 
   if (content === null) return;
   const parsed_xml = await parseStringPromise(content, { explicitArray: false })
@@ -64,7 +64,7 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
         let i = 0
         for (const chap of obj.chapter) {
           ++i
-          const sub_headings : subHeadingEntry[] = []
+          const sub_headings : Heading[] = []
           let j = 0
           for (const sec of chap.section) {
             ++j
@@ -77,7 +77,8 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
               sub_heading_name = sub_heading_name.trim()
             }
 
-            sub_headings.push({[sub_heading_num + " - " + sub_heading_name]: {id: sec.heading['$'].eId, content:[]}})
+            const sec_key = sub_heading_num + " - " + sub_heading_name
+            sub_headings.push({name: sec_key, id: sec.heading['$'].eId, content:[]})
           }
           let heading_name = chap.heading._
           if (heading_name === undefined) {
@@ -87,8 +88,8 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
             heading_name = heading_name.trim()
           }
           const chapter_num = chap.num.trim()
-          const key = chapter_num + " - " + heading_name
-          headings[key] = {id: chap.heading['$'].eId, content: sub_headings}
+          const chap_key = chapter_num + " - " + heading_name
+          headings.push({name: chap_key, id: chap.heading['$'].eId, content: sub_headings})
         }
       }
     }
