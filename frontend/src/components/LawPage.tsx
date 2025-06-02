@@ -153,15 +153,13 @@ const LawPage = ({language} :Lang) => {
       const container = document.createElement('div')
       container.appendChild(resultDocumentFragment)
       
+      // poimitaan vain se mitä on <article> -tagien sisällä.
       const bodyarr = Array.from (container.querySelectorAll("article"))
       if(bodyarr.length >= 1) {
           const body = bodyarr[0].innerHTML
       // Tallenna HTML tilaan
         setLaw(body)
-      }/*
-      else {
-        setLaw("no text")
-      }*/
+      }
     }
     catch (error) {
       console.error(error)
