@@ -75,7 +75,7 @@ const LawPage = ({language} :Lang) => {
     <>
     <div id="topId" style={topStyle}>
     <button onClick={() => navigate(-1)}>
-      {language==="fin" ? "Etusivulle" : "Till framsidan"}
+      {language==="fin" ? "Takaisin" : "Tillbaka"}
     </button>
     </div>
     <div id="contentDiv" style={contentStyle}>
