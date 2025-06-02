@@ -21,17 +21,11 @@ export interface Structure {
             }
     }
 }
-export interface subHeadingEntry {
-    [subTitle: string]: {
-                id: string,
-                content: []
-            }
-}
-export interface Headings {
-    [chapterTitle: string]: {
-        id: string,
-        content: subHeadingEntry[]
-    }
+
+export interface Heading {
+    id: string,
+    name: string,
+    content: Heading[]
 }
 
 
