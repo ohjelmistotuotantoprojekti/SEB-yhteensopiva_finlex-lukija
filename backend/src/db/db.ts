@@ -11,7 +11,7 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(startYear: number = 1900): Promise<void> {
+async function fillDb(startYear: number = 2023): Promise<void> {
   try {
     const currentYear = new Date().getFullYear();
     for (let i = startYear; i <= currentYear; i++) {
