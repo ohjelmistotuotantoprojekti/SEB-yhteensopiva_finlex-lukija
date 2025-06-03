@@ -8,9 +8,7 @@ import { setJudgment, setLaw } from './akoma.js';
 import { setImage } from './image.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
-import fs from 'fs';
-import path, { parse } from 'path';
-import { fileURLToPath } from 'url';
+import { XMLParser } from 'fast-xml-parser';
 
 
 
@@ -144,6 +142,28 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
   return { content, is_empty };
 }
 
+function checkIsXMLEmpty(xmlString: string): boolean {
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: '@_',
+  });
+  const parsed = parser.parse(xmlString);
+
+  const body = parsed?.['akomaNtoso']?.['act']?.['body'];
+
+  if (!body) return false;
+
+  const container = body['hcontainer'];
+  if (!container) return false;
+
+  if (Array.isArray(container)) {
+    return container.some(c => c?.['@_name'] === 'contentAbsent');
+  } else {
+    return container?.['@_name'] === 'contentAbsent';
+  }
+}
+
+
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
 async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
@@ -186,7 +206,9 @@ async function setSingleStatute(uri: string) {
     console.log(imageLinks.length)
     console.log(imageLinks)
   }
-  console.log(result.data)
+
+  const xmlContent = result.data as string;
+  const is_empty = checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage } = parseFinlexUrl(uri)
   const lawUuid = uuidv4()
@@ -197,8 +219,9 @@ async function setSingleStatute(uri: string) {
     year: docYear,
     language: docLanguage,
     content: result.data as string,
-    is_empty: false
+    is_empty: is_empty
   }
+  console.log(law)
   // setImages(docYear, docNumber, docLanguage, imageLinks)
   // await setLaw(law)
 }
