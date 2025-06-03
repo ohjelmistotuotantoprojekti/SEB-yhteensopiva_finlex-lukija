@@ -75,16 +75,16 @@ test('headings, ids and subheadings are returned', async () => {
   await api
     .get('/api/statute/structure/id/2023/9/fin')
     .expect((response) => {
-      if (! ("1 luku - Yleiset säännökset" in response.body)) {
+      if (response.body[0].name !== "1 luku - Yleiset säännökset") {
         throw new Error("Heading name does not match")
       }
-      if (response.body['1 luku - Yleiset säännökset'].id !== "chp_1__heading") {
+      if (response.body[0].id !== "chp_1__heading") {
         throw new Error("Heading id does not match")
       }
-      if (! ("1 § - Lain tavoite" in response.body['1 luku - Yleiset säännökset'].content[0])) {
+      if (response.body[0].content[0].name !== "1 § - Lain tavoite") {
         throw new Error("Subheading does not match")
       }
-      if (response.body['1 luku - Yleiset säännökset'].content[0]["1 § - Lain tavoite"].id !== "chp_1__sec_1__heading") {
+      if (response.body[0].content[0].id !== "chp_1__sec_1__heading") {
         throw new Error("Subheading id does not match")
       }
     })
