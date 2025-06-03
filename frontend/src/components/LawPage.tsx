@@ -3,9 +3,13 @@ import type {Lang, Headings } from "../types"
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import TableOfContent from './TableOfContent'
+import { useParams, useNavigate } from 'react-router-dom'
+
 
 
 const LawPage = ({language} :Lang) => {
+
+  const navigate = useNavigate()
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
@@ -114,7 +118,9 @@ const LawPage = ({language} :Lang) => {
   return (
     <>
     <div id="topId" style={topStyle}>
-    <p><a href="/">{language==="fin" ? "Etusivulle" : "Till framsidan"}</a></p>
+    <button onClick={() => navigate(-1)}>
+      {language==="fin" ? "Takaisin" : "Tillbaka"}
+    </button>
     </div>
 
   
