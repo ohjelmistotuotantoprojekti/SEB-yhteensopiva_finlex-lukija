@@ -44,7 +44,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
   }
 
   // Hakee backendiltä dataa
-  const msg = "Haulla ei löytynyt hakutuloksia"
+  const msg = language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat"
   const getJson = async (path: string) => {
     try {
         const response = await axios.get(path)
