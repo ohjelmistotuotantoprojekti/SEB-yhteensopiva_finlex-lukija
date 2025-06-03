@@ -142,7 +142,7 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
   return { content, is_empty };
 }
 
-function checkIsXMLEmpty(xmlString: string): boolean {
+async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
   const parser = new XMLParser({
     ignoreAttributes: false,
     attributeNamePrefix: '@_',
@@ -208,7 +208,7 @@ async function setSingleStatute(uri: string) {
   }
 
   const xmlContent = result.data as string;
-  const is_empty = checkIsXMLEmpty(xmlContent);
+  const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage } = parseFinlexUrl(uri)
   const lawUuid = uuidv4()
@@ -221,13 +221,13 @@ async function setSingleStatute(uri: string) {
     content: result.data as string,
     is_empty: is_empty
   }
-  console.log(law)
-  // setImages(docYear, docNumber, docLanguage, imageLinks)
-  // await setLaw(law)
+
+  setImages(docYear, docNumber, docLanguage, imageLinks)
+  await setLaw(law)
 }
 
 async function setSingleJudgment(uri: string) {
-  let parts = uri.split('/');
+  const parts = uri.split('/');
   let courtLevel = 'kko'
   if (parts.includes('korkein-hallinto-oikeus')) {
     courtLevel = 'kho'
@@ -293,7 +293,7 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
     fi: '',
     sv: ''
   };
-    if (level === 'kho') {
+  if (level === 'kho') {
     courtLevel = {fi: 'korkein-hallinto-oikeus', sv: 'hogsta-forvaltningsdomstolen'};
   } else if (level === 'kko') {
     courtLevel = {fi: 'korkein-oikeus', sv: 'hogsta-domstolen'};
@@ -309,7 +309,7 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
 
 async function listJudgmentsByYear(year: number, language: string, level: string): Promise<string[]> {
   const judgmentNumbers = await listJudgmentNumbersByYear(year, language, level);
-  let judgmentURLs = [];
+  const judgmentURLs = [];
   for (const judgmentID of judgmentNumbers) {
     const url = parseURLfromJudgmentID(judgmentID);
     judgmentURLs.push(url);

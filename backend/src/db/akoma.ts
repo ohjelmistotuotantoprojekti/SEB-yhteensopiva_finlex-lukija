@@ -22,8 +22,8 @@ async function getLawsByContent(keyword: string, language: string): Promise<{ ti
 }
 
 async function setLaw(law: Akoma) {
-  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (number, year, language) DO NOTHING';
-  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content]);
+  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (number, year, language) DO NOTHING';
+  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content, law.is_empty]);
 }
 
 async function setJudgment(judgment: Judgment) {

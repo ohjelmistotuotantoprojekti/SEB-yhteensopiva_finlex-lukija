@@ -16,4 +16,4 @@ for (const j of judglist) {
 // console.log(await listStatutesByYear(2010, 'fin'))
 // console.log(await listStatutesByYear(1970, 'fin'))
 setSingleStatute('https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2010/69/fin@')
-setSingleStatute('https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/1970/896/fin@')
+setSingleStatute('https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/1920/8/fin@')
