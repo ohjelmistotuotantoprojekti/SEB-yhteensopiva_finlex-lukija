@@ -20,3 +20,13 @@ export interface Lang {
   language: string,
   setLanguage: (Status: string) => void
 }
+
+export interface Headings {
+    name: string,
+    id: string,
+    content: {
+        name: string,
+        id: string,
+        content: never[]
+    }[]
+}
