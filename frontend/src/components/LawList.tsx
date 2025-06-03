@@ -14,7 +14,7 @@ const LawList = ({laws}: {laws: Law[]}) => {
   return (
     <>
     { laws.map((law) => 
-        <div style={listStyle} key={`${law.docYear}${law.docNumber}${nanoid(2)}`} >{law.docYear}/{law.docNumber} &nbsp;
+        <div style={listStyle} key={`${law.docYear}${law.docNumber}${nanoid(2)}`} >{law.docNumber}/{law.docYear} &nbsp;
         <a href={`/lainsaadanto/${law.docYear}/${law.docNumber}`}>{law.docTitle}</a></div>
       )
     }
