@@ -108,6 +108,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
     setErrorMessage(
           errorMessage
         )
+        setLaws([])
         setTimeout(() => {
           setErrorMessage("")
         }, 2500)
