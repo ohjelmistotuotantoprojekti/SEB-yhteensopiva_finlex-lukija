@@ -1,7 +1,6 @@
 import axios from 'axios'
 import type {Lang, Headings } from "../types"
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
 import TableOfContent from './TableOfContent'
 import { useParams, useNavigate } from 'react-router-dom'
 
