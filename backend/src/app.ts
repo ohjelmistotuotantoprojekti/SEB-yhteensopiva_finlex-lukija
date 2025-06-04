@@ -30,6 +30,7 @@ app.get('/api/statute/year/:year/:language', async (request: express.Request, re
   const year = parseInt(request.params.year)
   const language = request.params.language
   const results = await getLawsByYear(year, language)
+  console.log(results)
   const preparedResults = results.map((result) => {
     return {
       docYear: result.year,

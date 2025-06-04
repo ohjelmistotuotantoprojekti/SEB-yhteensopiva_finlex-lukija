@@ -107,7 +107,7 @@ async function createTables(): Promise<void> {
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
       + "content TEXT NOT NULL,"
       + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_judgment UNIQUE (number, year, language)"
+      + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
       + ")");
     client.release();
   }
