@@ -1,6 +1,6 @@
 import type {Props} from '../types'
 
-const SearchForm = ({language, search, handleSearchInputChange, handleSearchEvent} : Props ) => {
+const SearchForm = ({language, search, ref, handleSearchInputChange, handleSearchEvent} : Props ) => {
 
 
 
@@ -29,7 +29,7 @@ const inputStyle = {
 
   return (
        <div key="searchdiv" style={inputBoxStyle}>
-        <form key="searchForm" onSubmit={handleSearchEvent}>
+        <form key="searchForm" ref={ref} onSubmit={handleSearchEvent}>
           <input type="text" size={40} key="searchField" 
          onChange={handleSearchInputChange}
           value={search}

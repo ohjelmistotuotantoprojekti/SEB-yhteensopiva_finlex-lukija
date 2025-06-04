@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import SearchForm from './SearchForm'
 import LawList from './LawList'
 import Notification  from './Notification'
@@ -8,11 +8,25 @@ import LanguageSelection from './LanguageSelection'
 
 
 const ListPage = ({language, setLanguage} : Lang) => {
-   
+
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const [search, setSearch] = useState<string>('')
   const [laws, setLaws] = useState<Law[]>([])
   const [errorMessage, setErrorMessage] = useState<string>("")
+
+  // Aja haku samantien, jos localStoragessa on haku valmiina
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    const saved = localStorage.getItem('haku');
+    if (saved) {
+      setSearch(saved);
+      setTimeout(() => {
+        if (formRef.current) {
+          formRef.current.requestSubmit();
+      }
+    }, 1);
+    }
+  }, []);
 
   const topStyle = {
     display: 'flex',
@@ -65,6 +79,9 @@ const ListPage = ({language, setLanguage} : Lang) => {
   // Jos haussa on "/", haetaan yksittäistä lakia, jos se on vuosiluku, haetaan vuodella, muutoin haetaan hakusanalla.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
+
+    // lisää haku localStorageen
+    localStorage.setItem("haku", search)
 
     if (search === "") {
       setErrorMessage(msg)
@@ -123,6 +140,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
       <div id="ccDiv" style={contentContainerStyle}>
     <h3>{language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}</h3>
     <SearchForm search={search}
+                ref={formRef}
                 language={language}  
                 handleSearchInputChange={handleSearchInputChange}
                 handleSearchEvent={handleSearchEvent} 
