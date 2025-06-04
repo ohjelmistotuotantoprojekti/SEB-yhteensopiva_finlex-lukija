@@ -7,7 +7,7 @@
 
 export interface Props {
   search: string,
-  ref: React.RefObject<HTMLFormElement | null>,
+  ref: React.RefObject<HTMLFormElement | null> | null,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
   handleSearchEvent: (event: React.SyntheticEvent) => void,
   language: string
