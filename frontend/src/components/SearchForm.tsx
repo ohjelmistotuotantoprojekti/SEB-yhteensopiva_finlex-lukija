@@ -1,8 +1,6 @@
 import type {Props} from '../types'
-import React from 'react'
 
-const SearchForm = React.forwardRef<HTMLFormElement, Props>(
-  function SearchForm({language, search, handleSearchInputChange, handleSearchEvent}, ref) {
+const SearchForm = ({language, search, handleSearchInputChange, handleSearchEvent}: Props) => {
 
   const inputBoxStyle = {
     display: 'flex',
@@ -29,7 +27,7 @@ const SearchForm = React.forwardRef<HTMLFormElement, Props>(
 
   return (
        <div key="searchdiv" style={inputBoxStyle}>
-        <form key="searchForm" ref={ref} onSubmit={handleSearchEvent}>
+        <form key="searchForm" onSubmit={handleSearchEvent}>
           <input type="text" size={40} key="searchField" 
          onChange={handleSearchInputChange}
           value={search}
@@ -40,6 +38,6 @@ const SearchForm = React.forwardRef<HTMLFormElement, Props>(
         </form>
       </div>
    )
-})
+}
 
 export default SearchForm

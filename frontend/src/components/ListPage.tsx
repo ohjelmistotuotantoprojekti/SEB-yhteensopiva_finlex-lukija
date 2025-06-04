@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import SearchForm from './SearchForm'
 import LawList from './LawList'
 import Notification  from './Notification'
@@ -10,23 +10,11 @@ import LanguageSelection from './LanguageSelection'
 const ListPage = ({language, setLanguage} : Lang) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
-  const [search, setSearch] = useState<string>('')
-  const [laws, setLaws] = useState<Law[]>([])
+  const defaultSearch = localStorage.getItem("haku") || ""
+  const defaultLaws = JSON.parse(localStorage.getItem("hakucontent") || "[]")
+  const [search, setSearch] = useState<string>(defaultSearch)
+  const [laws, setLaws] = useState<Law[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
-
-  // Aja haku samantien, jos localStoragessa on haku valmiina
-  const formRef = useRef<HTMLFormElement>(null);
-  useEffect(() => {
-    const saved = localStorage.getItem('haku');
-    if (saved) {
-      setSearch(saved);
-      setTimeout(() => {
-        if (formRef.current) {
-          formRef.current.requestSubmit();
-      }
-    }, 1);
-    }
-  }, []);
 
   const topStyle = {
     display: 'flex',
@@ -65,13 +53,18 @@ const ListPage = ({language, setLanguage} : Lang) => {
         if (response.data.length === 0) {
           setErrorMessage(msg)
           showError(msg)
+          localStorage.removeItem("hakucontent")
+          setLaws([])
         } else {
           setLaws(response.data)
+          localStorage.setItem("hakucontent", JSON.stringify(response.data))
         }
     } catch (error) {
       console.log("error1" + error)
       setErrorMessage(msg)
       showError(msg)
+      localStorage.removeItem("hakucontent")
+      setLaws([])
     }
   }
   
@@ -140,7 +133,6 @@ const ListPage = ({language, setLanguage} : Lang) => {
       <div id="ccDiv" style={contentContainerStyle}>
     <h3>{language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}</h3>
     <SearchForm search={search}
-                ref={formRef}
                 language={language}  
                 handleSearchInputChange={handleSearchInputChange}
                 handleSearchEvent={handleSearchEvent} 
