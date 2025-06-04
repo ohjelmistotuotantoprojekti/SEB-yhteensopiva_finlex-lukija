@@ -136,7 +136,6 @@ app.get('/api/judgment/year/:year/:language/:level', async (request: express.Req
   const language = request.params.language
   const level = request.params.level
   const results = await getJudgmentsByYear(year, language, level)
-  console.log(results)
   const preparedResults = results.map((result) => {
     return {
       docYear: result.year,
