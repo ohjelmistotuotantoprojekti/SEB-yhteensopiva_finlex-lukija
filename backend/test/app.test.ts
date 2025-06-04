@@ -72,3 +72,46 @@ test('a single law is returned as xml', async () => {
     .expect(200)
     .expect('Content-Type', /application\/xml/)
 })
+
+test('list of judgments per year is returned as valid json', async () => {
+  await api
+    .get('/api/judgment/year/2005/fin/kho')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+    .expect((response) => {
+      if (!Array.isArray(response.body)) {
+        throw new Error('Response is not an array')
+      }
+      if (response.body.length === 0) {
+        throw new Error('Response array is empty')
+      }
+      if (!response.body[0].docYear || !response.body[0].docNumber || !response.body[0].docLevel) {
+        throw new Error('Response object does not contain expected properties')
+      }
+    })
+})
+
+test('a single judgment is returned as html', async () => {
+  await api
+    .get('/api/judgment/id/2005/13/fin/kho')
+    .expect(200)
+    .expect('Content-Type', /application\/xml/)
+})
+
+test('list of judgments per keyword is returned as valid json', async () => {
+  await api
+    .get('/api/judgment/keyword/aiheutt/fin')
+    .expect(200)
+    .expect('Content-Type', /application\/json/)
+    .expect((response) => {
+      if (!Array.isArray(response.body)) {
+        throw new Error('Response is not an array')
+      }
+      if (response.body.length === 0) {
+        throw new Error('Response array is empty')
+      }
+      if (!response.body[0].docYear || !response.body[0].docNumber || !response.body[0].docLevel) {
+        throw new Error('Response object does not contain expected properties')
+      }
+    })
+})
