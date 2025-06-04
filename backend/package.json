@@ -34,6 +34,8 @@
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "fast-xml-parser": "^5.2.3",
+    "jsdom": "^26.1.0",
     "pg": "^8.16.0",
     "uuid": "^11.1.0",
     "xml2js": "^0.6.2"
@@ -44,6 +46,7 @@
     "@types/axios": "^0.9.36",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
+    "@types/jsdom": "^21.1.7",
     "@types/node": "^22.15.18",
     "@types/pg": "^8.15.2",
     "@types/supertest": "^6.0.3",

@@ -1,9 +1,9 @@
-export interface Akoma {
+export interface Judgment {
     uuid: string;
-    title: string;
+    level: string;
     number: string;
-    year: number;
+    year: string;
     language: string;
     content: string;
     is_empty: boolean;
-}
+  }
