@@ -51,20 +51,20 @@ const ListPage = ({language, setLanguage} : Lang) => {
     try {
         const response = await axios.get(path)
         if (response.data.length === 0) {
-          setErrorMessage(msg)
-          showError(msg)
           localStorage.removeItem("hakucontent")
           setLaws([])
+          setErrorMessage(msg)
+          showError(msg)
         } else {
-          setLaws(response.data)
           localStorage.setItem("hakucontent", JSON.stringify(response.data))
+          setLaws(response.data)
         }
     } catch (error) {
       console.log("error1" + error)
-      setErrorMessage(msg)
-      showError(msg)
       localStorage.removeItem("hakucontent")
       setLaws([])
+      setErrorMessage(msg)
+      showError(msg)
     }
   }
   
@@ -77,6 +77,8 @@ const ListPage = ({language, setLanguage} : Lang) => {
     localStorage.setItem("haku", search)
 
     if (search === "") {
+      localStorage.removeItem("hakucontent")
+      setLaws([])
       setErrorMessage(msg)
       showError(msg)
     }
