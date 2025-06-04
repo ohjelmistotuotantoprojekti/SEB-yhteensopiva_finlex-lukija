@@ -27,8 +27,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",
-    "db:reset": "tsx db_tool.ts",
-    "runtest": "tsx test.ts"
+    "db:reset": "tsx db_tool.ts"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
