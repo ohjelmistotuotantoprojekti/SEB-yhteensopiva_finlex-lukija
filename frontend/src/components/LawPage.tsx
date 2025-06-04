@@ -2,13 +2,11 @@ import axios from 'axios'
 import type {Lang, Headings } from "../types"
 import { useState } from 'react'
 import TableOfContent from './TableOfContent'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 
 
 
 const LawPage = ({language} :Lang) => {
-
-  const navigate = useNavigate()
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
@@ -117,9 +115,7 @@ const LawPage = ({language} :Lang) => {
   return (
     <>
     <div id="topId" style={topStyle}>
-    <button onClick={() => navigate(-1)}>
-      {language==="fin" ? "Takaisin" : "Tillbaka"}
-    </button>
+    <a href="/">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
     </div>
 
   
