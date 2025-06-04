@@ -11,7 +11,14 @@ const ListPage = ({language, setLanguage} : Lang) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku") || ""
-  const defaultLaws = JSON.parse(localStorage.getItem("hakucontent") || "[]")
+  let defaultLaws: Law[] = [];
+  try {
+    const storedData = localStorage.getItem("hakucontent");
+    defaultLaws = storedData ? JSON.parse(storedData) : [];
+  } catch (error) {
+    console.error("Failed to parse hakucontent from localStorage:", error);
+    defaultLaws = [];
+  }
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Law[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
