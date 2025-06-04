@@ -124,7 +124,7 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
 
   if (section) {
     const paragraphs = section.querySelectorAll('p');
-    is_empty = !Array.from(paragraphs).some(p => p.textContent.trim() !== '');
+    is_empty = !Array.from(paragraphs).some(p => (p.textContent ?? '').trim() !== '');
   }
 
   const sectionHTML = section ? section.outerHTML : '';
