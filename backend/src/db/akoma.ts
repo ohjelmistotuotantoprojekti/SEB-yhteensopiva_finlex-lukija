@@ -22,8 +22,8 @@ async function getLawsByContent(keyword: string, language: string): Promise<{ ti
 }
 
 async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
-  const sql = 'SELECT content FROM judgments WHERE number = "$1" AND year = $2 AND language = $3 AND level = $4';
-  const result = await query(sql, [number, year, language, level]);
+  const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level = $4';
+  const result = await query(sql, [`${number}`, year, language, level]);
   return result.rows[0].content || null;
 }
 
@@ -34,7 +34,7 @@ async function getJudgmentsByYear(year: number, language: string, level: string)
 }
 
 async function getJudgmentsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number }[]> {
-  const sql = 'SELECT title, number, level, year FROM judgments WHERE language = $1 AND content ILIKE keyword'
+  const sql = 'SELECT number, level, year FROM judgments WHERE language = $1 AND content ILIKE $2'
   const result = await query(sql, [language, `%${keyword}%`]);
   return result.rows;
 }
