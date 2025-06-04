@@ -112,6 +112,9 @@ test('list of judgments per keyword is returned as valid json', async () => {
       }
       if (!response.body[0].docYear || !response.body[0].docNumber || !response.body[0].docLevel) {
         throw new Error('Response object does not contain expected properties')
+      }
+    })
+})
 
 test('headings, ids and subheadings are returned', async () => {
   await api
