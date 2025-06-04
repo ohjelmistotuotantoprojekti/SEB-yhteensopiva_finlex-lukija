@@ -14,10 +14,9 @@ test('renders content', () => {
         return
     }
     const language = "fin"
-    const formRef = null
    
     // Testaa että hakukenttä renderöidään.
-    render(<SearchForm language={language} search={search} ref={formRef} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
+    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
     const element = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
     expect(element).toBeDefined()
     
@@ -29,10 +28,8 @@ test('call handleInput', () => {
     const handleInput = vi.fn()
     const handleSubmit = vi.fn()
     const language = "fin"
-    const formRef = null
     
-
-    render(<SearchForm language={language} search={search} ref={formRef} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
+    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
     const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
    
     // Testaa hakukentän toimintaa.
@@ -46,12 +43,10 @@ test('call handleInput', async () => {
     const handleInput = vi.fn()
     const handleSubmit = vi.fn()
     const language = "fin"
-    const formRef = null
-    
 
     const search: string = '' 
 
-    render(<SearchForm language={language} search={search} ref={formRef} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
+    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
     const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
     const button = screen.getByText("Hae")
    
@@ -59,8 +54,5 @@ test('call handleInput', async () => {
     await user.type(searchInput, "Testi")
     await user.click(button)
     console.log(handleSubmit.mock.calls[0][0].target)
-    //console.log("hei",search)
-    //expect(handleSubmit.mock.calls).toHaveLength(1)
-    //expect(handleSubmit.mock.calls[0][0].content).toBe("Testi")
     
 })

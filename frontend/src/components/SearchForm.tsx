@@ -1,31 +1,31 @@
 import type {Props} from '../types'
+import React from 'react'
 
-const SearchForm = ({language, search, ref, handleSearchInputChange, handleSearchEvent} : Props ) => {
+const SearchForm = React.forwardRef<HTMLFormElement, Props>(
+  function SearchForm({language, search, handleSearchInputChange, handleSearchEvent}, ref) {
 
+  const inputBoxStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '600px',
+    padding: '20px',
+    backgroundColor: ' #F3F8FC',
+    border: '1px solid #0C6FC0',
+    borderBottom: '4px solid #0C6FC0',
+    marginTop: '50px',
+    marginBottom: '50px',
+  }
 
+  const buttonStyle = {
+    color: '#fafafa',
+    backgroundColor:' #0C6FC0',
+    fontSize: '15px'
+  }
 
-const inputBoxStyle = {
-  display: 'flex',
-  justifyContent: 'center',
-  width: '600px',
-  padding: '20px',
-  backgroundColor: ' #F3F8FC',
-  border: '1px solid #0C6FC0',
-  borderBottom: '4px solid #0C6FC0',
-  marginTop: '50px',
-  marginBottom: '50px',
-}
-
-const buttonStyle = {
-  color: '#fafafa',
-  backgroundColor:' #0C6FC0',
-  fontSize: '15px'
-}
-
-const inputStyle = {
-  border: '1px solid #0C6FC0',
-  fontSize: '16px'
-}
+  const inputStyle = {
+    border: '1px solid #0C6FC0',
+    fontSize: '16px'
+  }
 
   return (
        <div key="searchdiv" style={inputBoxStyle}>
@@ -40,6 +40,6 @@ const inputStyle = {
         </form>
       </div>
    )
-}
+})
 
 export default SearchForm
