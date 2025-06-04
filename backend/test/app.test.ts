@@ -112,6 +112,22 @@ test('list of judgments per keyword is returned as valid json', async () => {
       }
       if (!response.body[0].docYear || !response.body[0].docNumber || !response.body[0].docLevel) {
         throw new Error('Response object does not contain expected properties')
+
+test('headings, ids and subheadings are returned', async () => {
+  await api
+    .get('/api/statute/structure/id/2023/9/fin')
+    .expect((response) => {
+      if (response.body[0].name !== "1 luku - Yleiset säännökset") {
+        throw new Error("Heading name does not match")
+      }
+      if (response.body[0].id !== "chp_1__heading") {
+        throw new Error("Heading id does not match")
+      }
+      if (response.body[0].content[0].name !== "1 § - Lain tavoite") {
+        throw new Error("Subheading does not match")
+      }
+      if (response.body[0].content[0].id !== "chp_1__sec_1__heading") {
+        throw new Error("Subheading id does not match")
       }
     })
 })
