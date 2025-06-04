@@ -127,17 +127,7 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
     is_empty = !Array.from(paragraphs).some(p => (p.textContent ?? '').trim() !== '');
   }
 
-  const sectionHTML = section ? section.outerHTML : '';
-  const content = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Ennakkopäätös</title>
-</head>
-<body>
-  ${sectionHTML}
-</body>
-</html>`;
+  const content = section ? section.outerHTML : '';
 
   return { content, is_empty };
 }

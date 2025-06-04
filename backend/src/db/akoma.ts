@@ -23,7 +23,7 @@ async function getLawsByContent(keyword: string, language: string): Promise<{ ti
 
 async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
   const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level = $4';
-  const result = await query(sql, [`${number}`, year, language, level]);
+  const result = await query(sql, [number, year, language, level]);
   return result.rows[0].content || null;
 }
 
