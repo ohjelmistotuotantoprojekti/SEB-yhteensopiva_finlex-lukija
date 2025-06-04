@@ -95,7 +95,7 @@ test('a single judgment is returned as html', async () => {
   await api
     .get('/api/judgment/id/2005/13/fin/kho')
     .expect(200)
-    .expect('Content-Type', /application\/html/)
+    .expect('Content-Type', /text\/html/)
 })
 
 test('list of judgments per keyword is returned as valid json', async () => {

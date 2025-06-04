@@ -153,7 +153,7 @@ app.get('/api/judgment/id/:year/:number/:language/:level', async (request: expre
   const number = request.params.number
   const level = request.params.level
   const content = await getJudgmentByNumberYear(number, year, language, level)
-  response.setHeader('Content-Type', 'application/html')
+  response.setHeader('Content-Type', 'text/html')
   response.send(content)
 })
 
