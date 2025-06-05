@@ -56,7 +56,7 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
 
   function search(parsed_xml : Structure) {
 
-    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0] as any
+    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0] as any // eslint-disable-line
 
     if (obj === undefined || obj === null) return;
 
