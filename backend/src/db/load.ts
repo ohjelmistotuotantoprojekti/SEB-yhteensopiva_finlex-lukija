@@ -114,8 +114,10 @@ function parseURLfromJudgmentID(judgmentID: string): string {
 }
 
 async function parseAkomafromURL(inputURL: string): Promise<{ content: string; is_empty: boolean }> {
-  const rawResult = await fetch(inputURL);
-  const inputHTML = await rawResult.text();
+  const result = await axios.get(inputURL, {
+    headers: { 'Accept': 'text/html', 'Accept-Encoding': 'gzip' }
+  });
+  const inputHTML = result.data as string;
   const dom = new JSDOM(inputHTML);
   const doc = dom.window.document;
   const section = doc.querySelector('section[class*="akomaNtoso"]');
@@ -231,7 +233,13 @@ async function setSingleJudgment(uri: string) {
     language = 'swe'
   }
 
-  const html = await parseAkomafromURL(uri)
+  let html: { content: string; is_empty: boolean }
+  try {
+    html = await parseAkomafromURL(uri)
+  } catch (error) {
+    console.error(`Failed to parse Akoma from URL ${uri}:`, error);
+    return;
+  }
 
   const judgment: Judgment = {
     uuid: uuidv4(),
@@ -291,9 +299,17 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
   const inputUrl = language === 'fin'
     ? `https://finlex.fi/fi/oikeuskaytanto/${courtLevel.fi}/ennakkopaatokset/${year}`
     : `https://finlex.fi/sv/rattspraxis/${courtLevel.sv}/prejudikat/${year}`;
-  const rawResult =  await fetch(inputUrl);
-  const inputHTML = await rawResult.text();
-  const parsedList = parseJudgmentList(inputHTML, language, level);
+  let parsedList: string[] = [];
+  try {
+    const result = await axios.get(inputUrl, {
+      headers: { 'Accept': 'text/html', 'Accept-Encoding': 'gzip' }
+    });
+    const inputHTML = result.data as string;
+    parsedList = parseJudgmentList(inputHTML, language, level);
+  } catch (error) {
+    console.error(`Failed to fetch judgment numbers for year ${year}, language ${language}, level ${level}`);
+    return [];
+  }
   return parsedList
 }
 
