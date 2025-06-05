@@ -55,7 +55,7 @@ async function dbIsReady(): Promise<boolean> {
     const imagesCount = parseInt(result.rows[0].count, 10);
     result = await client.query("SELECT COUNT(*) FROM laws;");
     const lawsCount = parseInt(result.rows[0].count, 10);
-    result = await client.query("SELECT COUNT(*) FROM judgements;");
+    result = await client.query("SELECT COUNT(*) FROM judgments;");
     const judgmentsCount = parseInt(result.rows[0].count, 10);
 
     return imagesCount > 0 && lawsCount > 0 && judgmentsCount > 0;
