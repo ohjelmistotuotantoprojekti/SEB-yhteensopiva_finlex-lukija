@@ -8,6 +8,8 @@ import LanguageSelection from './LanguageSelection'
 
 
 const ListCaseLawPage = ({language, setLanguage} : Lang) => {
+    // parametsiksi kielei, onko laki vai oikeusjäyntäntöpuolella, otsikot
+    
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku") || ""
@@ -84,11 +86,9 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
       setErrorMessage(msg)
       showError(msg)
     }
-    else if (search.includes("/")) {
-    
-      
-        getJson(`/api/statute/year/${search}/${language}`)
-        
+    else {
+        getJson(`/api/statute/search/${search}/${language}`)
+
     }
   }
 
