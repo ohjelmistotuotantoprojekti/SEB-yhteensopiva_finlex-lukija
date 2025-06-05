@@ -1,7 +1,7 @@
 
 import { Pool, QueryResult } from 'pg';
-import { setStatutesByYear, setJudgmentsByYear } from './load.js';
-import { getLatestYearLaw, getLawCountByYear, getLawsByYear } from './akoma.js';
+import { setStatutesByYear, setJudgmentsByYear, listStatutesByYear, listJudgmentsByYear } from './load.js';
+import { getLatestYearLaw, getLawCountByYear, getLatestYearJudgment, getJudgmentCountByYear } from './akoma.js';
 
 let pool: Pool;
 
@@ -11,23 +11,19 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(startYear: number = 1900): Promise<void> {
+async function fillDb(startYearLaw: number = 1900, startYearJudgment: number = 1900): Promise<void> {
   try {
     const currentYear = new Date().getFullYear();
-    for (let i = startYear; i <= currentYear; i++) {
+    for (let i = startYearLaw; i <= currentYear; i++) {
       await setStatutesByYear(i, 'fin')
       await setStatutesByYear(i, 'swe')
+    }
+
+    for (let i = startYearJudgment; i <= currentYear; i++) {
       await setJudgmentsByYear(i, 'fin', 'kho')
       await setJudgmentsByYear(i, 'fin', 'kko')
       await setJudgmentsByYear(i, 'swe', 'kho')
       await setJudgmentsByYear(i, 'swe', 'kko')
-    }
-    for (const i of [1898, 1896, 1895, 1894, 1893, 1892, 1889, 1886, 1883, 1873, 1872, 1868, 1864, 1734]) {
-      if (i < startYear) {
-        continue;
-      }
-      await setStatutesByYear(i, 'fin')
-      await setStatutesByYear(i, 'swe')
     }
     console.log("Database is filled")
   } catch (error) {
@@ -44,36 +40,59 @@ async function dbIsReady(): Promise<boolean> {
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'laws');")
     const lawsExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'judgments');")
+    const judgmentsExists = result.rows[0].exists;
     client.release();
-    if  (!imagesExists || !lawsExists) {
-      return false
-    }
-    result = await client.query("SELECT COUNT(*) FROM images;");
-    const imagesCount = parseInt(result.rows[0].count, 10);
-    result = await client.query("SELECT COUNT(*) FROM laws;");
-    const lawsCount = parseInt(result.rows[0].count, 10);
-    return imagesCount > 0 && lawsCount > 0;
+    return imagesExists && lawsExists && judgmentsExists
+
+
   } catch (error) {
     console.error('Error checking database readiness:', error);
     throw error;
   }
 }
 
-async function dbIsUpToDate(): Promise<{upToDate: boolean, latestYear: number}> {
+async function dbIsUpToDate(): Promise<{upToDate: boolean, latestYearLaw: number, latestYearJudgment: number}> {
   try {
-    const latestYear = await getLatestYearLaw();
     const currentYear = new Date().getFullYear();
-    if (latestYear == currentYear) {
+    let latestYearLaw = await getLatestYearLaw();
+    let latestYearJudgment = await getLatestYearJudgment(); // Assuming this function also works for judgments
+    let upToDate = true;
+
+    if (latestYearLaw == currentYear) {
       const numberOfLaws = await getLawCountByYear(currentYear);
-      const expectedFin = await getLawsByYear(currentYear, 'fin');
-      const expectedSwe = await getLawsByYear(currentYear, 'swe');
+      const expectedFin = await listStatutesByYear(currentYear, 'fin');
+      const expectedSwe = await listStatutesByYear(currentYear, 'swe');
       const exprectedNumberOfLaws = expectedFin.length + expectedSwe.length;
       if (numberOfLaws != exprectedNumberOfLaws) {
-        return { upToDate: false, latestYear };
+        console.log(`Number of laws for year ${currentYear} does not match expected: ${numberOfLaws} vs ${exprectedNumberOfLaws}`);
+        upToDate = false;
       } else {
-        return { upToDate: true, latestYear };
+        ++latestYearLaw
       }
-    } else { return { upToDate: false, latestYear };}
+    } else {
+      upToDate = false;
+    }
+
+    if (latestYearJudgment == currentYear) {
+      const numberOfJudgments = await getJudgmentCountByYear(currentYear);
+      const expectedFinKKO = await listJudgmentsByYear(currentYear, 'fin', 'kko');
+      const expectedSweKKO = await listJudgmentsByYear(currentYear, 'swe', 'kko');
+      const expectedFinKHO = await listJudgmentsByYear(currentYear, 'fin', 'kho');
+      const expectedSweKHO = await listJudgmentsByYear(currentYear, 'swe', 'kho');
+      const exprectedNumberOfJudgments = expectedFinKKO.length + expectedSweKKO.length + expectedFinKHO.length + expectedSweKHO.length;
+      if (numberOfJudgments != exprectedNumberOfJudgments) {
+        console.log(`Number of judgments for year ${currentYear} does not match expected: ${numberOfJudgments} vs ${exprectedNumberOfJudgments}`);
+        upToDate = false;
+      } else {
+        ++latestYearJudgment
+      }
+    } else {
+      upToDate = false;
+    }
+    console.log(`Database up to date: ${upToDate}, Latest law year: ${latestYearLaw}, Latest judgment year: ${latestYearJudgment}`);
+    return { upToDate, latestYearLaw, latestYearJudgment };
   } catch (error) {
     console.error('Error checking if database is up to date:', error);
     throw error;
