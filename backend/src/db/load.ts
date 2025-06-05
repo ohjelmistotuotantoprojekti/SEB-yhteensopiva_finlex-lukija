@@ -308,6 +308,7 @@ async function listJudgmentsByYear(year: number, language: string, level: string
 }
 
 
+
 async function setStatutesByYear(year: number, language: string) {
   const uris = await listStatutesByYear(year, language)
   for (const uri of uris) {
@@ -324,4 +325,4 @@ async function setJudgmentsByYear(year: number, language: string, level: string)
   console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
 }
 
-export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }
+export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }
