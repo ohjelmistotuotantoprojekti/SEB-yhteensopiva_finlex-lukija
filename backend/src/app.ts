@@ -58,7 +58,7 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
 
     const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0] as any
 
-    if (obj === null) return;
+    if (obj === undefined || obj === null) return;
 
     let hasChapters: boolean = true
     if (!Object.keys(obj).includes("chapter")) {
