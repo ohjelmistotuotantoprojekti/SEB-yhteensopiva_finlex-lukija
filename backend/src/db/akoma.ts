@@ -15,6 +15,9 @@ async function getLawsByYear(year: number, language: string): Promise<{ title: s
 }
 
 async function getLawsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number }[]> {
+  if (keyword === "'") {
+    keyword = "''";
+  }
   const sql = "SELECT title, number, year FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0)";
   const xpath_query = `//akn:p/text()[contains(., '${keyword}')]`;
   const result = await query(sql, [language, `%${keyword}%`, xpath_query]);
@@ -34,6 +37,9 @@ async function getJudgmentsByYear(year: number, language: string, level: string)
 }
 
 async function getJudgmentsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number, level: string }[]> {
+  if (keyword === "'") {
+    keyword = "''";
+  }
   const sql = 'SELECT number, level, year FROM judgments WHERE language = $1 AND content ILIKE $2'
   const result = await query(sql, [language, `%${keyword}%`]);
   return result.rows;
