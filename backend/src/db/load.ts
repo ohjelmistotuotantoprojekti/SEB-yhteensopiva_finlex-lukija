@@ -306,7 +306,7 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
     });
     const inputHTML = result.data as string;
     parsedList = parseJudgmentList(inputHTML, language, level);
-  } catch (error) {
+  } catch {
     console.error(`Failed to fetch judgment numbers for year ${year}, language ${language}, level ${level}`);
     return [];
   }
