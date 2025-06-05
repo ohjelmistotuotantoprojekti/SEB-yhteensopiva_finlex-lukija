@@ -1,5 +1,6 @@
 import { query } from './db.js';
 import { Akoma } from '../types/akoma.js';
+import { Judgment } from '../types/judgment.js';
 
 async function getLawByNumberYear(number: string, year: number, language: string): Promise<string | null> {
   const sql = 'SELECT content FROM laws WHERE number = $1 AND year = $2 AND language = $3';
@@ -20,9 +21,32 @@ async function getLawsByContent(keyword: string, language: string): Promise<{ ti
   return result.rows;
 }
 
+async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
+  const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level = $4';
+  const result = await query(sql, [number, year, language, level]);
+  return result.rows[0].content || null;
+}
+
+async function getJudgmentsByYear(year: number, language: string, level: string): Promise<{ title: string; number: string; year: number, level: string }[]> {
+  const sql = 'SELECT level, number, year FROM judgments WHERE year = $1 AND language = $2 AND level = $3';
+  const result = await query(sql, [year, language, level]);
+  return result.rows;
+}
+
+async function getJudgmentsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number, level: string }[]> {
+  const sql = 'SELECT number, level, year FROM judgments WHERE language = $1 AND content ILIKE $2'
+  const result = await query(sql, [language, `%${keyword}%`]);
+  return result.rows;
+}
+
 async function setLaw(law: Akoma) {
-  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (number, year, language) DO NOTHING';
-  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content]);
+  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (number, year, language) DO NOTHING';
+  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content, law.is_empty]);
+}
+
+async function setJudgment(judgment: Judgment) {
+  const sql = 'INSERT INTO judgments (uuid, level, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (level, number, year, language) DO NOTHING';
+  await query(sql, [judgment.uuid, judgment.level, judgment.number, judgment.year, judgment.language, judgment.content, judgment.is_empty]);
 }
 
 async function getLawCountByYear(year: number): Promise<number> {
@@ -37,4 +61,4 @@ async function getLatestYearLaw() : Promise<number> {
   return parseInt(result.rows[0].latest_year, 10);
 }
 
-export { getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw };
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent };

@@ -29,7 +29,6 @@ test('call handleInput', () => {
     const handleSubmit = vi.fn()
     const language = "fin"
     
-
     render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
     const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
    
@@ -44,7 +43,6 @@ test('call handleInput', async () => {
     const handleInput = vi.fn()
     const handleSubmit = vi.fn()
     const language = "fin"
-    
 
     const search: string = '' 
 
@@ -56,8 +54,5 @@ test('call handleInput', async () => {
     await user.type(searchInput, "Testi")
     await user.click(button)
     console.log(handleSubmit.mock.calls[0][0].target)
-    //console.log("hei",search)
-    //expect(handleSubmit.mock.calls).toHaveLength(1)
-    //expect(handleSubmit.mock.calls[0][0].content).toBe("Testi")
     
 })

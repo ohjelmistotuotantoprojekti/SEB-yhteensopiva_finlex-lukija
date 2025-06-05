@@ -8,10 +8,19 @@ import LanguageSelection from './LanguageSelection'
 
 
 const ListPage = ({language, setLanguage} : Lang) => {
-   
+
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
-  const [search, setSearch] = useState<string>('')
-  const [laws, setLaws] = useState<Law[]>([])
+  const defaultSearch = localStorage.getItem("haku") || ""
+  let defaultLaws: Law[] = [];
+  try {
+    const storedData = localStorage.getItem("hakucontent");
+    defaultLaws = storedData ? JSON.parse(storedData) : [];
+  } catch (error) {
+    console.error("Failed to parse hakucontent from localStorage:", error);
+    defaultLaws = [];
+  }
+  const [search, setSearch] = useState<string>(defaultSearch)
+  const [laws, setLaws] = useState<Law[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
 
   const topStyle = {
@@ -44,18 +53,23 @@ const ListPage = ({language, setLanguage} : Lang) => {
   }
 
   // Hakee backendiltä dataa
-  const msg = "Haulla ei löytynyt hakutuloksia"
+  const msg = language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat"
   const getJson = async (path: string) => {
     try {
         const response = await axios.get(path)
         if (response.data.length === 0) {
+          localStorage.removeItem("hakucontent")
+          setLaws([])
           setErrorMessage(msg)
           showError(msg)
         } else {
+          localStorage.setItem("hakucontent", JSON.stringify(response.data))
           setLaws(response.data)
         }
     } catch (error) {
       console.log("error1" + error)
+      localStorage.removeItem("hakucontent")
+      setLaws([])
       setErrorMessage(msg)
       showError(msg)
     }
@@ -66,7 +80,12 @@ const ListPage = ({language, setLanguage} : Lang) => {
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
+    // lisää haku localStorageen
+    localStorage.setItem("haku", search)
+
     if (search === "") {
+      localStorage.removeItem("hakucontent")
+      setLaws([])
       setErrorMessage(msg)
       showError(msg)
     }

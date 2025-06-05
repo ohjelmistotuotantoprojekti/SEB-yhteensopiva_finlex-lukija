@@ -2,16 +2,16 @@ import axios from 'axios'
 import type {Lang, Headings } from "../types"
 import { useState } from 'react'
 import TableOfContent from './TableOfContent'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import {Helmet} from "react-helmet";
 
 
 
 const LawPage = ({language} :Lang) => {
 
-  const navigate = useNavigate()
-
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
+  const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
 
@@ -80,6 +80,9 @@ const LawPage = ({language} :Lang) => {
       const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document)
       const container = document.createElement('div')
       container.appendChild(resultDocumentFragment)
+
+      // poimi lain otsikko
+      setDocTitle(xmlDoc.querySelector("docTitle")?.textContent || "Lain otsikko puuttuu")
       
       // poimitaan vain se mitä on <article> -tagien sisällä.
       const bodyarr = Array.from (container.querySelectorAll("article"))
@@ -116,10 +119,13 @@ const LawPage = ({language} :Lang) => {
 
   return (
     <>
+    <Helmet>
+      <title>
+        {docTitle}
+      </title>
+    </Helmet>
     <div id="topId" style={topStyle}>
-    <button onClick={() => navigate(-1)}>
-      {language==="fin" ? "Takaisin" : "Tillbaka"}
-    </button>
+    <a href="/">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
     </div>
 
   
