@@ -44,15 +44,21 @@ async function dbIsReady(): Promise<boolean> {
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'laws');")
     const lawsExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'judgments');")
+    const judgmentsExists = result.rows[0].exists;
     client.release();
-    if  (!imagesExists || !lawsExists) {
+    if  (!imagesExists || !lawsExists || !judgmentsExists) {
       return false
     }
     result = await client.query("SELECT COUNT(*) FROM images;");
     const imagesCount = parseInt(result.rows[0].count, 10);
     result = await client.query("SELECT COUNT(*) FROM laws;");
     const lawsCount = parseInt(result.rows[0].count, 10);
-    return imagesCount > 0 && lawsCount > 0;
+    result = await client.query("SELECT COUNT(*) FROM judgements;");
+    const judgmentsCount = parseInt(result.rows[0].count, 10);
+    
+    return imagesCount > 0 && lawsCount > 0 && judgmentsCount > 0;
   } catch (error) {
     console.error('Error checking database readiness:', error);
     throw error;
