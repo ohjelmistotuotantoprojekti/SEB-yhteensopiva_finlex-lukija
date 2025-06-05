@@ -55,30 +55,40 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   const parsed_xml = await parseStringPromise(content, { explicitArray: false })
 
   function search(parsed_xml : Structure) {
-    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
+
+    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0] as any
 
     if (obj === null) return;
 
+    let hasChapters: boolean = true
+    if (!Object.keys(obj).includes("chapter")) {
+      hasChapters = false
+    }
+
     for (const key in obj) {
-      if (key === 'chapter') {
+      if (key === 'chapter' || key === 'section') {
         let i = 0
-        for (const chap of obj.chapter) {
+
+        for (const chap of obj[key]) {
           ++i
           const sub_headings : Heading[] = []
           let j = 0
-          for (const sec of chap.section) {
-            ++j
-            const sub_heading_num = sec.num.trim()
-            let sub_heading_name = sec.heading._
-            if (sub_heading_name === undefined) {
-              sub_heading_name = `_${j}`
-            }
-            else {
-              sub_heading_name = sub_heading_name.trim()
-            }
 
-            const sec_key = sub_heading_num + " - " + sub_heading_name
-            sub_headings.push({name: sec_key, id: sec.heading['$'].eId, content:[]})
+          if (hasChapters && chap.section !== null) {
+            for (const sec of chap.section) {
+              ++j
+              const sub_heading_num = sec.num.trim()
+              let sub_heading_name = sec.heading._
+              if (sub_heading_name === undefined) {
+                sub_heading_name = `_${j}`
+              }
+              else {
+                sub_heading_name = sub_heading_name.trim()
+              }
+
+              const sec_key = sub_heading_num + " - " + sub_heading_name
+              sub_headings.push({name: sec_key, id: sec.heading['$'].eId, content:[]})
+            }
           }
           let heading_name = chap.heading._
           if (heading_name === undefined) {
@@ -89,6 +99,7 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
           }
           const chapter_num = chap.num.trim()
           const chap_key = chapter_num + " - " + heading_name
+
           headings.push({name: chap_key, id: chap.heading['$'].eId, content: sub_headings})
         }
       }
