@@ -166,8 +166,7 @@ app.get('/api/judgment/keyword/:keyword/:language', async (request: express.Requ
     return {
       docYear: result.year,
       docNumber: result.number,
-      docLevel: result.level,
-      docTitle: result.title
+      docLevel: result.level
     }
   })
   response.json(preparedResults)
