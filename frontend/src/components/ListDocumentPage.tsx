@@ -11,13 +11,13 @@ import TopMenu from './TopMenu'
 const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection, pagetitle} : ListDocumentPageProps) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
-  const defaultSearch = localStorage.getItem("haku2") || ""
+  const defaultSearch = localStorage.getItem(`query_${apisection}`) || ""
   let defaultLaws: Document[] = [];
   try {
-    const storedData = localStorage.getItem("hakucontent2");
+    const storedData = localStorage.getItem(`results_${apisection}`);
     defaultLaws = storedData ? JSON.parse(storedData) : [];
   } catch (error) {
-    console.error("Failed to parse hakucontent2 from localStorage:", error);
+    console.error("Failed to parse `results_${apisection}` from localStorage:", error);
     defaultLaws = [];
   }
   const [search, setSearch] = useState<string>(defaultSearch)
@@ -48,7 +48,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
 
   function logError(error: unknown, msg: string) {
     console.error("Error:", error);
-    localStorage.removeItem("hakucontent2")
+    localStorage.removeItem(`results_${apisection}`)
     setLaws([])
     setErrorMessage(msg)
     showError(msg)
@@ -59,14 +59,14 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     event.preventDefault()
 
     // lisää haku localStorageen
-    localStorage.setItem("haku2", search)
+    localStorage.setItem(`query_${apisection}`, search)
 
     try {
       const response = await axios.get(`/api/${apisection}/search`,
         { params: { q: search, language: language } }
       )
       if (response.data.type === "resultList") {
-        localStorage.setItem("hakucontent2", JSON.stringify(response.data.content))
+        localStorage.setItem(`results_${apisection}`, JSON.stringify(response.data.content))
         setLaws(response.data.content)
       } else if (response.data.type === "redirect") {
         const { number, year, level } = response.data.content
