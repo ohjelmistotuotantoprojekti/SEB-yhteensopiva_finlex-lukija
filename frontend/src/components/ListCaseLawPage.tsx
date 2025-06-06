@@ -3,20 +3,23 @@ import { useState } from 'react'
 import SearchForm from './SearchForm'
 import CaseLawList from './CaseLawList'
 import Notification  from './Notification'
-import type {Lang, Judgment} from '../types'
+import type {Lang, Judgment, Document} from '../types'
 import LanguageSelection from './LanguageSelection'
 
 
 const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     // parametsiksi kielei, onko laki vai oikeusjäyntäntöpuolella, otsikot
 
-  const buttonetext = language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"
-  const placeholdertext = language==="fin" ? "Hae" : "Sök"
+  const buttonetext: string = language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"
+  const placeholdertext: string = language==="fin" ? "Hae" : "Sök"
+  const apisection: string = "judgment"
+  const frontsection: string = "oikeuskaytanto"
+  const pagetitle: string = language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"
 
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku2") || ""
-  let defaultLaws: Judgment[] = [];
+  let defaultLaws: Document[] = [];
   try {
     const storedData = localStorage.getItem("hakucontent2");
     defaultLaws = storedData ? JSON.parse(storedData) : [];
@@ -25,7 +28,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     defaultLaws = [];
   }
   const [search, setSearch] = useState<string>(defaultSearch)
-  const [laws, setLaws] = useState<Judgment[]>(defaultLaws)
+  const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
 
   const topStyle = {
@@ -66,7 +69,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     localStorage.setItem("haku2", search)
 
     try {
-      const response = await axios.get(`/api/judgment/search`,
+      const response = await axios.get(`/api/${apisection}/search`,
         { params: { q: search, language: language } }
       )
       if (response.data.type === "resultList") {
@@ -74,7 +77,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
         setLaws(response.data.content)
       } else if (response.data.type === "redirect") {
         const { number, year, level } = response.data.content
-        window.location.href = `/oikeuskaytanto/${year}/${number}/${level}`
+        window.location.href = `/${frontsection}/${year}/${number}/${level}`
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -120,7 +123,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
         <div style={contentStyle} id="contentdiv">
             <div id="ccDiv" style={contentContainerStyle}>
 
-                <h3>{language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"}</h3>
+                <h3>{pagetitle}</h3>
 
                 <SearchForm search={search}
                             buttontext={buttonetext}  
@@ -133,7 +136,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
                     <Notification message={errorMessage} />
                 </div>
    
-                <CaseLawList laws={laws} />
+                <CaseLawList laws={laws}  />
             </div>
         </div>
     </div>

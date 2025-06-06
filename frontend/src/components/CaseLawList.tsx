@@ -1,8 +1,9 @@
-import type {Judgment} from "../types"
+import type {Document} from "../types"
 import {nanoid} from 'nanoid'
 
 
-const CaseLawList = ({laws}: {laws: Judgment[]}) => {
+const CaseLawList = ({laws}: {laws: Document[]}) => {
+  const frontsection = "oikeuskaytanto"
 
   const listStyle = {
     width: "500px",
@@ -15,7 +16,8 @@ const CaseLawList = ({laws}: {laws: Judgment[]}) => {
     <>
     { laws.map((law) => 
         <div style={listStyle} key={`${law.docLevel}${law.docYear}${law.docNumber}${nanoid(2)}`} >
-        <a href={`/oikeuskaytanto/${law.docYear}/${law.docNumber}/${law.docLevel}`}>{law.docLevel.toUpperCase()}:{law.docYear}:{law.docNumber}</a></div>
+        <a href={`/${frontsection}/${law.docYear}/${law.docNumber}/${law.docLevel}`}>
+        {law.docLevel ? law.docLevel.toUpperCase(): ""}{law.docTitle ? law.docTitle.toUpperCase(): ""}:{law.docYear}:{law.docNumber}</a></div>
       )
     }
     </>

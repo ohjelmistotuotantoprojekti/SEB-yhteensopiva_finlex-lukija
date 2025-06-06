@@ -12,6 +12,11 @@ const CaseLawPage = ({language} : Lang) => {
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
   const doclevel: string = useParams().level ?? ""
+
+
+  const backpath: string = "/oikeuskaytantohaku/"
+  const backtext: string = language==="fin" ? "Takaisin" : "Tillbaka"
+  
   const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
@@ -78,15 +83,16 @@ const CaseLawPage = ({language} : Lang) => {
     setHeadings([])
   }
 
+  // estää sivua lataamasta usemapaan kertaan.
   if (law === '') {
     getHtml(`/api/judgment/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
   }
 
   // estää sisällysluetteloa lataamsta moneen kertaan silloin kun lista on saatu palvelimelta. 
   // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapuksessa.
-  if (headings.length < 1) {
-    getHeadings()
-  }
+  //if (headings.length < 1) {
+  //  getHeadings()
+  //}
 
   return (
     <>
@@ -96,7 +102,7 @@ const CaseLawPage = ({language} : Lang) => {
       </title>
     </Helmet>
     <div id="topId" style={topStyle}>
-    <a href="/oikeuskaytantohaku">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
+    <a href={backpath}>{backtext}</a>
     </div>
 
   

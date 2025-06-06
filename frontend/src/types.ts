@@ -11,6 +11,13 @@
   docLevel: string
 }
 
+ export interface Document {
+  docYear:  string,
+  docNumber: string,
+  docTitle: string | null
+  docLevel: string | null
+}
+
 export interface Props {
   search: string,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
