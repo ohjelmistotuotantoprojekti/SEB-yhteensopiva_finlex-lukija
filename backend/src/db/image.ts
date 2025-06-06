@@ -6,11 +6,11 @@ async function setImage(image: Image) {
   await query(sql, [image.uuid, image.name, image.mime_type, image.content]);
 }
 
-async function getImageByName(name: string): Promise<{content: Buffer, mimeType: string}> {
+async function getImageByName(name: string): Promise<{content: Buffer, mimeType: string}| null> {
   const sql = 'SELECT content, mime_type FROM images WHERE name = $1';
   const result = await query(sql, [name]);
   if (result.rows.length === 0) {
-    throw new Error(`Image with name ${name} not found`);
+    return null
   }
   return {content: result.rows[0].content, mimeType: result.rows[0].mime_type};
 }

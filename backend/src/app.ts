@@ -20,7 +20,18 @@ app.use(express.static(path.join(__dirname, 'frontend')))
 app.get('/media/:filename', async (request: express.Request, response: express.Response): Promise<void> => {
   const filename = request.params.filename;
   try{
-    const {content, mimeType} = await getImageByName(filename);
+    let result;
+    try {
+      result = await getImageByName(filename);
+    } catch {
+      response.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    if (result === null) {
+      response.status(404).json({ error: 'Not found' });
+      return;
+    }
+    const {content, mimeType} = result;
     response.setHeader('Content-Type', mimeType);
     response.send(content);
   } catch {
@@ -47,7 +58,13 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
   const year = parseInt(request.params.year)
   const language = request.params.language
   const number = request.params.number
-  const content = await getLawByNumberYear(number, year, language)
+  let content;
+  try {
+    content = await getLawByNumberYear(number, year, language)
+  } catch {
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
   if (content === null) {
     response.status(404).json({ error: 'Not found' });
     return;
@@ -108,7 +125,12 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
       }
     }
   }
-  search(parsed_xml)
+  try {
+    search(parsed_xml)
+  } catch {
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
   response.json(headings)
 })
 
@@ -209,7 +231,14 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
   if (query.match(/^(KKO|KHO):(19|20)\d\d:\d+$/i)) {
     console.log(`Searching for judgment by id: ${query} in language: ${language} and level: ${level}`);
     const [docLevel, docYear, docNumber] = query.split(':');
-    if (await getJudgmentByNumberYear(docNumber, parseInt(docYear), language, docLevel.toLowerCase())) {
+    let result;
+    try {
+      result = await getJudgmentByNumberYear(docNumber, parseInt(docYear), language, docLevel.toLowerCase());
+    } catch {
+      response.status(500).json({ error: 'Internal server error' });
+      return;
+    }
+    if (result) {
       response.json({type: 'redirect', content: {
         number: docNumber,
         year: parseInt(docYear),
@@ -227,7 +256,13 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
   if (query.match(/^\d{4}$/)) {
     console.log(`Searching for judgments by year: ${query} in language: ${language} and level: ${level}`);
     const year = parseInt(query);
-    const results = await getJudgmentsByYearAndLanguageAndLevel(year, language, level);
+    let results;
+    try {
+      results = await getJudgmentsByYearAndLanguageAndLevel(year, language, level);
+    } catch {
+      response.status(500).json({ error: 'Internal server error' });
+      return;
+    }
     if (results.length > 0) {
       response.json({type: 'resultList', content: results });
       return;
@@ -238,7 +273,13 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
   }
 
   // Haku sisällöllä
-  const results = await searchJudgmentsByKeywordAndLanguage(query, language, level);
+  let results;
+  try {
+    results = await searchJudgmentsByKeywordAndLanguage(query, language, level);
+  } catch {
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
   if (results.length > 0) {
     response.json({type: 'resultList', content: results });
     return;
@@ -267,7 +308,12 @@ app.get('/api/statute/search', async (request: express.Request, response: expres
   // Haku id:llä
   if (query.match(/^\d+(-\d+)?\/(19|20)\d\d$/)) {
     const [docNumber, docYear] = query.split('/');
-    if(await getLawByNumberYear(docNumber, parseInt(docYear), language)) {
+    let results
+    try {
+      results = await getLawByNumberYear(docNumber, parseInt(docYear), language)
+    }catch {response.status(500).json({ error: 'Internal server error' }); return; }
+
+    if (results) {
       response.json({type: 'redirect', content: {
         number: docNumber,
         year: parseInt(docYear),
@@ -283,7 +329,13 @@ app.get('/api/statute/search', async (request: express.Request, response: expres
   // Haku vuodella
   if (query.match(/^\d{4}$/)) {
     const year = parseInt(query);
-    const results = await getStatutesByYearAndLanguage(year, language);
+    let results;
+    try {
+      results = await getStatutesByYearAndLanguage(year, language);
+    } catch {
+      response.status(500).json({ error: 'Internal server error' });
+      return;
+    }
     if (results.length > 0) {
       response.json({type: 'resultList', content: results });
       return;
@@ -294,7 +346,13 @@ app.get('/api/statute/search', async (request: express.Request, response: expres
   }
 
   // Haku sisällöllä
-  const results = await searchLawsByKeywordAndLanguage(query, language);
+  let results;
+  try {
+    results = await searchLawsByKeywordAndLanguage(query, language);
+  } catch {
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
   if (results.length > 0) {
     response.json({type: 'resultList', content: results });
     return;
