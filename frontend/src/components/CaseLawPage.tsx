@@ -81,9 +81,12 @@ const CaseLawPage = ({language} : Lang) => {
   if (law === '') {
     getHtml(`/api/judgment/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
   }
-  /*if (headings.length < 1) {
+
+  // estää sisällysluetteloa lataamsta moneen kertaan silloin kun lista on saatu palvelimelta. 
+  // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapuksessa.
+  if (headings.length < 1) {
     getHeadings()
-  }*/
+  }
 
   return (
     <>

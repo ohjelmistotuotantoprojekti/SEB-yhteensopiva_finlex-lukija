@@ -4,6 +4,10 @@ import {nanoid} from 'nanoid'
 
 const LawList = ({laws}: {laws: Law[]}) => {
 
+  if (laws.length < 1) {
+    return <></>
+  }
+  console.log("lawlist", laws)
   const listStyle = {
     width: "500px",
     backgroundColor: "#eeeeee",

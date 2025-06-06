@@ -9,7 +9,10 @@ import LanguageSelection from './LanguageSelection'
 
 const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     // parametsiksi kielei, onko laki vai oikeusjäyntäntöpuolella, otsikot
-    
+
+  const buttonetext = language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"
+  const placeholdertext = language==="fin" ? "Hae" : "Sök"
+
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku2") || ""
@@ -45,13 +48,6 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
   const contentContainerStyle = {
     width: '700px',
     border: '0px solid black',
-  }
-
-  const errorStyle = {
-    width: '640px',
-    font: 'arial',
-    backgroundColor: 'rgb(243, 248, 252)',
-    border: 'solid #0C6FC0',
   }
 
   function logError(error: unknown, msg: string) {
@@ -127,14 +123,15 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
                 <h3>{language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"}</h3>
 
                 <SearchForm search={search}
-                            language={language}  
+                            buttontext={buttonetext}  
+                            placeholdertext={placeholdertext}
                             handleSearchInputChange={handleSearchInputChange}
                             handleSearchEvent={handleSearchEvent} 
                 />
    
-                <div style={errorStyle}>
-      <Notification message={errorMessage} />
-    </div>
+                <div id="errorblock">
+                    <Notification message={errorMessage} />
+                </div>
    
                 <CaseLawList laws={laws} />
             </div>

@@ -15,7 +15,8 @@ export interface Props {
   search: string,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
   handleSearchEvent: (event: React.SyntheticEvent) => void,
-  language: string
+  buttontext: string
+  placeholdertext: string 
 }
 
 export interface Server {

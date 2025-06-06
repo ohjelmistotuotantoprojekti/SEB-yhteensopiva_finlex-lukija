@@ -8,7 +8,7 @@ import LanguageSelection from './LanguageSelection'
 
 
 const ListPage = ({language, setLanguage} : Lang) => {
-
+   
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku") || ""
   let defaultLaws: Law[] = [];
@@ -19,6 +19,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
     console.error("Failed to parse hakucontent from localStorage:", error);
     defaultLaws = [];
   }
+  console.log("default laws", defaultLaws)
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Law[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
