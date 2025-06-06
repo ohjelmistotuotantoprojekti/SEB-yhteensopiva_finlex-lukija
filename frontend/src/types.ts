@@ -5,6 +5,12 @@
   docTitle: string
 }
 
+ export interface Judgment {
+  docYear:  string,
+  docNumber: string,
+  docLevel: string
+}
+
 export interface Props {
   search: string,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,

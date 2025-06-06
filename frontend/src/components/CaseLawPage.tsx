@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type {Lang, Headings } from "../types"
+import type { Headings, Lang } from "../types"
 import { useState } from 'react'
 import TableOfContent from './TableOfContent'
 import { useParams } from 'react-router-dom'
@@ -7,10 +7,11 @@ import {Helmet} from "react-helmet";
 
 
 
-const CaseLawPage = ({language} :Lang) => {
+const CaseLawPage = ({language} : Lang) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
+  const doclevel: string = useParams().level ?? ""
   const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
@@ -62,35 +63,9 @@ const CaseLawPage = ({language} :Lang) => {
 
     try {
       // Hae XML (APIsta)
-      const xmlResp = await axios.get(path)
-      const xmlText: string = xmlResp.data
-      
-      // Hae XSLT (tiedostosta)
-      const xsltResp = await axios.get('/akomo_ntoso.xsl')
-      const xsltText: string = xsltResp.data
-      
-      // Parsi XML ja XSLT
-      const parser = new DOMParser();
-      const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
-      const xsltDoc = parser.parseFromString(xsltText, 'text/xml')
-      
-      // Muunna XML HTML:ksi
-      const xsltProcessor = new XSLTProcessor()
-      xsltProcessor.importStylesheet(xsltDoc)
-      const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document)
-      const container = document.createElement('div')
-      container.appendChild(resultDocumentFragment)
-
-      // poimi lain otsikko
-      setDocTitle(xmlDoc.querySelector("docTitle")?.textContent || "Lain otsikko puuttuu")
-      
-      // poimitaan vain se mitä on <article> -tagien sisällä.
-      const bodyarr = Array.from (container.querySelectorAll("article"))
-      if(bodyarr.length >= 1) {
-          const body = bodyarr[0].innerHTML
-      // Tallenna HTML tilaan
-        setLaw(body)
-      }
+      const htmlResp = await axios.get(path)
+      const htmlText: string = htmlResp.data
+      setLaw(htmlText)
     }
     catch (error) {
       console.error(error)
@@ -100,22 +75,15 @@ const CaseLawPage = ({language} :Lang) => {
    // Hakee backendiltä sisällysluettelon
   const getHeadings = async () => {
 
-    try {
-      console.log("getting ", docyear,"/", docnumber," ", language)
-      const response = await axios.get(`/api/statute/structure/id/${docyear}/${docnumber}/${language}`)
-      console.log("response", response.data)
-      setHeadings(response.data)
-    } catch(error) {
-      console.error(error)
-    }
+    setHeadings([])
   }
 
   if (law === '') {
-    getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+    getHtml(`/api/judgment/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
   }
-  if (headings.length < 1) {
+  /*if (headings.length < 1) {
     getHeadings()
-  }
+  }*/
 
   return (
     <>
@@ -125,7 +93,7 @@ const CaseLawPage = ({language} :Lang) => {
       </title>
     </Helmet>
     <div id="topId" style={topStyle}>
-    <a href="/">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
+    <a href="/oikeuskaytantohaku">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
     </div>
 
   

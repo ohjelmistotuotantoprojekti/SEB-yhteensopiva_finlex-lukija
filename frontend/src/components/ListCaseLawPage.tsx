@@ -1,9 +1,9 @@
 import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
-import LawList from './LawList'
+import CaseLawList from './CaseLawList'
 import Notification  from './Notification'
-import type {Law, Lang} from '../types'
+import type {Lang, Judgment} from '../types'
 import LanguageSelection from './LanguageSelection'
 
 
@@ -12,17 +12,17 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
-  const defaultSearch = localStorage.getItem("haku") || ""
-  let defaultLaws: Law[] = [];
+  const defaultSearch = localStorage.getItem("haku2") || ""
+  let defaultLaws: Judgment[] = [];
   try {
-    const storedData = localStorage.getItem("hakucontent");
+    const storedData = localStorage.getItem("hakucontent2");
     defaultLaws = storedData ? JSON.parse(storedData) : [];
   } catch (error) {
-    console.error("Failed to parse hakucontent from localStorage:", error);
+    console.error("Failed to parse hakucontent2 from localStorage:", error);
     defaultLaws = [];
   }
   const [search, setSearch] = useState<string>(defaultSearch)
-  const [laws, setLaws] = useState<Law[]>(defaultLaws)
+  const [laws, setLaws] = useState<Judgment[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
 
   const topStyle = {
@@ -47,54 +47,63 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     border: '0px solid black',
   }
 
+  const errorStyle = {
+    width: '640px',
+    font: 'arial',
+    backgroundColor: 'rgb(243, 248, 252)',
+    border: 'solid #0C6FC0',
+  }
 
-
-  // Hakee backendiltä dataa
-  const msg = language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat"
-  const getJson = async (path: string) => {
-    try {
-        const response = await axios.get(path)
-        if (response.data.length === 0) {
-          localStorage.removeItem("hakucontent")
-          setLaws([])
-          setErrorMessage(msg)
-          showError(msg)
-        } else {
-          localStorage.setItem("hakucontent", JSON.stringify(response.data))
-          setLaws(response.data)
-        }
-    } catch (error) {
-      console.log("error1" + error)
-      localStorage.removeItem("hakucontent")
-      setLaws([])
-      setErrorMessage(msg)
-      showError(msg)
-    }
+  function logError(error: unknown, msg: string) {
+    console.error("Error:", error);
+    localStorage.removeItem("hakucontent2")
+    setLaws([])
+    setErrorMessage(msg)
+    showError(msg)
   }
   
   // Käsittelee SearchForm-komponentin submit-aktionia.
-  // Jos haussa on "/", haetaan yksittäistä lakia, jos se on vuosiluku, haetaan vuodella, muutoin haetaan hakusanalla.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
     // lisää haku localStorageen
-    localStorage.setItem("haku", search)
+    localStorage.setItem("haku2", search)
 
-    if (search === "") {
-      localStorage.removeItem("hakucontent")
-      setLaws([])
-      setErrorMessage(msg)
-      showError(msg)
-    }
-    else {
-        getJson(`/api/statute/search/${search}/${language}`)
-
+    try {
+      const response = await axios.get(`/api/judgment/search`,
+        { params: { q: search, language: language } }
+      )
+      if (response.data.type === "resultList") {
+        localStorage.setItem("hakucontent2", JSON.stringify(response.data.content))
+        setLaws(response.data.content)
+      } else if (response.data.type === "redirect") {
+        const { number, year, level } = response.data.content
+        window.location.href = `/oikeuskaytanto/${year}/${number}/${level}`
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        // Axios virhe, joka sisältää vastauksen
+        console.error("Axios error:", error.response.data);
+        if (error.response.status === 404) {
+          // Ei löytynyt tuloksia
+          logError(error, language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat")
+        } else if (error.response.status === 400) {
+          // Virheellinen pyyntö, esim. väärä kieli tai puuttuva kysely
+          logError(error, language === "fin" ? "Virheellinen haku" : "Ogiltig sökning")
+        } else {
+          logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
+        }
+      } else {
+        // Muu virhe, esim verkko-ongelma
+        logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
+      }
+      
     }
   }
 
   // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
   const handleSearchInputChange = (event: React.SyntheticEvent) => {
-    setSearch(encodeURIComponent((event.target as HTMLInputElement).value))
+    setSearch((event.target as HTMLInputElement).value)
   }
 
   function showError(errorMessage: string) {
@@ -123,9 +132,11 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
                             handleSearchEvent={handleSearchEvent} 
                 />
    
-                <Notification message={errorMessage} />
+                <div style={errorStyle}>
+      <Notification message={errorMessage} />
+    </div>
    
-                <LawList laws={laws} />
+                <CaseLawList laws={laws} />
             </div>
         </div>
     </div>

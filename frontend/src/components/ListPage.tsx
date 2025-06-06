@@ -52,69 +52,50 @@ const ListPage = ({language, setLanguage} : Lang) => {
     border: 'solid #0C6FC0',
   }
 
-  // Hakee backendiltä dataa
-  const msg = language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat"
-  const getJson = async (path: string) => {
-    try {
-        const response = await axios.get(path)
-        if (response.data.length === 0) {
-          localStorage.removeItem("hakucontent")
-          setLaws([])
-          setErrorMessage(msg)
-          showError(msg)
-        } else {
-          localStorage.setItem("hakucontent", JSON.stringify(response.data))
-          setLaws(response.data)
-        }
-    } catch (error) {
-      console.log("error1" + error)
-      localStorage.removeItem("hakucontent")
-      setLaws([])
-      setErrorMessage(msg)
-      showError(msg)
-    }
+  function logError(error: unknown, msg: string) {
+    console.error("Error:", error);
+    localStorage.removeItem("hakucontent")
+    setLaws([])
+    setErrorMessage(msg)
+    showError(msg)
   }
   
   // Käsittelee SearchForm-komponentin submit-aktionia.
-  // Jos haussa on "/", haetaan yksittäistä lakia, jos se on vuosiluku, haetaan vuodella, muutoin haetaan hakusanalla.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
     // lisää haku localStorageen
     localStorage.setItem("haku", search)
 
-    if (search === "") {
-      localStorage.removeItem("hakucontent")
-      setLaws([])
-      setErrorMessage(msg)
-      showError(msg)
-    }
-    else if (search.includes("/")) {
-      if (search.match(/[0-9]\d*\/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-        const law_number = search.split("/")[0]
-        const year = search.split("/")[1]
-
-        try {const response = await axios.get(`/api/statute/id/${year}/${law_number}/${language}`)
-          if (response.data !== "<AknXmlList><Results/></AknXmlList>") {
-            window.location.href = `/lainsaadanto/${year}/${law_number}`
-          } else {
-            setErrorMessage(msg)
-            showError(msg)
-        }} catch (error) {
-          console.log("error2" + error)
-          setErrorMessage(msg)
-          showError(msg)
+    try {
+      const response = await axios.get(`/api/statute/search`,
+        { params: { q: search, language: language } }
+      )
+      if (response.data.type === "resultList") {
+        localStorage.setItem("hakucontent", JSON.stringify(response.data.content))
+        setLaws(response.data.content)
+      } else if (response.data.type === "redirect") {
+        const { number, year } = response.data.content
+        window.location.href = `/lainsaadanto/${year}/${number}`
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        // Axios virhe, joka sisältää vastauksen
+        console.error("Axios error:", error.response.data);
+        if (error.response.status === 404) {
+          // Ei löytynyt tuloksia
+          logError(error, language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat")
+        } else if (error.response.status === 400) {
+          // Virheellinen pyyntö, esim. väärä kieli tai puuttuva kysely
+          logError(error, language === "fin" ? "Virheellinen haku" : "Ogiltig sökning")
+        } else {
+          logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
         }
       } else {
-        setErrorMessage(msg)
-        showError(msg)
+        // Muu virhe, esim verkko-ongelma
+        logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
       }
-    }
-    else if (search.match(/\b(18\d{2}|19\d{2}|20\d{2}|2100)\b/)) {
-      getJson(`/api/statute/year/${search}/${language}`)
-    } 
-    else {
-      getJson(`/api/statute/keyword/${search}/${language}`)
+      
     }
   }
 
