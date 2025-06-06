@@ -110,17 +110,24 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
               sub_headings.push({name: sec_key, id: sec.heading['$'].eId, content:[]})
             }
           }
-          let heading_name = chap.heading._
+          console.log("chap", chap)
+          let heading_name = chap?.heading?._
+          let heading_id
+          let chap_key
+          const chapter_num = chap.num.trim()
           if (heading_name === undefined) {
-            heading_name = `_${i}`
+            heading_name = ""
+            heading_id = `_${i}`
+            chap_key = chapter_num
           }
           else {
+            heading_id = chap.heading['$'].eId
             heading_name = heading_name.trim()
+            chap_key = chapter_num + " - " + heading_name
           }
-          const chapter_num = chap.num.trim()
-          const chap_key = chapter_num + " - " + heading_name
 
-          headings.push({name: chap_key, id: chap.heading['$'].eId, content: sub_headings})
+
+          headings.push({name: chap_key, id: heading_id, content: sub_headings})
         }
       }
     }
