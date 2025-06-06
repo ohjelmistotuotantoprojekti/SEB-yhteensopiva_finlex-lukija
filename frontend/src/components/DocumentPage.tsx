@@ -1,21 +1,23 @@
 import axios from 'axios'
-import type {Lang, Headings } from "../types"
+import type { Headings, DocumentPageProps } from "../types"
 import { useState } from 'react'
 import TableOfContent from './TableOfContent'
 import { useParams } from 'react-router-dom'
 import {Helmet} from "react-helmet";
+import TopMenu from './TopMenu'
 
 
-
-const LawPage = ({language} :Lang) => {
+const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProps) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
+  const doclevel: string = useParams().level ?? ""
+
   const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
 
-
+  console.log("caselawpage")
   const topStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'flex-start',
@@ -59,6 +61,20 @@ const LawPage = ({language} :Lang) => {
 
   // Hakee backendiltä dataa
   const getHtml = async (path: string) => {
+
+    try {
+      // Hae XML (APIsta)
+      const htmlResp = await axios.get(path)
+      const htmlText: string = htmlResp.data
+      setLaw(htmlText)
+    }
+    catch (error) {
+      console.error(error)
+    }
+  }
+
+   // Hakee backendiltä dataa
+  const getLawHtml = async (path: string) => {
 
     try {
       // Hae XML (APIsta)
@@ -110,12 +126,20 @@ const LawPage = ({language} :Lang) => {
     }
   }
 
+  // estää sivua lataamasta usemapaan kertaan.
   if (law === '') {
-    getHtml(`/api/statute/id/${docyear}/${docnumber}/${language}`) 
+    if(apipath === "statute") {
+      getLawHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}`) 
+    } else {
+      getHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
+    }
   }
-  if (headings.length < 1) {
-    getHeadings()
-  }
+
+  // estää sisällysluetteloa lataamsta moneen kertaan silloin kun lista on saatu palvelimelta. 
+  // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapuksessa.
+   if(apipath === "statute" && headings.length < 1) {
+      getHeadings()
+    }
 
   return (
     <>
@@ -125,20 +149,20 @@ const LawPage = ({language} :Lang) => {
       </title>
     </Helmet>
     <div id="topId" style={topStyle}>
-    <a href="/">{language==="fin" ? "Takaisin" : "Tillbaka"}</a>
+     <TopMenu />
     </div>
 
-  
     <div id="contentDiv" style={contentStyle}>
-
-    <div id="contentBlock" style={contentBlockStyle}>
-      <div id="leftMargin" style={tocStyle}><TableOfContent headings={headings} /></div>
-      <div dangerouslySetInnerHTML={{ __html: law}}>
+      <div id="contentBlock" style={contentBlockStyle}>
+        <a href={backpath}>{backtext}</a>
+        <div id="leftMargin" style={tocStyle}>
+          <TableOfContent headings={headings} />
+        </div>
+        <div dangerouslySetInnerHTML={{ __html: law}}></div>
       </div>
-    </div>
     </div>
     </>
   )
 }
 
-export default LawPage
+export default DocumentPage

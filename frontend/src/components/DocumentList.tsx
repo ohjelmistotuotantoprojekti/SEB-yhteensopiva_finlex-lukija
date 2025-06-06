@@ -1,9 +1,9 @@
-import type {Document} from "../types"
+import type {DocumentListProps} from "../types"
 import {nanoid} from 'nanoid'
 
 
-const CaseLawList = ({laws}: {laws: Document[]}) => {
-  const frontsection = "oikeuskaytanto"
+const DocumentList = ({laws, frontsection}: DocumentListProps) => {
+ 
 
   const listStyle = {
     width: "500px",
@@ -16,7 +16,7 @@ const CaseLawList = ({laws}: {laws: Document[]}) => {
     <>
     { laws.map((law) => 
         <div style={listStyle} key={`${law.docLevel}${law.docYear}${law.docNumber}${nanoid(2)}`} >
-        <a href={`/${frontsection}/${law.docYear}/${law.docNumber}/${law.docLevel}`}>
+        <a href={`/${frontsection}/${law.docYear}/${law.docNumber}/${law.docLevel ? law.docLevel : ""}`}>
         {law.docLevel ? law.docLevel.toUpperCase(): ""}{law.docTitle ? law.docTitle.toUpperCase(): ""}:{law.docYear}:{law.docNumber}</a></div>
       )
     }
@@ -24,4 +24,4 @@ const CaseLawList = ({laws}: {laws: Document[]}) => {
   )
 }
 
-export default CaseLawList
+export default DocumentList

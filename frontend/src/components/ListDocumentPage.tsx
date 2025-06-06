@@ -1,22 +1,14 @@
 import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
-import CaseLawList from './CaseLawList'
+import CaseLawList from './DocumentList'
 import Notification  from './Notification'
-import type {Lang, Judgment, Document} from '../types'
+import type {Document, ListDocumentPageProps} from '../types'
 import LanguageSelection from './LanguageSelection'
-import TopMenu
- from './TopMenu'
+import TopMenu from './TopMenu'
 
-const ListCaseLawPage = ({language, setLanguage} : Lang) => {
-    // parametsiksi kielei, onko laki vai oikeusjäyntäntöpuolella, otsikot
 
-  const buttonetext: string = language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"
-  const placeholdertext: string = language==="fin" ? "Hae" : "Sök"
-  const apisection: string = "judgment"
-  const frontsection: string = "oikeuskaytanto"
-  const pagetitle: string = language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"
-
+const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection, pagetitle} : ListDocumentPageProps) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem("haku2") || ""
@@ -31,7 +23,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
-
+  
   const topStyle = {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -138,11 +130,11 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
                     <Notification message={errorMessage} />
                 </div>
    
-                <CaseLawList laws={laws}  />
+                <CaseLawList laws={laws} frontsection={frontsection} />
             </div>
         </div>
     </div>
   )
 }
 
-export default ListCaseLawPage
+export default ListDocumentPage
