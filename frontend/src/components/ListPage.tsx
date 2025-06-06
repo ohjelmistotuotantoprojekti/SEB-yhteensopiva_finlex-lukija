@@ -5,6 +5,7 @@ import LawList from './LawList'
 import Notification  from './Notification'
 import type {Law, Lang} from '../types'
 import LanguageSelection from './LanguageSelection'
+import TopMenu from './TopMenu'
 
 
 const ListPage = ({language, setLanguage} : Lang) => {
@@ -118,6 +119,7 @@ const ListPage = ({language, setLanguage} : Lang) => {
   return (
     <div id="lawpagediv">
       <div style={topStyle} id="topdiv">
+        <TopMenu />
     <LanguageSelection language={language} setLanguage={setLanguage}/>
     </div>
     <div style={contentStyle} id="contentdiv">

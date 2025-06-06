@@ -1,27 +1,23 @@
 import axios from 'axios'
-import type { Headings, Lang } from "../types"
+import type { Headings, CaseLawPageProps } from "../types"
 import { useState } from 'react'
 import TableOfContent from './TableOfContent'
 import { useParams } from 'react-router-dom'
 import {Helmet} from "react-helmet";
+import TopMenu from './TopMenu'
 
 
-
-const CaseLawPage = ({language} : Lang) => {
+const CaseLawPage = ({language, apipath, backpath, backtext} : CaseLawPageProps) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
   const doclevel: string = useParams().level ?? ""
 
-
-  const backpath: string = "/oikeuskaytantohaku/"
-  const backtext: string = language==="fin" ? "Takaisin" : "Tillbaka"
-  
   const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
 
-
+  console.log("caselawpage")
   const topStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'flex-start',
@@ -76,23 +72,74 @@ const CaseLawPage = ({language} : Lang) => {
       console.error(error)
     }
   }
+
+   // Hakee backendiltä dataa
+  const getLawHtml = async (path: string) => {
+
+    try {
+      // Hae XML (APIsta)
+      const xmlResp = await axios.get(path)
+      const xmlText: string = xmlResp.data
+      
+      // Hae XSLT (tiedostosta)
+      const xsltResp = await axios.get('/akomo_ntoso.xsl')
+      const xsltText: string = xsltResp.data
+      
+      // Parsi XML ja XSLT
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
+      const xsltDoc = parser.parseFromString(xsltText, 'text/xml')
+      
+      // Muunna XML HTML:ksi
+      const xsltProcessor = new XSLTProcessor()
+      xsltProcessor.importStylesheet(xsltDoc)
+      const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document)
+      const container = document.createElement('div')
+      container.appendChild(resultDocumentFragment)
+
+      // poimi lain otsikko
+      setDocTitle(xmlDoc.querySelector("docTitle")?.textContent || "Lain otsikko puuttuu")
+      
+      // poimitaan vain se mitä on <article> -tagien sisällä.
+      const bodyarr = Array.from (container.querySelectorAll("article"))
+      if(bodyarr.length >= 1) {
+          const body = bodyarr[0].innerHTML
+      // Tallenna HTML tilaan
+        setLaw(body)
+      }
+    }
+    catch (error) {
+      console.error(error)
+    }
+  }
    
    // Hakee backendiltä sisällysluettelon
   const getHeadings = async () => {
 
-    setHeadings([])
+    try {
+      console.log("getting ", docyear,"/", docnumber," ", language)
+      const response = await axios.get(`/api/statute/structure/id/${docyear}/${docnumber}/${language}`)
+      console.log("response", response.data)
+      setHeadings(response.data)
+    } catch(error) {
+      console.error(error)
+    }
   }
 
   // estää sivua lataamasta usemapaan kertaan.
   if (law === '') {
-    getHtml(`/api/judgment/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
+    if(apipath === "statute") {
+      getLawHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}`) 
+    } else {
+      getHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
+    }
   }
 
   // estää sisällysluetteloa lataamsta moneen kertaan silloin kun lista on saatu palvelimelta. 
   // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapuksessa.
-  //if (headings.length < 1) {
-  //  getHeadings()
-  //}
+   if(apipath === "statute" && headings.length < 1) {
+      getHeadings()
+    }
 
   return (
     <>
@@ -102,17 +149,17 @@ const CaseLawPage = ({language} : Lang) => {
       </title>
     </Helmet>
     <div id="topId" style={topStyle}>
-    <a href={backpath}>{backtext}</a>
+     <TopMenu />
     </div>
 
-  
     <div id="contentDiv" style={contentStyle}>
-
-    <div id="contentBlock" style={contentBlockStyle}>
-      <div id="leftMargin" style={tocStyle}><TableOfContent headings={headings} /></div>
-      <div dangerouslySetInnerHTML={{ __html: law}}>
+      <div id="contentBlock" style={contentBlockStyle}>
+        <a href={backpath}>{backtext}</a>
+        <div id="leftMargin" style={tocStyle}>
+          <TableOfContent headings={headings} />
+        </div>
+        <div dangerouslySetInnerHTML={{ __html: law}}></div>
       </div>
-    </div>
     </div>
     </>
   )

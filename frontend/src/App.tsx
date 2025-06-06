@@ -15,6 +15,8 @@ const App = () => {
     return localStorage.getItem("language") || "fin"
   })
 
+   const backtext: string = language==="fin" ? "Takaisin" : "Tillbaka"
+
   return (
     <Router>
     <div>
@@ -24,9 +26,17 @@ const App = () => {
     </Helmet>
     <Routes>
       <Route key="listpage" path="/" element={<ListPage language={language} setLanguage={setLanguage}/>} />
-      <Route key="lawpage" path="/lainsaadanto/:year/:id" element={<LawPage language={language} setLanguage={setLanguage}/>} />
+      <Route key="lawpage" path="/lainsaadanto/:year/:id" 
+          element={<CaseLawPage language={language} backpath='/' 
+                            backtext={backtext} apipath="statute" />
+                  } 
+      />
       <Route key="caselistpage" path="/oikeuskaytantohaku" element={<ListCaseLawPage language={language} setLanguage={setLanguage}/>} />
-      <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" element={<CaseLawPage language={language} setLanguage={setLanguage}/>} />
+      <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
+          element={<CaseLawPage language={language} backpath='/oikeuskaytantohaku/' 
+                            backtext={backtext} apipath="judgment" />
+                  } 
+      />
     </Routes>
     </div>
     </Router>

@@ -5,7 +5,8 @@ import CaseLawList from './CaseLawList'
 import Notification  from './Notification'
 import type {Lang, Judgment, Document} from '../types'
 import LanguageSelection from './LanguageSelection'
-
+import TopMenu
+ from './TopMenu'
 
 const ListCaseLawPage = ({language, setLanguage} : Lang) => {
     // parametsiksi kielei, onko laki vai oikeusjäyntäntöpuolella, otsikot
@@ -118,6 +119,7 @@ const ListCaseLawPage = ({language, setLanguage} : Lang) => {
   return (
     <div id="lawpagediv">
         <div style={topStyle} id="topdiv">
+            <TopMenu />
             <LanguageSelection language={language} setLanguage={setLanguage}/>
         </div>
         <div style={contentStyle} id="contentdiv">

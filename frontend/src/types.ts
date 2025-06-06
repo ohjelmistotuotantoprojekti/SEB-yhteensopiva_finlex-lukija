@@ -18,6 +18,13 @@
   docLevel: string | null
 }
 
+export interface CaseLawPageProps {
+  apipath: string,
+  backpath: string,
+  backtext: string,
+  language: string
+}
+
 export interface Props {
   search: string,
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
