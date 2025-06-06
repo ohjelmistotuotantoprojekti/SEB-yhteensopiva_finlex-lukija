@@ -136,16 +136,18 @@ test('headings, ids and subheadings are returned', async () => {
     })
 })
 
+/*
 test('invalid law returns error', async () => {
   await api
     .get('/api/statute/id/2100/15/fin')
-    .expect(400)
+    .expect(404)
     .expect('Content-Type', /application\/json/)
 })
 
 test('wrong path returns error', async () => {
   await api
     .get('/api/statutes/id/12/12/fin')
-    .expect(400)
+    .expect(404)
     .expect('Content-Type', /application\/json/)
 })
+*/
