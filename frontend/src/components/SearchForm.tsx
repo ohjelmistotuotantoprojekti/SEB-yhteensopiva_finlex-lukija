@@ -1,6 +1,7 @@
 import type {Props} from '../types'
 
-const SearchForm = ({language, search, handleSearchInputChange, handleSearchEvent}: Props) => {
+const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChange, handleSearchEvent}: Props) => {
+
 
   const inputBoxStyle = {
     display: 'flex',
@@ -32,9 +33,9 @@ const SearchForm = ({language, search, handleSearchInputChange, handleSearchEven
          onChange={handleSearchInputChange}
           value={search}
           style={inputStyle}
-          placeholder={language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"}
+          placeholder={placeholdertext}
           />
-        &nbsp; <button style={buttonStyle} type="submit">{language==="fin" ? "Hae" : "Sök"}</button>
+        &nbsp; <button style={buttonStyle} type="submit">{buttontext}</button>
         </form>
       </div>
    )
