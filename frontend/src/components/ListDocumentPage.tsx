@@ -70,7 +70,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
         setLaws(response.data.content)
       } else if (response.data.type === "redirect") {
         const { number, year, level } = response.data.content
-        window.location.href = `/${frontsection}/${year}/${number}/${level}`
+        window.location.href = `/${frontsection}/${year}/${number}${level ? '/'+level : ''}`
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {

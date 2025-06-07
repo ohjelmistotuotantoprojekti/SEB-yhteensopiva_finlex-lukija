@@ -16,7 +16,6 @@ async function getLawsByYear(year: number, language: string): Promise<{ title: s
 
 async function getLawsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number }[]> {
   const escapedKeyword = keyword.replaceAll('\'', '');
-  console.log(`Searching for keyword: ${escapedKeyword} in language: ${language}`);
   const sql = "SELECT title, number, year FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0)";
   const xpath_query = `//akn:p/text()[contains(., '${escapedKeyword}')]`;
   const result = await query(sql, [language, `%${escapedKeyword}%`, xpath_query]);

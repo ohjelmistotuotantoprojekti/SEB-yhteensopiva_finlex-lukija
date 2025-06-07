@@ -10,8 +10,8 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const VALID_LANGUAGES = ['fin', 'swe'];
-const VALID_LEVELS = ['any', 'kho', 'kko'];
+export const VALID_LANGUAGES = ['fin', 'swe'];
+export const VALID_LEVELS = ['any', 'kho', 'kko'];
 
 app.get('/favicon.ico', (request: express.Request, response: express.Response): void => {
   response.status(204).end();
@@ -206,11 +206,9 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
     response.status(400).send('Invalid level parameter');
     return;
   }
-  console.log(`Searching for keyword: ${query} in language: ${language} and level: ${level}`);
 
   // Haku id:llä
   if (query.match(/^(KKO|KHO):(19|20)\d\d:\d+$/i)) {
-    console.log(`Searching for judgment by id: ${query} in language: ${language} and level: ${level}`);
     const [docLevel, docYear, docNumber] = query.split(':');
     let result;
     try {
@@ -235,7 +233,6 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
 
   // Haku vuodella
   if (query.match(/^\d{4}$/)) {
-    console.log(`Searching for judgments by year: ${query} in language: ${language} and level: ${level}`);
     const year = parseInt(query);
     let results;
     try {
