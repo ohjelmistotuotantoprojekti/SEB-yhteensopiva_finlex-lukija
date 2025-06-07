@@ -17,7 +17,6 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
 
-  console.log("caselawpage")
   const topStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'flex-start',
@@ -63,7 +62,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const getHtml = async (path: string) => {
 
     try {
-      // Hae XML (APIsta)
+      // Hae HTML (APIsta)
       const htmlResp = await axios.get(path)
       const htmlText: string = htmlResp.data
       setLaw(htmlText)
@@ -117,9 +116,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const getHeadings = async () => {
 
     try {
-      console.log("getting ", docyear,"/", docnumber," ", language)
-      const response = await axios.get(`/api/statute/structure/id/${docyear}/${docnumber}/${language}`)
-      console.log("response", response.data)
+      const response = await axios.get(`/api/${apipath}/structure/id/${docyear}/${docnumber}/${language}/${doclevel ? doclevel : ''}`)
       setHeadings(response.data)
     } catch(error) {
       console.error(error)
@@ -135,11 +132,11 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     }
   }
 
-  // estää sisällysluetteloa lataamsta moneen kertaan silloin kun lista on saatu palvelimelta. 
-  // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapuksessa.
-   if(apipath === "statute" && headings.length < 1) {
-      getHeadings()
-    }
+  // estää sisällysluetteloa lataamasta moneen kertaan silloin kun lista on saatu palvelimelta. 
+  // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapauksessa.
+  if(headings.length < 1) {
+    getHeadings()
+  }
 
   return (
     <>
