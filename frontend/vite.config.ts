@@ -13,6 +13,10 @@ export default defineConfig({
       '/media': {
         target: 'http://localhost:3001',
         changeOrigin: true
+      },
+      '/favicon.ico': {
+        target: 'http://localhost:3001',
+        changeOrigin: true
       }
     }
   },

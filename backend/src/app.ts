@@ -13,6 +13,10 @@ const __dirname = path.dirname(__filename);
 const VALID_LANGUAGES = ['fin', 'swe'];
 const VALID_LEVELS = ['any', 'kho', 'kko'];
 
+app.get('/favicon.ico', (request: express.Request, response: express.Response): void => {
+  response.status(204).end();
+})
+
 app.use(express.static(path.join(__dirname, 'frontend')))
 
 app.get('/media/:filename', async (request: express.Request, response: express.Response): Promise<void> => {
