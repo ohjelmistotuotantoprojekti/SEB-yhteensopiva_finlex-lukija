@@ -1,6 +1,6 @@
 import express from 'express';
 import { parseStringPromise } from 'xml2js';
-import { hContainer, Chapter, Heading } from './types/structure.js';
+import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent } from './db/akoma.js';
@@ -12,11 +12,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const VALID_LANGUAGES = ['fin', 'swe'];
 const VALID_LEVELS = ['any', 'kho', 'kko'];
-
-// Pakota input taulukkoon, jossei se jo ole
-function toArray<T>(input: T | T[]): T[] {
-  return Array.isArray(input) ? input : [input];
-}
 
 app.use(express.static(path.join(__dirname, 'frontend')))
 
@@ -73,79 +68,41 @@ app.get('/api/statute/structure/id/:year/:number/:language', async (request: exp
     response.status(404).json({ error: 'Not found' });
     return;
   }
-  const headings: Heading[] = []
 
   if (content === null) return;
   const parsed_xml = await parseStringPromise(content, { explicitArray: false })
-
-  function search(parsed_xml : hContainer) {
-    function parseSubSections(obj: Chapter) {
-      const sub_headings: Heading[] = []
-      const sections = toArray(obj.section)
-      for (const sec of sections) {
-        const sec_num = sec.num.trim()
-        let sec_key;
-        let sec_name;
-        if (typeof sec.heading === 'object') {
-          sec_name = sec.heading._?.trim();
-        } else if (typeof sec.heading === 'string') {
-          sec_name = sec.heading.trim();
-        }
-        if (sec_name === undefined) {
-          sec_name = ""
-          sec_key = sec_num
-        }
-        else {
-          sec_key = sec_num + " - " + sec_name
-        }
-
-        const sec_id = sec?.['$']?.eId
-        sub_headings.push({name: sec_key, id: sec_id, content:[]})
-      }
-      return sub_headings
-    }
-
-    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
-    if (!obj) return;
-
-    if ('chapter' in obj) {
-      const chapters = toArray(obj.chapter)
-      for (const chap of chapters) {
-        let sub_headings: Heading[]
-
-        if (chap.section) {
-          sub_headings = parseSubSections(chap)
-        } else {
-          sub_headings = []
-        }
-
-        let chap_name
-        if (typeof chap.heading === 'object') {
-          chap_name = chap.heading._.trim()
-        } else if (typeof chap.heading === 'string') {
-          chap_name = chap.heading.trim()
-        }
-
-        const chap_id = chap['$'].eId
-        let chap_key
-        const chapter_num = chap.num.trim()
-        if (chap_name === undefined) {
-          chap_name = ""
-          chap_key = chapter_num
-        }
-        else {
-          chap_key = chapter_num + " - " + chap_name
-        }
-
-        headings.push({name: chap_key, id: chap_id, content: sub_headings})
-      }
-      return headings
-    } else {
-      return parseSubSections(obj as Chapter)
-    }
-  }
   try {
-    const structure = search(parsed_xml)
+    const structure = parseXmlHeadings(parsed_xml)
+    response.json(structure)
+  } catch (error) {
+    console.error("Error parsing XML content", error);
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
+})
+
+// Hae tietyn oikeuskäytännön struktuurin eli otsikot ja otsikkojen alaotsikot
+app.get('/api/judgment/structure/id/:year/:number/:language/:level', async (request: express.Request, response: express.Response): Promise<void> => {
+
+  const year = parseInt(request.params.year)
+  const language = request.params.language
+  const number = request.params.number
+  const level = request.params.level
+  let content;
+  try {
+    content = await getJudgmentByNumberYear(number, year, language, level)
+  } catch {
+    response.status(500).json({ error: 'Internal server error' });
+    return;
+  }
+  if (content === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  }
+
+  if (content === null) return;
+  try {
+    const structure = parseHtmlHeadings(content)
     response.json(structure)
   } catch (error) {
     console.error("Error parsing XML content", error);
