@@ -14,8 +14,8 @@
  export interface Document {
   docYear:  string,
   docNumber: string,
-  docTitle: string | null
-  docLevel: string | null
+  docLevel?: string,
+  docTitle?: string
 }
 
 export interface DocumentPageProps {
