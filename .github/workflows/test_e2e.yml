@@ -1,0 +1,24 @@
+name: Test e2e
+on:
+  pull_request:
+    branches:
+      - main
+      - staging
+
+jobs:
+  test_e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend
+        run: |
+          npm --prefix ./frontend install
+          npm --prefix ./frontend run build
+      - name: Build backend
+        run: |
+          npm --prefix ./backend ci
+          npm --prefix ./backend start > backend_prod.log 2>&1 &
+
+      - name: Run tests
+        run: npm test
