@@ -12,6 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Dependencies
         run: npm install
+      - name: playwright
+        run: npx playwright install
 
       - name: Build frontend
         run: |
