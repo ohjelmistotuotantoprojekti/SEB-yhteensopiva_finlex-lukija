@@ -15,13 +15,13 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
   const tagStyle = {
     display: 'inline-block',
     padding: '0.6em 0.6em',
-    'font-size': '0.9em',
+    fontSize: '0.9em',
     color: '#721c24',
-    'background-color': '#f8d7da',
+    backgroundColor: '#f8d7da',
     border: '1px solid #f5c6cb',
-    'border-radius': '0.25rem',
-    'line-height': 1,
-    'white-space': 'normal'
+    borderRadius: '0.25rem',
+    lineHeight: 1,
+    whiteSpace: 'normal'
   }
 
   function prepareLink(doc: Document): string {
