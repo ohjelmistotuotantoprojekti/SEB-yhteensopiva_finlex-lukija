@@ -1,5 +1,4 @@
 import type {DocumentListProps, Document} from "../types"
-import {nanoid} from 'nanoid'
 
 
 const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
@@ -38,7 +37,7 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
   }
 
   function prepareKey(doc: Document): string {
-    return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${nanoid(2)}`;
+    return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${language}`;
   }
   
   const emptyTagName = language === 'fin' ? 'Tyhjä': 'Tom'
