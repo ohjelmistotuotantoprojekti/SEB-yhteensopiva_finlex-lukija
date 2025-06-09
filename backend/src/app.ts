@@ -16,7 +16,18 @@ export const VALID_LEVELS = ['any', 'kho', 'kko'];
 
 let databaseStatus = 'notready';
 
-app.get('/api/status', (req: express.Request, res: express.Response): void => {
+app.get('/api/check-db-status', (req: express.Request, res: express.Response): void => {
+  if (databaseStatus === 'ready') {
+    res.status(200).json({ status: 'ready' });
+  } else {
+    res.status(503).json({
+      error: 'Service Unavailable: Database is not ready',
+      status: databaseStatus
+    });
+  }
+});
+
+app.get('/api/update-db-status', (req: express.Request, res: express.Response): void => {
   const password = req.query.password as string;
   const status = req.query.status as string;
 
