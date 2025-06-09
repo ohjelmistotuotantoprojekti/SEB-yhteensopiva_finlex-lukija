@@ -23,7 +23,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
-  
+  /*
   const topStyle = {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -32,6 +32,17 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     height: '50px',
     backgroundColor: '#0C6FC0',
     padding: '2px',
+  }*/
+   const topStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignContent: 'center',
+    width: '100%',
+    height: '50px',
+    backgroundColor: '#0C6FC0',
+    padding: '2px',
+    margin: '2px',
+    border: '0px solid red'
   }
 
   const contentStyle = {

@@ -4,13 +4,19 @@ const TopMenu = () => {
     const menyStyle: React.CSSProperties = {
         color: '#fefefe',
         textDecoration: 'none',
-        padding: '20px',
-        
+    }
+    const menuDivStle: React.CSSProperties = {
+        display: 'flex',
+    justifyContent: 'space-evenly',
+        marginTop: '0px',
+        width: '400px',
+        border: '0px solid pink',
+        paddingTop: '14px'
     }
 
   return (
-      <div id="topmenydiv" ><a style={menyStyle} href="/">Lainsäädäntö</a>
-   &nbsp; <a style={menyStyle} href="/oikeuskaytantohaku/">Oikeuskäytäntö</a>
+      <div id="topmenudiv" style={menuDivStle} ><a style={menyStyle} href="/lainsaadanto/">Lainsäädäntö</a>
+   &nbsp; <a style={menyStyle} href="/oikeuskaytanto/">Oikeuskäytäntö</a>
    </div>
    )
 }

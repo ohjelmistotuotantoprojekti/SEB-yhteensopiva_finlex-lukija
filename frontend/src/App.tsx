@@ -16,6 +16,9 @@ const App = () => {
   const backtext: string = language==="fin" ? "Takaisin" : "Tillbaka"
   const buttontext: string = language==="fin" ? "Hae" : "Sök"
  
+  if (window.location.pathname === "/") {
+    window.location.href = "/lainsaadanto/"
+  }
 
   return (
     <Router>
@@ -25,7 +28,7 @@ const App = () => {
         <title>Finlex Lite</title>
     </Helmet>
     <Routes>
-      <Route key="listpage" path="/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
+      <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
                         apisection="statute"
                         frontsection='lainsaadanto' pagetitle={language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}
                         placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"}
@@ -33,11 +36,11 @@ const App = () => {
                   } 
       />
       <Route key="lawpage" path="/lainsaadanto/:year/:id" 
-          element={<DocumentPage language={language} backpath='/' 
+          element={<DocumentPage language={language} backpath='/lainsaadanto/' 
                             backtext={backtext} apipath="statute" />
                   } 
       />
-      <Route key="caselistpage" path="/oikeuskaytantohaku" 
+      <Route key="caselistpage" path="/oikeuskaytanto" 
         element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
                         frontsection='oikeuskaytanto' pagetitle={language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"}
                         placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi" : "År eller nummer/år"}
@@ -45,7 +48,7 @@ const App = () => {
                   } 
       />
       <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
-          element={<DocumentPage language={language} backpath='/oikeuskaytantohaku/' 
+          element={<DocumentPage language={language} backpath='/oikeuskaytanto/' 
                             backtext={backtext} apipath="judgment" />
                   } 
       />

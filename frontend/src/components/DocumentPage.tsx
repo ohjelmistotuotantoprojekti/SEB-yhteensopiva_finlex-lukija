@@ -19,13 +19,14 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignContent: 'center',
     width: '100%',
     height: '50px',
     backgroundColor: '#0C6FC0',
     padding: '2px',
     margin: '2px',
+    border: '0px solid red'
   }
 
   const contentStyle: React.CSSProperties = {
@@ -34,21 +35,34 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     width: '100%',
     padding: '5px',
     margin: '10px',
+    border: '0px solid blue'
+    
+  }
+
+  const returnStyle: React.CSSProperties = {
+    padding: '20px'
   }
 
    const contentBlockStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
-    padding: '10px',
-    margin: '10px',
+    padding: '0px',
+    margin: '0px',
+    border: '0px solid pink'
   }
    const tocStyle: React.CSSProperties = {
     display: 'flex',
-    justifyContent: 'center',
-    width: '100%',
-    padding: '10px',
+    justifyContent: 'start',
+    width: '350px',
+    padding: '00px',
     margin: '10px',
+    border: '0px solid yellow',
+  }
+
+  const docBodyStyle: React.CSSProperties = {
+    width: '600px',
+    border: '0px solid pink'
   }
 
   if (docnumber === "" ) {
@@ -146,16 +160,22 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
       </title>
     </Helmet>
     <div id="topId" style={topStyle}>
+       
      <TopMenu />
     </div>
 
     <div id="contentDiv" style={contentStyle}>
       <div id="contentBlock" style={contentBlockStyle}>
-        <a href={backpath}>{backtext}</a>
-        <div id="leftMargin" style={tocStyle}>
-          <TableOfContent headings={headings} />
+        <div id="returndiv" style={returnStyle}>
+          <a href={backpath}>{backtext}</a>
         </div>
-        <div dangerouslySetInnerHTML={{ __html: law}}></div>
+        <div id="leftMargin" style={tocStyle}>
+          
+          <TableOfContent headings={headings} />
+          
+        </div>
+        
+        <div id="documentbodydiv" style={docBodyStyle} dangerouslySetInnerHTML={{ __html: law}}></div>
       </div>
     </div>
     </>

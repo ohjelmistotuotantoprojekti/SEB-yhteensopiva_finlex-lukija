@@ -7,7 +7,7 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
 
   const listStyle = {
     width: "500px",
-    backgroundColor: "#eeeeee",
+    backgroundColor: "#F3F8FC",
     padding: '10px',
     margin: '4px',
   }
@@ -34,7 +34,7 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
     { laws.map((law) => 
         <div style={listStyle} key={prepareKey(law)} >
           <a href={prepareLink(law)}>
-            {prepareLabel(law)} {law.docTitle ? law.docTitle : ""}
+            {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
         </div>
       )

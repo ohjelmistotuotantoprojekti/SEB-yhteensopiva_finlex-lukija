@@ -10,16 +10,19 @@ const TableOfContent = ({headings}: {headings: Headings[]}) => {
         display: 'flow',
         width: '100%',
         border: '0px solid blue',
+        backgroundColor: '#F3F8FC',
+        padding: '0px',
+        paddingLeft: '4px'
        
     }
 
     const autoscrollStyle: React.CSSProperties = {
         overflow: 'auto',
         maxHeight: '600px',
-         position: 'fixed',
+        position: 'fixed',
         top: '0pn',
         left: '0pn',
-        width: '250px',
+        width: '300px',
         display: 'flex',
         flexDirection: 'column-reverse',
         border: '0px solid red',
@@ -44,6 +47,7 @@ const TableOfContent = ({headings}: {headings: Headings[]}) => {
     else { 
         const out = (
             <div style={autoscrollStyle} id="autoscrolldiv">
+                
                 <div key="tocdiv" style={tocStyle}>
                     {data.map((section) => {
                         return (
