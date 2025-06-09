@@ -2,7 +2,7 @@ import type {DocumentListProps, Document} from "../types"
 import {nanoid} from 'nanoid'
 
 
-const DocumentList = ({laws, frontsection}: DocumentListProps) => {
+const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
  
 
   const listStyle = {
@@ -41,11 +41,12 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
     return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${nanoid(2)}`;
   }
   
+  const emptyTagName = language === 'fin' ? 'Tyhjä': 'Tom'
   return (
     <>
     { laws.map((law) => 
         <div style={listStyle} key={prepareKey(law)} >
-          {law.isEmpty ? <span style={tagStyle}>Empty</span>: ""}
+          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span>: ""}
           <a href={prepareLink(law)}>
             {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>

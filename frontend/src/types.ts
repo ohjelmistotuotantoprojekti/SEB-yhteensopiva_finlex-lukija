@@ -38,7 +38,8 @@ export interface ListDocumentPageProps {
 
 export interface DocumentListProps {
   laws: Document[],
-  frontsection: string
+  frontsection: string,
+  language: string
 }
 
 export interface Props {
