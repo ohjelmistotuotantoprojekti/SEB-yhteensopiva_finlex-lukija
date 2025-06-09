@@ -16,6 +16,7 @@
   docNumber: string,
   docLevel?: string,
   docTitle?: string
+  isEmpty?: boolean,
 }
 
 export interface DocumentPageProps {

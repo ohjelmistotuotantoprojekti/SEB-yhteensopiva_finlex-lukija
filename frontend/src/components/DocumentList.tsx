@@ -12,6 +12,18 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
     margin: '4px',
   }
 
+  const tagStyle = {
+    display: 'inline-block',
+    padding: '0.6em 0.6em',
+    'font-size': '0.9em',
+    color: '#721c24',
+    'background-color': '#f8d7da',
+    border: '1px solid #f5c6cb',
+    'border-radius': '0.25rem',
+    'line-height': 1,
+    'white-space': 'normal'
+  }
+
   function prepareLink(doc: Document): string {
     return `/${frontsection}/${doc.docYear}/${doc.docNumber}${doc.docLevel ? `/${doc.docLevel}` : ""}`;
   }
@@ -33,6 +45,7 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
     <>
     { laws.map((law) => 
         <div style={listStyle} key={prepareKey(law)} >
+          {law.isEmpty ? <span style={tagStyle}>Empty</span>: ""}
           <a href={prepareLink(law)}>
             {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>

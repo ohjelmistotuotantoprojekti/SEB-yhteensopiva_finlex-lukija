@@ -49,7 +49,8 @@ async function getStatutesByYearAndLanguage(year: number, language: string) {
     return {
       docYear: result.year,
       docNumber: result.number,
-      docTitle: result.title
+      docTitle: result.title,
+      isEmpty: result.is_empty
     };
   });
   return preparedResults;
@@ -136,7 +137,8 @@ async function searchLawsByKeywordAndLanguage(keyword: string, language: string)
     return {
       docYear: result.year,
       docNumber: result.number,
-      docTitle: result.title
+      docTitle: result.title,
+      isEmpty: result.is_empty
     };
   });
   return preparedResults;
@@ -149,7 +151,8 @@ async function getJudgmentsByYearAndLanguageAndLevel(year: number, language: str
     return {
       docYear: result.year,
       docNumber: result.number,
-      docLevel: result.level
+      docLevel: result.level,
+      isEmpty: result.is_empty
     };
   });
   return preparedResults;
@@ -177,7 +180,8 @@ async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: st
     return {
       docYear: result.year,
       docNumber: result.number,
-      docLevel: result.level
+      docLevel: result.level,
+      isEmpty: result.is_empty
     };
   });
   return preparedResults;
