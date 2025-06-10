@@ -15,8 +15,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24.x'
-      - name: playwright browser
-        run: npx playwright install --with-deps
 
       - name: Build frontend
         run: |
@@ -27,6 +25,11 @@ jobs:
           npm --prefix ./backend ci
           npm --prefix ./backend run build
           npm --prefix ./backend start > backend_prod.log 2>&1 &
+
+      - name: playwright browser
+        run: |
+          cd backend
+          npx playwright install --with-deps
 
       - name: Run tests
         run: npx playwright test
