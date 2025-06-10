@@ -1,4 +1,4 @@
-import playwright, { test } from '@playwright/test'
+import playwright from '@playwright/test'
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { setPool, createTables, closePool } from '../src/db/db.js'
 import { setSingleJudgment, setSingleStatute } from '../src/db/load.js'
@@ -26,7 +26,7 @@ playwright.describe("Main page", () => {
     await container.stop();
   })
 */
-  test('front page can be opened', async ({ page }) => {
+  playwright.test('front page can be opened', async ({ page }) => {
     const locator = await page.getByText("Lainsäädäntö:")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai numero/vuosi")).toBeVisible()
