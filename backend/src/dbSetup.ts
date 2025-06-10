@@ -3,8 +3,6 @@ import dotenv from "dotenv";
 import { exit } from 'process';
 dotenv.config();
 
-console.log('testi 1');
-
 if (!process.env.PG_URI) {
   console.error("PG_URI environment variable is not set.");
   process.exit(1);
@@ -24,8 +22,6 @@ if (process.env.NODE_ENV === 'production') {
   console.log('Running in unknown mode')
   exit(1)
 }
-
-console.log('testi 2');
 
 // Alusta tietokanta
 async function initDatabase() {
