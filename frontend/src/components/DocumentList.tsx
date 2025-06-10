@@ -1,8 +1,7 @@
 import type {DocumentListProps, Document} from "../types"
-import {nanoid} from 'nanoid'
 
 
-const DocumentList = ({laws, frontsection}: DocumentListProps) => {
+const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
  
 
   const listStyle = {
@@ -10,6 +9,18 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
     backgroundColor: "#F3F8FC",
     padding: '10px',
     margin: '4px',
+  }
+
+  const tagStyle = {
+    display: 'inline-block',
+    padding: '0.6em 0.6em',
+    fontSize: '0.9em',
+    color: '#721c24',
+    backgroundColor: '#f8d7da',
+    border: '1px solid #f5c6cb',
+    borderRadius: '0.25rem',
+    lineHeight: 1,
+    whiteSpace: 'normal'
   }
 
   function prepareLink(doc: Document): string {
@@ -26,13 +37,15 @@ const DocumentList = ({laws, frontsection}: DocumentListProps) => {
   }
 
   function prepareKey(doc: Document): string {
-    return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${nanoid(2)}`;
+    return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${language}`;
   }
   
+  const emptyTagName = language === 'fin' ? 'Tyhjä': 'Tom'
   return (
     <>
     { laws.map((law) => 
         <div style={listStyle} key={prepareKey(law)} >
+          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span>: ""}
           <a href={prepareLink(law)}>
             {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
