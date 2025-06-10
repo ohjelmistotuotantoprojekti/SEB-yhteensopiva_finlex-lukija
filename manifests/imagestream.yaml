@@ -9,10 +9,10 @@ spec:
   lookupPolicy:
     local: false
   tags:
-    - name: staging
+    - name: production
       from:
         kind: DockerImage
-        name: arttkan/finlex-lukija:staging
+        name: arttkan/finlex-lukija:production
       importPolicy:
         scheduled: true
       referencePolicy:
