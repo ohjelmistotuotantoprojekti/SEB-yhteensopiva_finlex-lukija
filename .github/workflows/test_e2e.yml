@@ -32,4 +32,6 @@ jobs:
           npx playwright install --with-deps
 
       - name: Run tests
-        run: npx playwright test
+        run: |
+          cd backend
+          npx playwright test
