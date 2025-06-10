@@ -2,3 +2,9 @@ node_modules
 dist
 frontend
 .env
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

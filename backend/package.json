@@ -27,7 +27,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",
-    "db:reset": "tsx db_tool.ts"
+    "db:reset": "tsx db_tool.ts",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@playwright/test": "^1.52.0",
     "@testcontainers/postgresql": "^10.27.0",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",
