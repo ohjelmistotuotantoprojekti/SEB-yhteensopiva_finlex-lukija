@@ -11,6 +11,11 @@
   docLevel: string
 }
 
+ export interface TopMenuProps {
+  language:  string,
+  setLanguage: (Status: string) => void
+}
+
  export interface Document {
   docYear:  string,
   docNumber: string,
