@@ -1,0 +1,19 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+
+metadata:
+  name: finlex-lukija
+  labels:
+    app: finlex-lukija
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: production
+      from:
+        kind: DockerImage
+        name: arttkan/finlex-lukija:production
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Local

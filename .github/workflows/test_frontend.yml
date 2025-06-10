@@ -1,27 +1,25 @@
-name: Test backend
+name: Test frontend
 on:
   pull_request:
     branches:
       - main
       - staging
     paths:
-      - 'backend/**'
+      - 'frontend/**'
 
 jobs:
-  test_backend:
+  test_frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.x'
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       - name: Lint code
         run: npm run lint
       - name: Run tests
         run: npm test
+      - name: Run build
+        run: npm run build

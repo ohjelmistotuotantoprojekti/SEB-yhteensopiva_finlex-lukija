@@ -1,0 +1,19 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: finlex-lukija-route
+  namespace: ohtuprojekti-production
+  labels:
+    app: finlex-lukija
+    type: external
+spec:
+  host: finlex-lukija-ohtuprojekti-prod.ext.ocp-test-0.k8s.it.helsinki.fi 
+  port:
+    targetPort: 3001
+  to:
+    kind: Service
+    name: finlex-lukija-svc
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
