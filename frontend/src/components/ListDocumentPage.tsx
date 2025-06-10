@@ -7,7 +7,7 @@ import type {Document, ListDocumentPageProps} from '../types'
 import TopMenu from './TopMenu'
 
 
-const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection, pagetitle} : ListDocumentPageProps) => {
+const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection} : ListDocumentPageProps) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem(`query_${apisection}`) || ""

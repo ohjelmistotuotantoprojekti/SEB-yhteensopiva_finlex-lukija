@@ -35,7 +35,6 @@ export interface ListDocumentPageProps {
   placeholdertext: string,
   apisection: string,
   frontsection: string,
-  pagetitle: string,
   language: string,
   setLanguage: (Status: string) => void
 }

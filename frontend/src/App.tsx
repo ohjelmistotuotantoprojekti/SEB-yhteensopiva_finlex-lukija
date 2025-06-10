@@ -30,7 +30,7 @@ const App = () => {
     <Routes>
       <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
                         apisection="statute"
-                        frontsection='lainsaadanto' pagetitle={language==="fin" ? "Lainsäädäntö:" : "Lagstiftning"}
+                        frontsection='lainsaadanto'
                         placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi tai avainsana" : "År eller nummer/år eller nyckelord"}
                   />
                   } 
@@ -42,7 +42,7 @@ const App = () => {
       />
       <Route key="caselistpage" path="/oikeuskaytanto" 
         element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
-                        frontsection='oikeuskaytanto' pagetitle={language==="fin" ? "Oikeuskäytäntö" : "Rättspraxis"}
+                        frontsection='oikeuskaytanto'
                         placeholdertext={language==="fin" ? "Vuosi tai oikeusaste:vuosi:numero tai avainsana" : "År eller domstol:år:nummer eller nyckelord"}
                   />
                   } 
