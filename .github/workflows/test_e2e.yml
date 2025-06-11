@@ -16,13 +16,24 @@ jobs:
         with:
           node-version: '24.x'
 
-      - name: Build backend
+      - name: Build frontend
         run: |
           npm --prefix ./frontend ci
           npm --prefix ./frontend run build
+      - name: Build backend
+        run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
           npm --prefix ./backend start > backend_prod.log 2>&1 &
+
+      - name: playwright browser
+        run: |
           cd backend
+          ls
           npx playwright install --with-deps
+
+      - name: Run tests
+        run: |
+          cd backend
+          ls
           npx playwright test
