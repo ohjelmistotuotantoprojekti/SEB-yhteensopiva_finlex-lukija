@@ -1,5 +1,5 @@
 import { query } from './db.js';
-import { Akoma } from '../types/akoma.js';
+import { Akoma, CommonName } from '../types/akoma.js';
 import { Judgment } from '../types/judgment.js';
 
 async function getLawByNumberYear(number: string, year: number, language: string): Promise<string | null> {
@@ -19,6 +19,12 @@ async function getLawsByContent(keyword: string, language: string): Promise<{ ti
   const sql = "SELECT title, number, year, is_empty FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0) ORDER BY is_empty ASC, year ASC, number ASC";
   const xpath_query = `//akn:p/text()[contains(., '${escapedKeyword}')]`;
   const result = await query(sql, [language, `%${escapedKeyword}%`, xpath_query]);
+  return result.rows;
+}
+
+async function getLawsByCommonName(commonName: string, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
+  const sql = 'SELECT l.title, l.number, l.year, l.is_empty FROM laws l JOIN common_names c ON l.number = c.number AND l.year = c.year AND l.language = c.language WHERE c.common_name ILIKE $1 AND l.language = $2 ORDER BY l.is_empty ASC, l.year ASC, l.number ASC';
+  const result = await query(sql, [`%${commonName}%`, language]);
   return result.rows;
 }
 
@@ -65,4 +71,9 @@ async function getJudgmentCountByYear(year: number): Promise<number> {
   return parseInt(result.rows[0].count, 10);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear };
+async function setCommonName(commonName: CommonName) {
+  const sql = 'INSERT INTO common_names (uuid, common_name, number, year, language) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (common_name, number, year, language) DO NOTHING';
+  await query(sql, [commonName.uuid, commonName.commonName, commonName.number, commonName.year, commonName.language]);
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };
