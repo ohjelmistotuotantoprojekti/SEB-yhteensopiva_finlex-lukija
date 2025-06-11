@@ -11,7 +11,7 @@ const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChang
     backgroundColor: ' #F3F8FC',
     border: '1px solid #0C6FC0',
     borderBottom: '4px solid #0C6FC0',
-    marginTop: '50px',
+    marginTop: '70px',
     marginBottom: '50px',
   }
 
@@ -29,7 +29,7 @@ const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChang
   return (
        <div key="searchdiv" style={inputBoxStyle}>
         <form key="searchForm" onSubmit={handleSearchEvent}>
-          <input type="text" size={40} key="searchField" 
+          <input type="text" size={60} key="searchField" 
          onChange={handleSearchInputChange}
           value={search}
           style={inputStyle}

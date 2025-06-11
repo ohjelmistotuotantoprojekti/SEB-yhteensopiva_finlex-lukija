@@ -16,6 +16,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const [docTitle, setDocTitle] = useState<string>("Finlex Lite")
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
+  const [lan, setLan] = useState<string>(language)
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -24,7 +25,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     width: '100%',
     height: '50px',
     backgroundColor: '#0C6FC0',
-    padding: '2px',
+    padding: '0px',
     margin: '2px',
     border: '0px solid red'
   }
@@ -161,7 +162,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     </Helmet>
     <div id="topId" style={topStyle}>
        
-     <TopMenu />
+     <TopMenu language={lan} setLanguage={setLan} />
     </div>
 
     <div id="contentDiv" style={contentStyle}>

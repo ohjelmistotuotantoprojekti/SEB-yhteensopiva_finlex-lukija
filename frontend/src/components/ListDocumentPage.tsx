@@ -4,11 +4,10 @@ import SearchForm from './SearchForm'
 import DocumentList from './DocumentList'
 import Notification  from './Notification'
 import type {Document, ListDocumentPageProps} from '../types'
-import LanguageSelection from './LanguageSelection'
 import TopMenu from './TopMenu'
 
 
-const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection, pagetitle} : ListDocumentPageProps) => {
+const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection} : ListDocumentPageProps) => {
 
   // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem(`query_${apisection}`) || ""
@@ -31,9 +30,10 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     width: '100%',
     height: '50px',
     backgroundColor: '#0C6FC0',
-    padding: '2px',
+    padding: '0px',
+    paddingBottom: '0px',
     margin: '2px',
-    border: '0px solid red'
+    border: '0px solid #0C6FC0'
   }
 
   const contentStyle = {
@@ -113,13 +113,12 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   return (
     <div id="lawpagediv">
         <div style={topStyle} id="topdiv">
-            <TopMenu />
-            <LanguageSelection language={language} setLanguage={setLanguage}/>
+            <TopMenu language={language} setLanguage={setLanguage} />
+           
         </div>
         <div style={contentStyle} id="contentdiv">
             <div id="ccDiv" style={contentContainerStyle}>
 
-                <h3>{pagetitle}</h3>
 
                 <SearchForm search={search}
                             buttontext={buttonetext}  
