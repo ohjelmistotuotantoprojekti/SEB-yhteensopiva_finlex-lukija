@@ -19,13 +19,10 @@ jobs:
         with:
           node-version: '24.x'
 
-      - name: Build frontend
+      - name: Run tests
         run: |
           npm --prefix ./frontend ci
           npm --prefix ./frontend run build
-
-      - name: Run tests
-        run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
           npm --prefix ./backend run test2
