@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: '24.x'
 
+      - name: playwright browser
+        run: |
+          cd backend
+          npx playwright install --with-deps
       - name: Build frontend
         run: |
           npm --prefix ./frontend ci
@@ -25,15 +29,20 @@ jobs:
           npm --prefix ./backend ci
           npm --prefix ./backend run build
           npm --prefix ./backend start > backend_prod.log 2>&1 &
+          sleep 5
 
-      - name: playwright browser
+      - name: Wait for backend to be ready
         run: |
-          cd backend
-          ls
-          npx playwright install --with-deps
+          for i in {1..30}; do
+            if curl --fail http://localhost:3001 > /dev/null 2>&1; then
+              echo "Backend is up!"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 1
+          done
 
       - name: Run tests
         run: |
           cd backend
-          ls
           npx playwright test
