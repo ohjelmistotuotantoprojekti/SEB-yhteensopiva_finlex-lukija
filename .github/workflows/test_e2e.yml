@@ -24,7 +24,7 @@ jobs:
         run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
-          npm --prefix ./backend test2
+          npm --prefix ./backend run test2
 
 
       - name: playwright browser
