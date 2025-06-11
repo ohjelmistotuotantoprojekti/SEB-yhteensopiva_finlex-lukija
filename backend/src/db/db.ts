@@ -1,7 +1,9 @@
 
 import { Pool, QueryResult } from 'pg';
-import { setStatutesByYear, setJudgmentsByYear, listStatutesByYear, listJudgmentsByYear } from './load.js';
-import { getLatestYearLaw, getLawCountByYear, getLatestYearJudgment, getJudgmentCountByYear } from './akoma.js';
+import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment } from './load.js';
+import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsByYear } from './akoma.js';
+import { LawKey } from '../types/akoma.js';
+import { JudgmentKey } from '../types/judgment.js';
 
 let pool: Pool;
 
@@ -11,19 +13,14 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(startYearLaw: number = 1900, startYearJudgment: number = 1900): Promise<void> {
+async function fillDb(laws: LawKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
-    const currentYear = new Date().getFullYear();
-    for (let i = startYearLaw; i <= currentYear; i++) {
-      await setStatutesByYear(i, 'fin')
-      await setStatutesByYear(i, 'swe')
-    }
 
-    for (let i = startYearJudgment; i <= currentYear; i++) {
-      await setJudgmentsByYear(i, 'fin', 'kho')
-      await setJudgmentsByYear(i, 'fin', 'kko')
-      await setJudgmentsByYear(i, 'swe', 'kho')
-      await setJudgmentsByYear(i, 'swe', 'kko')
+    for (const key of laws) {
+      await setSingleStatute(buildFinlexUrl(key));
+    }
+    for (const key of judgments) {
+      await setSingleJudgment(buildJudgmentUrl(key));
     }
     console.log("Database is filled")
   } catch (error) {
@@ -53,46 +50,145 @@ async function dbIsReady(): Promise<boolean> {
   }
 }
 
-async function dbIsUpToDate(): Promise<{upToDate: boolean, latestYearLaw: number, latestYearJudgment: number}> {
+async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgments: JudgmentKey[]}> {
+  console.log('Checking if database is up to date...');
+
+  async function compareStatuteCount(year: number): Promise<boolean> {
+    const expectedFin = await listStatutesByYear(year, 'fin');
+    const expectedSwe = await listStatutesByYear(year, 'swe');
+    const expectedCount = expectedFin.length + expectedSwe.length;
+    if (expectedCount === 0) {
+      return true;
+    }
+    const existingCount = await getLawCountByYear(year);
+    if (existingCount > expectedCount) {
+      console.warn(`Found too many laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+    } else if (existingCount < expectedCount) {
+      console.log(`Found too few laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+    } else {
+      console.debug(`Correct number of laws for year ${year}: ${existingCount}`);
+    }
+    return existingCount === expectedCount;
+  }
+
+  async function compareJudgmentCount(year: number): Promise<boolean> {
+    const expectedFinKKO = await listJudgmentsByYear(year, 'fin', 'kko');
+    const expectedSweKKO = await listJudgmentsByYear(year, 'swe', 'kko');
+    const expectedFinKHO = await listJudgmentsByYear(year, 'fin', 'kho');
+    const expectedSweKHO = await listJudgmentsByYear(year, 'swe', 'kho');
+    const expectedCount = expectedFinKKO.length + expectedSweKKO.length + expectedFinKHO.length + expectedSweKHO.length;
+    if (expectedCount === 0) {
+      return true;
+    }
+    const existingCount = await getJudgmentCountByYear(year);
+    if (existingCount > expectedCount) {
+      console.warn(`Found too many judgments for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+    } else if (existingCount < expectedCount) {
+      console.log(`Found too few judgments for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+    } else {
+      console.debug(`Correct number of judgments for year ${year}: ${existingCount}`);
+    }
+    return existingCount === expectedCount;
+  }
+
+  async function findMissingStatutes(year: number): Promise<LawKey[]> {
+    const expectedFin = await listStatutesByYear(year, 'fin');
+    const expectedSwe = await listStatutesByYear(year, 'swe');
+    const expectedLaws = []
+    for (const lawUrl of [...expectedFin, ...expectedSwe]) {
+      const law = parseFinlexUrl(lawUrl);
+      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage });
+    }
+    const existingLawsFin = await getLawsByYear(year, 'fin');
+    const existingLawsSwe = await getLawsByYear(year, 'swe');
+    const existingLaws: LawKey[] = [];
+
+    for (const law of existingLawsFin) {
+      existingLaws.push({ number: law.number, year: law.year, language: 'fin' });
+    }
+    for (const law of existingLawsSwe) {
+      existingLaws.push({ number: law.number, year: law.year, language: 'swe' });
+    }
+
+    const missingLaws: LawKey[] = [];
+    for (const law of expectedLaws) {
+      if (!existingLaws.some(existing =>
+        existing.number === law.number &&
+        existing.year === law.year &&
+        existing.language === law.language
+      )) {
+        missingLaws.push(law);
+      }
+    }
+    console.log(`Found ${missingLaws.length} missing laws for year ${year}`);
+    console.debug(`Missing laws for year ${year}:`, missingLaws);
+    return missingLaws;
+  }
+
+
+  async function findMissingJudgments(year: number): Promise<JudgmentKey[]> {
+    const expectedFinKKO = await listJudgmentsByYear(year, 'fin', 'kko');
+    const expectedSweKKO = await listJudgmentsByYear(year, 'swe', 'kko');
+    const expectedFinKHO = await listJudgmentsByYear(year, 'fin', 'kho');
+    const expectedSweKHO = await listJudgmentsByYear(year, 'swe', 'kho');
+    const expectedJudgments: JudgmentKey[] = [];
+
+    for (const judgmentUrl of [...expectedFinKKO, ...expectedSweKKO, ...expectedFinKHO, ...expectedSweKHO]) {
+      const judgment = parseJudgmentUrl(judgmentUrl);
+      expectedJudgments.push({ number: judgment.number, year: judgment.year, language: judgment.language, level: judgment.level });
+    }
+
+    const existingJudgmentsFin = await getJudgmentsByYear(year, 'fin', 'any');
+    const existingJudgmentsSwe = await getJudgmentsByYear(year, 'swe', 'any');
+    const existingJudgments: JudgmentKey[] = [];
+    for (const judgment of existingJudgmentsFin) {
+      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'fin', level: judgment.level });
+    }
+    for (const judgment of existingJudgmentsSwe) {
+      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'swe', level: judgment.level });
+    }
+
+    const missingJudgments: JudgmentKey[] = [];
+
+    for (const judgment of expectedJudgments) {
+      if (!existingJudgments.some(existing =>
+        existing.number === judgment.number &&
+        existing.year === judgment.year &&
+        existing.language === judgment.language &&
+        existing.level === judgment.level
+      )) {
+        missingJudgments.push(judgment);
+      }
+    }
+    console.log(`Found ${missingJudgments.length} missing judgments for year ${year}`);
+    console.debug(`Missing judgments for year ${year}:`, missingJudgments);
+    return missingJudgments;
+  }
+
+
+
   try {
-    const currentYear = new Date().getFullYear();
-    let latestYearLaw = await getLatestYearLaw();
-    let latestYearJudgment = await getLatestYearJudgment(); // Assuming this function also works for judgments
+    const laws: LawKey[] = [];
+    const judgments: JudgmentKey[] = [];
     let upToDate = true;
+    const currentYear = new Date().getFullYear();
+    const startYear = 1700
 
-    if (latestYearLaw == currentYear) {
-      const numberOfLaws = await getLawCountByYear(currentYear);
-      const expectedFin = await listStatutesByYear(currentYear, 'fin');
-      const expectedSwe = await listStatutesByYear(currentYear, 'swe');
-      const exprectedNumberOfLaws = expectedFin.length + expectedSwe.length;
-      if (numberOfLaws != exprectedNumberOfLaws) {
-        console.log(`Number of laws for year ${currentYear} does not match expected: ${numberOfLaws} vs ${exprectedNumberOfLaws}`);
+    for (let year = startYear; year <= currentYear + 1; year++) {
+      if (!await compareStatuteCount(year)) {
+        console.log(`Laws for year ${year} are not up to date`);
+        laws.push(...await findMissingStatutes(year));
         upToDate = false;
-      } else {
-        ++latestYearLaw
       }
-    } else {
-      upToDate = false;
-    }
 
-    if (latestYearJudgment == currentYear) {
-      const numberOfJudgments = await getJudgmentCountByYear(currentYear);
-      const expectedFinKKO = await listJudgmentsByYear(currentYear, 'fin', 'kko');
-      const expectedSweKKO = await listJudgmentsByYear(currentYear, 'swe', 'kko');
-      const expectedFinKHO = await listJudgmentsByYear(currentYear, 'fin', 'kho');
-      const expectedSweKHO = await listJudgmentsByYear(currentYear, 'swe', 'kho');
-      const exprectedNumberOfJudgments = expectedFinKKO.length + expectedSweKKO.length + expectedFinKHO.length + expectedSweKHO.length;
-      if (numberOfJudgments != exprectedNumberOfJudgments) {
-        console.log(`Number of judgments for year ${currentYear} does not match expected: ${numberOfJudgments} vs ${exprectedNumberOfJudgments}`);
+      if (!await compareJudgmentCount(year)) {
+        console.log(`Judgments for year ${year} are not up to date`);
+        judgments.push(...await findMissingJudgments(year));
         upToDate = false;
-      } else {
-        ++latestYearJudgment
       }
-    } else {
-      upToDate = false;
     }
-    console.log(`Database up to date: ${upToDate}, Latest law year: ${latestYearLaw}, Latest judgment year: ${latestYearJudgment}`);
-    return { upToDate, latestYearLaw, latestYearJudgment };
+    return { upToDate, laws, judgments };
+
   } catch (error) {
     console.error('Error checking if database is up to date:', error);
     throw error;

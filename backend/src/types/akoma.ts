@@ -7,3 +7,9 @@ export interface Akoma {
     content: string;
     is_empty: boolean;
 }
+
+export interface LawKey {
+    number: string;
+    year: number;
+    language: string;
+}

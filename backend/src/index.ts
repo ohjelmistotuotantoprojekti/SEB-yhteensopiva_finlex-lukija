@@ -31,20 +31,17 @@ async function initDatabase() {
     if (!await dbIsReady()) {
       console.log('Database is not ready, creating tables...')
       await createTables()
-      console.log('Filling database...')
-      await fillDb()
-      console.log('Database is ready.')
-    } else {
-      console.log('Database is ready.')
-      const { upToDate, latestYearLaw, latestYearJudgment } = await dbIsUpToDate()
-      if (!upToDate) {
-        console.log('Database is not up to date, filling database...')
-        await fillDb(latestYearLaw, latestYearJudgment)
-        console.log('Database is now up to date.')
-      } else {
-        console.log('Database is up to date.')
-      }
     }
+    console.log('Database is ready.')
+    const { upToDate, laws, judgments } = await dbIsUpToDate()
+    if (!upToDate) {
+      console.log('Database is not up to date, filling database...')
+      await fillDb(laws, judgments)
+      console.log('Database is now up to date.')
+    } else {
+      console.log('Database is up to date.')
+    }
+
   } catch (error) {
     console.error('Error initializing database:', error)
     exit(1)
