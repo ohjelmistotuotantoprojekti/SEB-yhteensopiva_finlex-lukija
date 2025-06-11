@@ -28,6 +28,7 @@ jobs:
           npm --prefix ./backend ci
           npm --prefix ./backend run build
           npm --prefix ./backend run test2
+          sleep 5
 
 
       - name: playwright browser
@@ -38,4 +39,12 @@ jobs:
       - name: Run tests
         run: |
           cd backend
+          for i in {1..30}; do
+            if curl --fail http://localhost:3001 > /dev/null 2>&1; then
+              echo "Backend is up!"
+              break
+            fi
+            echo "Waiting for backend..."
+            sleep 1
+          done
           npx playwright test
