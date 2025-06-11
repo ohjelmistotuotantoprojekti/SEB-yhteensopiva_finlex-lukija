@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: finlex-lukija-config
 data:
-  PG_URI: SECRET_PG_URI
+  PG_URI: postgres://finlex_lukija_db:Es2K25pw4fLdB@possu.it.helsinki.fi:5432/finlex_lukija_db?targetServerType=primary&ssl=true
 
