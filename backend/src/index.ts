@@ -44,7 +44,6 @@ async function initDatabase() {
 
   } catch (error) {
     console.error('Error initializing database:', error)
-    exit(1)
   }
 }
 
