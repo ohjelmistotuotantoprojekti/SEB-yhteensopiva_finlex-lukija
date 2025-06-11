@@ -31,6 +31,7 @@
     "test2": "NODE_ENV=production node dist/index.js &",
     "start:test": "NODE_ENV=test node index.js",
     "e2e": "playwright test"
+    "start:test": "NODE_ENV=test node index.js",
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
