@@ -5,23 +5,24 @@ import type {Headings } from "../types"
 const TableOfContent = ({headings}: {headings: Headings[]}) => {
     
     const data = headings 
-   
-    console.log("headinngs", data)
 
     const tocStyle: React.CSSProperties = {
         display: 'flow',
         width: '100%',
         border: '0px solid blue',
+        backgroundColor: '#F3F8FC',
+        padding: '0px',
+        paddingLeft: '4px'
        
     }
 
     const autoscrollStyle: React.CSSProperties = {
         overflow: 'auto',
         maxHeight: '600px',
-         position: 'fixed',
+        position: 'fixed',
         top: '0pn',
         left: '0pn',
-        width: '250px',
+        width: '300px',
         display: 'flex',
         flexDirection: 'column-reverse',
         border: '0px solid red',
@@ -41,26 +42,32 @@ const TableOfContent = ({headings}: {headings: Headings[]}) => {
     }
 
      if (data.length < 1 ) {
-        console.log("headings empty")
         return <></>
     }
     else { 
-        return (
-            <div style={autoscrollStyle} id="autoscolldiv">
-            <div key="tocdiv" style={tocStyle}>
-
-                {data.map((section) => {
-                        return (<><div id={section.name} style={h1Style}><a href={`#${section.id.replace("__heading", "")}`}>{section.name}</a></div>
-
-                        {section.content.map((item) => {
-                        return (<div id={item.name} style={h2Style}><a href={`#${item.id.replace("__heading", "")}`}>{item.name}</a></div>)
-                        })} 
-                    </>
-                    )
-                })} 
-            </div>
+        const out = (
+            <div style={autoscrollStyle} id="autoscrolldiv">
+                
+                <div key="tocdiv" style={tocStyle}>
+                    {data.map((section) => {
+                        return (
+                            <div key={section.name}>
+                                <div id={section.name} style={h1Style}>
+                                    <a href={`#${section.id}`}>{section.name}</a>
+                                </div>
+                                {section.content.map((item) => {
+                                    return (<div id={item.name} key={item.name} style={h2Style}>
+                                        <a href={`#${item.id}`}>{item.name}</a>
+                                        </div>
+                                    )
+                                })} 
+                            </div>
+                        )
+                    })} 
+                </div>
             </div>
         )
+        return out
     }
 }
 
