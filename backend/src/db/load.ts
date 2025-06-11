@@ -1,7 +1,7 @@
 import { parseStringPromise } from 'xml2js';
-import axios from 'axios';
-import { Akoma } from '../types/akoma.js';
-import { Judgment } from '../types/judgment.js';
+import axios, { AxiosResponse } from 'axios'
+import { Akoma, LawKey } from '../types/akoma.js';
+import { Judgment, JudgmentKey } from '../types/judgment.js';
 import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
 import { setJudgment, setLaw } from './akoma.js';
@@ -41,8 +41,55 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
   }
 }
 
+function buildFinlexUrl(law: LawKey): string {
+  const baseUrl = 'https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated';
+  return `${baseUrl}/${law.year}/${law.number}/${law.language}@`;
+}
 
-async function parseTitlefromXML(result: Axios.AxiosXHR<unknown>): Promise<string> {
+function parseJudgmentUrl(url: string): JudgmentKey {
+  const u = new URL(url)
+  const parts = u.pathname.split("/").filter(p => p !== "")
+
+  let language = parts[0]
+  language = language === 'fi' ? 'fin' : 'swe'
+  if (language !== 'fin' && language !== 'swe') {
+    throw new Error(`Unknown language segment: ${language}`);
+  }
+  const courtSegment = parts[2]
+  const year = parseInt(parts[4])
+  const number = parts[5]
+
+  let level: "kho" | "kko";
+  if (courtSegment === "korkein-hallinto-oikeus" || courtSegment === "hogsta-forvaltningsdomstolen") {
+    level = "kho";
+  } else if (courtSegment === "korkein-oikeus" || courtSegment === "hogsta-domstolen") {
+    level = "kko";
+  } else {
+    throw new Error(`Unknown court segment: ${courtSegment}`);
+  }
+
+  return { level, year, number, language }
+}
+
+function buildJudgmentUrl(judgment: JudgmentKey): string {
+  const caselaw = judgment.language === 'fin' ? 'fi/oikeuskaytanto' : 'sv/rattspraxis';
+  const baseUrl = 'https://finlex.fi';
+  const path = `${judgment.year}/${judgment.number}`;
+  let prefix
+  if (judgment.level === 'kho') {
+    prefix = judgment.language === 'fin' ? 'korkein-hallinto-oikeus/ennakkopaatokset' : 'hogsta-forvaltningsdomstolen/prejudikat';
+  } else if (judgment.level === 'kko') {
+    prefix = judgment.language === 'fin' ? 'korkein-oikeus/ennakkopaatokset' : 'hogsta-domstolen/prejudikat';
+  } else {
+    throw new Error(`Unknown court level: ${judgment.level}`);
+  }
+  return `${baseUrl}/${caselaw}/${prefix}/${path}`;
+}
+
+
+
+
+async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string> {
   // Parsi XML data JSON-muotoon
   const xmlData = result.data as Promise<string>;
   const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
@@ -62,7 +109,7 @@ async function parseTitlefromXML(result: Axios.AxiosXHR<unknown>): Promise<strin
   return docTitle
 }
 
-async function parseImagesfromXML(result: Axios.AxiosXHR<unknown>): Promise<string[]> {
+async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<string[]> {
   // Parsi XML data
   const xmlData = await result.data as string;
   const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
@@ -189,6 +236,7 @@ async function setImages(docYear: number, docNumber: string, language: string, u
 }
 
 async function setSingleStatute(uri: string) {
+  console.log(`Processing statute from URL: ${uri}`);
   const result = await axios.get(`${uri}`, {
     headers: { 'Accept': 'application/xml', 'Accept-Encoding': 'gzip' }
   })
@@ -236,8 +284,8 @@ async function setSingleJudgment(uri: string) {
   let html: { content: string; is_empty: boolean }
   try {
     html = await parseAkomafromURL(uri)
-  } catch (error) {
-    console.error(`Failed to parse Akoma from URL ${uri}:`, error);
+  } catch {
+    console.error(`Failed to set judgment for URL: ${uri}`);
     return;
   }
 
@@ -250,7 +298,6 @@ async function setSingleJudgment(uri: string) {
     content: html.content,
     is_empty: html.is_empty,
   }
-
   await setJudgment(judgment)
 }
 
@@ -268,7 +315,7 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
 
   const uris: string[] = []
 
-  let result: Axios.AxiosXHR<Array<{ akn_uri: string }>>
+  let result: AxiosResponse<Array<{ akn_uri: string }>>
   do {
     result = await axios.get(`${baseURL}${path}`, {
       params: queryParams,
@@ -281,7 +328,6 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
     }
     queryParams.page += 1
   } while (result.data.length > 0)
-  console.log(`Found ${uris.length} statutes for year ${year} in language ${language}`)
   return uris
 }
 
@@ -306,39 +352,25 @@ async function listJudgmentNumbersByYear(year: number, language: string, level: 
     });
     const inputHTML = result.data as string;
     parsedList = parseJudgmentList(inputHTML, language, level);
-  } catch {
-    console.error(`Failed to fetch judgment numbers for year ${year}, language ${language}, level ${level}`);
-    return [];
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return [];
+    } else {
+      console.error(`Failed to fetch judgment numbers for year ${year}, language ${language}, level ${level}:`, error);
+      return [];
+    }
   }
   return parsedList
 }
 
 async function listJudgmentsByYear(year: number, language: string, level: string): Promise<string[]> {
   const judgmentNumbers = await listJudgmentNumbersByYear(year, language, level);
-  const judgmentURLs = [];
+  const judgmentURLsSet = new Set<string>();
   for (const judgmentID of judgmentNumbers) {
     const url = parseURLfromJudgmentID(judgmentID);
-    judgmentURLs.push(url);
+    judgmentURLsSet.add(url);
   }
-  return judgmentURLs;
+  return Array.from(judgmentURLsSet);
 }
 
-
-
-async function setStatutesByYear(year: number, language: string) {
-  const uris = await listStatutesByYear(year, language)
-  for (const uri of uris) {
-    await setSingleStatute(uri)
-  }
-  console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
-}
-
-async function setJudgmentsByYear(year: number, language: string, level: string) {
-  const uris = await listJudgmentsByYear(year, language, level)
-  for (const uri of uris) {
-    await setSingleJudgment(uri)
-  }
-  console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
-}
-
-export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL }
+export { listStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }

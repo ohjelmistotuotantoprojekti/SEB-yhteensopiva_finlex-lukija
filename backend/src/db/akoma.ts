@@ -59,22 +59,10 @@ async function getLawCountByYear(year: number): Promise<number> {
   return parseInt(result.rows[0].count, 10);
 }
 
-async function getLatestYearLaw() : Promise<number> {
-  const sql = 'SELECT MAX(year) AS latest_year FROM laws';
-  const result = await query(sql);
-  return parseInt(result.rows[0].latest_year, 10);
-}
-
 async function getJudgmentCountByYear(year: number): Promise<number> {
   const sql = 'SELECT COUNT(*) FROM judgments where year = $1';
   const result = await query(sql, [year]);
   return parseInt(result.rows[0].count, 10);
 }
 
-async function getLatestYearJudgment() : Promise<number> {
-  const sql = 'SELECT MAX(year) AS latest_year FROM judgments';
-  const result = await query(sql);
-  return parseInt(result.rows[0].latest_year, 10);
-}
-
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, getLatestYearJudgment };
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear };
