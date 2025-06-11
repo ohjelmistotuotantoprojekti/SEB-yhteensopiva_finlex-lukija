@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useState } from 'react'
 import SearchForm from './SearchForm'
-import CaseLawList from './DocumentList'
+import DocumentList from './DocumentList'
 import Notification  from './Notification'
 import type {Document, ListDocumentPageProps} from '../types'
 import TopMenu from './TopMenu'
@@ -131,7 +131,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
                     <Notification message={errorMessage} />
                 </div>
    
-                <CaseLawList laws={laws} frontsection={frontsection} />
+                <DocumentList laws={laws} frontsection={frontsection} language={language} />
             </div>
         </div>
     </div>
