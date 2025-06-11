@@ -1,32 +1,11 @@
 import playwright from '@playwright/test'
-import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { setPool, createTables, closePool } from '../src/db/db.js'
-import { setSingleJudgment, setSingleStatute } from '../src/db/load.js'
 
-import { afterEach } from 'node:test';
-
-let container;
-let databaseUrl;
 
 playwright.describe("Main page", () => {
   playwright.beforeEach(async ({ page }) => {
-    container = await new PostgreSqlContainer().start();
-    databaseUrl = container.getConnectionUri();
-    await setPool(databaseUrl);
-    await createTables();
-    await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
-    await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/4/fin@")
-    await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/5/fin@")
-    await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-hallinto-oikeus/ennakkopaatokset/2005/13")
-    await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1990/10")
-    await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
     await page.goto('http://localhost:3001')
   })
 
-  playwright.afterEach(async ({ page }) => {
-    await closePool();
-    await container.stop();
-  })
 
   playwright.test('front page can be opened', async ({ page }) => {
     const locator = await page.getByText("Lainsäädäntö:")

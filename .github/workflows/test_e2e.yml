@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-      PG_URI: "testii"
+      PG_URI: ${{ secrets.e2edburi }}
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -26,7 +26,7 @@ jobs:
         run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
-          npm --prefix ./backend run test2
+          npm --prefix ./backend start
 
 
       - name: playwright browser

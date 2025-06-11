@@ -28,7 +28,6 @@
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",
     "db:reset": "tsx db_tool.ts",
-    "test2": "NODE_ENV=test node dist/index.js &",
     "e2e": "playwright test"
   },
   "dependencies": {
