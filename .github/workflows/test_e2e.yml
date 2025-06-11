@@ -24,9 +24,9 @@ jobs:
         run: |
           cd backend
           npx playwright install --with-deps
-          npm --prefix ci
-          npm --prefix run build
-          npm --prefix start > backend_prod.log 2>&1 &
+          npm ci
+          npm run build
+          npm start > backend_prod.log 2>&1 &
           sleep 5
           for i in {1..30}; do
             if curl --fail http://localhost:3001 > /dev/null 2>&1; then
