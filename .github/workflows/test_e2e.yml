@@ -9,8 +9,6 @@ jobs:
   test_e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
@@ -26,7 +24,7 @@ jobs:
         run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
-          npm --prefix ./backend start
+          npm --prefix ./backend test2
 
 
       - name: playwright browser
