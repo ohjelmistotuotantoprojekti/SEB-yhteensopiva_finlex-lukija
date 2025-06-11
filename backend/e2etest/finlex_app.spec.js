@@ -8,7 +8,7 @@ playwright.describe("Main page", () => {
 
 
   playwright.test('front page can be opened', async ({ page }) => {
-    const locator = await page.getByText("Lainsäädäntö:")
+    const locator = await page.getByText("Lainsäädäntö")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai numero/vuosi")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
