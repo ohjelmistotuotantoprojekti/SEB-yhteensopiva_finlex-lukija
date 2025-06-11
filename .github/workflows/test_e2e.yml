@@ -20,13 +20,11 @@ jobs:
         run: |
           npm --prefix ./frontend ci
           npm --prefix ./frontend run build
-      - name: Build backend and get browser
+      - name: Build backend
         run: |
-          cd backend
-          npx playwright install --with-deps
-          npm ci
-          npm run build
-          npm start > backend_prod.log 2>&1 &
+          npm --prefix ./backend ci
+          npm --prefix ./backend run build
+          npm --prefix ./backend start > backend_prod.log 2>&1 &
           sleep 5
           for i in {1..30}; do
             if curl --fail http://localhost:3001 > /dev/null 2>&1; then
@@ -36,4 +34,13 @@ jobs:
             echo "Waiting for backend..."
             sleep 1
           done
+
+      - name: playwright browser
+        run: |
+          cd backend
+          npx playwright install --with-deps
+
+      - name: Run tests
+        run: |
+          cd backend
           npx playwright test
