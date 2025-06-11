@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: finlex-lukija-config
-data:
-  PG_URI: SECRET_PG_URI
-
