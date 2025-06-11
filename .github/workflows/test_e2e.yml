@@ -24,16 +24,8 @@ jobs:
         run: |
           npm --prefix ./backend ci
           npm --prefix ./backend run build
-          npm --prefix ./backend start > backend_prod.log 2>&1 &
-          sleep 5
-          for i in {1..30}; do
-            if curl --fail http://localhost:3001 > /dev/null 2>&1; then
-              echo "Backend is up!"
-              break
-            fi
-            echo "Waiting for backend..."
-            sleep 1
-          done
+          npm --prefix ./backend start
+
 
       - name: playwright browser
         run: |
