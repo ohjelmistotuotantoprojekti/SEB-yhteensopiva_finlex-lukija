@@ -9,6 +9,8 @@ jobs:
   test_e2e:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      PG_URI: "testii"
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js
