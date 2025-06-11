@@ -1,5 +1,4 @@
 *.log
-configmap.yaml
 .env
 
 # Playwright
