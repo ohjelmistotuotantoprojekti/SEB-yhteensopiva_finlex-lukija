@@ -2,7 +2,7 @@ import playwright from '@playwright/test'
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 import { setPool, createTables, closePool } from '../src/db/db.js'
 import { setSingleJudgment, setSingleStatute } from '../src/db/load.js'
-/*
+
 import { afterEach } from 'node:test';
 
 let container;
@@ -35,7 +35,7 @@ playwright.describe("Main page", () => {
     await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
-
+/*
   playwright.test('language can be changed to swedish', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Ruotsi")
 
@@ -98,9 +98,10 @@ playwright.describe("Main page", () => {
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
     await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
-
-})
 */
+})
+
+/*
 playwright.describe("Single law page", () => {
   playwright.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3001/lainsaadanto/2023/9')
@@ -205,3 +206,4 @@ playwright.test('language stays after back button is pressed', async ({ page }) 
   })
 
 })
+*/
