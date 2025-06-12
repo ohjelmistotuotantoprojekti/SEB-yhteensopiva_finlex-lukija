@@ -45,7 +45,7 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
 
 function buildFinlexUrl(law: LawKey): string {
   const baseUrl = 'https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated';
-  return `${baseUrl}/${law.year}/${law.number}/${law.language}@`;
+  return `${baseUrl}/${law.year}/${law.number}/${law.language}@${law.version ? law.version : ''}`;
 }
 
 function parseJudgmentUrl(url: string): JudgmentKey {
