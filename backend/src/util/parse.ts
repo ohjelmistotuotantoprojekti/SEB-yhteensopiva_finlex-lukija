@@ -120,9 +120,9 @@ function parseStatuteVersion(uri: string): StatuteVersion {
     };
   }
 
-  const [_, baseUri, language, version = ''] = match;
+  const [, baseUri, language, version = ''] = match;
   const versionMatch = version.match(/^(\d+)?(\d+)?$/);
-  
+
   return {
     baseUri,
     language,
@@ -135,7 +135,7 @@ function parseStatuteVersion(uri: string): StatuteVersion {
 export function getLatestStatuteVersions(uris: string[]): string[] {
   // Group URIs by their base (without version) and language
   const groups = new Map<string, StatuteVersion[]>();
-  
+
   uris.forEach(uri => {
     const version = parseStatuteVersion(uri);
     const key = version.baseUri;

@@ -19,7 +19,7 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
 
     // Split URL into parts before and after @
     const [basePath, version] = urlObj.pathname.split('@');
-    
+
     // Split base path and filter empty segments
     const segments = basePath.split('/').filter(Boolean);
 
@@ -32,7 +32,7 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
     const docYear = parseInt(segments[7]);
     const docNumber = segments[8];
     const docLanguage = segments[9];
-    
+
     // Handle version - null if no version specified
     const docVersion = version ? version : null;
 
@@ -319,10 +319,10 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
   const uris: string[] = [];
 
   try {
-    do {
+    while (true) {
       const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
         params: queryParams,
-        headers: { 
+        headers: {
           Accept: 'application/json',
           'Accept-Encoding': 'gzip'
         }
@@ -340,14 +340,14 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
       }
 
       queryParams.page += 1;
-    } while (true);
-    
+    };
+
     // Get latest versions and filter by language
     const latestVersions = getLatestStatuteVersions(uris)
       .filter(uri => uri.includes(`/${language}@`));
-    
+
     console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
-    
+
     return latestVersions;
 
   } catch (error) {
@@ -406,21 +406,6 @@ async function listJudgmentsByYear(year: number, language: string, level: string
   return Array.from(judgmentURLsSet);
 }
 
-async function setStatutesByYear(year: number, language: string) {
-  const uris = await listStatutesByYear(year, language)
-  for (const uri of uris) {
-    await setSingleStatute(uri)
-  }
-  console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
-}
-
-async function setJudgmentsByYear(year: number, language: string, level: string) {
-  const uris = await listJudgmentsByYear(year, language, level)
-  for (const uri of uris) {
-    await setSingleJudgment(uri)
-  }
-  console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
-}
 
 export async function getCommonNames(language: string): Promise<LawKey[]> {
   console.log(`Fetching common names for language: ${language}`);
