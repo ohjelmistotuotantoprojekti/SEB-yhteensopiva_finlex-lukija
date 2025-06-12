@@ -2,6 +2,7 @@ import express from 'express';
 import { parseStringPromise } from 'xml2js';
 import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
+app.use(express.json());
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
@@ -13,6 +14,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const VALID_LANGUAGES = ['fin', 'swe'];
 export const VALID_LEVELS = ['any', 'kho', 'kko'];
+
+let databaseStatus = 'notready';
+
+app.get('/api/check-db-status', (req: express.Request, res: express.Response): void => {
+  if (databaseStatus === 'ready') {
+    res.status(200).json({ status: 'ready' });
+  } else {
+    res.status(503).json({
+      error: 'Service Unavailable: Database is not ready',
+      status: databaseStatus
+    });
+  }
+});
+
+app.post('/api/update-db-status', (req: express.Request, res: express.Response): void => {
+  const password = req.body.password as string;
+  const status = req.body.status as string;
+
+  if (!password || password !== process.env.DATABASE_PASSWORD) {
+    res.status(403).json({ error: 'Forbidden: Invalid password' });
+    return;
+  }
+
+  const allowedStatuses = ['ready', 'notready'];
+  if (!status || !allowedStatuses.includes(status)) {
+    res.status(400).json({ error: 'Bad Request: Invalid status' });
+    return;
+  }
+
+  databaseStatus = status;
+  res.json({ message: `Database status updated to "${status}"` });
+});
 
 app.get('/favicon.ico', (request: express.Request, response: express.Response): void => {
   response.status(204).end();
