@@ -22,6 +22,8 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
+  let lan: string = language
+
 
    const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -75,7 +77,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     try {
       console.log("dosearch", language, "search:", search, "apisection:", apisection)
       const response = await axios.get(`/api/${apisection}/search`,
-        { params: { q: search, language: language } }
+        { params: { q: search, language: lan } }
       )
       if (response.data.type === "resultList") {
         localStorage.setItem(`results_${apisection}`, JSON.stringify(response.data.content))
@@ -120,6 +122,8 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
       const currentValue = (event.target as HTMLInputElement).value
       localStorage.setItem("language", currentValue)
       setLanguage(currentValue)
+      lan = currentValue
+      doSearch()
   }
 
   
