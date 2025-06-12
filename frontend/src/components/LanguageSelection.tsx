@@ -1,7 +1,7 @@
 //import { useEffect } from 'react'
 import type {Lang} from "../types"
 
-const LanguageSelection = ({language, setLanguage} : Lang) => {
+const LanguageSelection = ({language, handleSelect} : Lang) => {
 
     const menuStyle = {
         border: '0px solid red', 
@@ -9,13 +9,6 @@ const LanguageSelection = ({language, setLanguage} : Lang) => {
         marginTop: '14px',
     }
 
-
-    function handleSelect(event: React.SyntheticEvent) {
-        const currentValue = (event.target as HTMLInputElement).value
-        setLanguage(currentValue)
-        localStorage.setItem("language", currentValue)
-        console.log(currentValue)
-    }
 
   return (
        <div key="searchdiv" style={menuStyle}>
