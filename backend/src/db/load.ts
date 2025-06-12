@@ -303,7 +303,7 @@ async function setSingleJudgment(uri: string) {
 }
 
 
-async function listStatuteVersionsByYear(year: number, filter: boolean = true): Promise<string[]> {
+async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list';
   const queryParams = {
     format: 'json',
@@ -329,7 +329,10 @@ async function listStatuteVersionsByYear(year: number, filter: boolean = true): 
         throw new Error('Invalid response format: expected an array');
       }
 
-      const newUris = result.data.map(item => item.akn_uri);
+      const newUris = result.data
+        .map(item => item.akn_uri)
+        .filter(uri => uri.includes(`/${language}@`)); // Filter by language
+      
       uris.push(...newUris);
 
       if (result.data.length < queryParams.limit) {
@@ -339,13 +342,7 @@ async function listStatuteVersionsByYear(year: number, filter: boolean = true): 
       queryParams.page += 1;
     } while (true);
 
-    console.log(`Found ${uris.length} statute versions for year ${year}`);
-    
-    if (filter) {
-      const latestVersions = getLatestStatuteVersions(uris);
-      console.log(`Filtered to ${latestVersions.length} latest versions`);
-      return latestVersions;
-    }
+    console.log(`Found ${uris.length} statute versions for year ${year} in language ${language}`);
     
     return uris;
 
@@ -361,37 +358,6 @@ async function listStatuteVersionsByYear(year: number, filter: boolean = true): 
     }
     return [];
   }
-}
-
-
-async function listStatutesByYear(year: number, language: string): Promise<string[]> {
-  const path = '/akn/fi/act/statute-consolidated/list'
-  const queryParams = {
-    page: 1,
-    limit: 10,
-    sortBy: 'number',
-    langAndVersion: language + '@',
-    typeStatute: 'act',
-    startYear: year,
-    endYear: year,
-  }
-
-  const uris: string[] = []
-
-  let result: AxiosResponse<Array<{ akn_uri: string }>>
-  do {
-    result = await axios.get(`${baseURL}${path}`, {
-      params: queryParams,
-      headers: { Accept: 'application/json' , 'Accept-Encoding': 'gzip'}
-    })
-
-    for (const item of result.data) {
-      const uri = item.akn_uri
-      uris.push(uri)
-    }
-    queryParams.page += 1
-  } while (result.data.length > 0)
-  return uris
 }
 
 
@@ -452,4 +418,4 @@ async function setJudgmentsByYear(year: number, language: string, level: string)
   console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
 }
 
-export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, listStatuteVersionsByYear }
+export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }
