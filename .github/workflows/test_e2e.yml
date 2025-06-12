@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
-      PG_URI: postgres://postgres:postgres@localhost:5432/testdb
+      PG_URI: postgres://postgres:postgres@postgres:5432/testdb
     services:
       postgres:
         image: postgres:17
@@ -26,7 +26,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     container:
-      image: mcr.microsoft.com/playwright:v1.53.0-noble
+      image: mcr.microsoft.com/playwright:v1.52.0-noble
       options: --user 1001
     steps:
       - uses: actions/checkout@v4
