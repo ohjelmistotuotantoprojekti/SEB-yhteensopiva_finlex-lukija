@@ -37,15 +37,14 @@ playwright.describe("Main page", () => {
     await playwright.expect(page.getByText("Virheellinen haku")).toBeVisible()
   })
 
-   playwright.test('searchbar shows error message (not found, fin)', async ({ page }) => {
-    playwright.expect.configure({ timeout: 100000 })
+  playwright.test('searchbar shows error message (not found, fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("77777777777777777")
     await page.getByRole("button", {name: "Hae"}).click()
+    playwright.expect.configure({ timeout: 100000 })
     await playwright.expect(page.getByText("Haulla ei löytynyt hakutuloksia")).toBeVisible()
   })
 
   playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
-    playwright.expect.configure({ timeout: 100000 })
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("naturvårdslag")
     await page.getByRole("button", {name: "Sök"}).click()
@@ -60,8 +59,7 @@ playwright.describe("Main page", () => {
     await playwright.expect(page.getByText("Ogiltig sökning")).toBeVisible()
   })
 
-   playwright.test('searchbar shows error message (not found, swe)', async ({ page }) => {
-    playwright.test.setTimeout(200000)
+  playwright.test('searchbar shows error message (not found, swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("77777777777777777")
     await page.getByRole("button", {name: "Sök"}).click()
@@ -95,7 +93,7 @@ playwright.describe("Single law page", () => {
     await page.goto('http://localhost:3001/lainsaadanto/2023/9')
   })
 
-playwright.test('back button brings back to main page', async ({ page }) => {
+  playwright.test('back button brings back to main page', async ({ page }) => {
     const locator1 = await page.getByText("9/2023 – Luonnonsuojelulaki")
     await playwright.expect(locator1).toBeVisible()
     await page.getByRole('link', { name: 'Takaisin', exact: true}).click()
@@ -106,12 +104,12 @@ playwright.test('back button brings back to main page', async ({ page }) => {
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-playwright.test('language can be changed to swedish', async ({ page }) => {
+  playwright.test('language can be changed to swedish', async () => {
     ///await page.getByRole("combobox").selectOption("Svenska")
     ///Kielen vaihto ei vielä mahdollista
   })
 
-playwright.test('language stays after back button is pressed', async ({ page }) => {
+  playwright.test('language stays after back button is pressed', async () => {
     ///Kielen vaihto ei vielä mahdollista
   })
 
@@ -122,7 +120,7 @@ playwright.describe("Case law page", () => {
     await page.goto('http://localhost:3001/oikeuskaytanto')
   })
 
-playwright.test('page can be opened', async ({ page }) => {
+  playwright.test('page can be opened', async ({ page }) => {
     const locator = await page.getByText("Oikeuskäytäntö")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai oikeusaste:vuosi:numero")).toBeVisible()
@@ -130,7 +128,7 @@ playwright.test('page can be opened', async ({ page }) => {
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-playwright.test('language can be changed to swedish', async ({ page }) => {
+  playwright.test('language can be changed to swedish', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     const locator = await page.getByText("Rättspraxis")
     await playwright.expect(locator).toBeVisible()
@@ -139,28 +137,26 @@ playwright.test('language can be changed to swedish', async ({ page }) => {
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-playwright.test('searchbar gives error (empty, fin)', async ({ page }) => {
+  playwright.test('searchbar gives error (empty, fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("")
     await page.getByRole("button", {name: "Hae"}).click()
     await playwright.expect(page.getByText("Virheellinen haku")).toBeVisible()
   })
 
-playwright.test('searchbar gives error (not found, fin)', async ({ page }) => {
-    playwright.test.setTimeout(200000)
+  playwright.test('searchbar gives error (not found, fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("7777777777")
     await page.getByRole("button", {name: "Hae"}).click()
     await playwright.expect(page.getByText("Haulla ei löytynyt hakutuloksia")).toBeVisible()
   })
 
-playwright.test('searchbar gives error (empty, swe)', async ({ page }) => {
+  playwright.test('searchbar gives error (empty, swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("")
     await page.getByRole("button", {name: "Sök"}).click()
     await playwright.expect(page.getByText("Ogiltig sökning")).toBeVisible()
   })
 
-playwright.test('searchbar gives error (not found, swe)', async ({ page }) => {
-    playwright.test.setTimeout(200000)
+  playwright.test('searchbar gives error (not found, swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("7777777777777")
     await page.getByRole("button", {name: "Sök"}).click()
@@ -168,14 +164,14 @@ playwright.test('searchbar gives error (not found, swe)', async ({ page }) => {
   })
 
 
-playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
+  playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("päätös")
     await page.getByRole("button", {name: "Hae"}).click()
     await page.getByText(":").first().click()
     await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
-playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
+  playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("beslut")
     await page.getByRole("button", {name: "Sök"}).click()
@@ -183,7 +179,7 @@ playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
     await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
 
-playwright.test('single case can be searched (fin)', async ({ page }) => {
+  playwright.test('single case can be searched (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("kho:2022:3")
     await page.getByRole("button", {name: "Hae"}).click()
     const locator1 = await page.getByText("1.1 Kysymyksenasettelu")
@@ -191,7 +187,7 @@ playwright.test('single case can be searched (fin)', async ({ page }) => {
     await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
-playwright.test('single case can be searched (swe)', async ({ page }) => {
+  playwright.test('single case can be searched (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("kho:2022:3")
     await page.getByRole("button", {name: "Sök"}).click()
@@ -207,7 +203,7 @@ playwright.describe("Single case law page", () => {
     await page.goto('http://localhost:3001/oikeuskaytanto/2022/3/kho')
   })
 
-playwright.test('back button brings back to case law page', async ({ page }) => {
+  playwright.test('back button brings back to case law page', async ({ page }) => {
     const locator1 = await page.getByText("1.1 Kysymyksenasettelu")
     await playwright.expect(locator1).toBeVisible()
     await page.getByRole('link', { name: 'Takaisin', exact: true}).click()
@@ -216,12 +212,12 @@ playwright.test('back button brings back to case law page', async ({ page }) => 
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-playwright.test('language can be changed to swedish', async ({ page }) => {
+  playwright.test('language can be changed to swedish', async () => {
     ///await page.getByRole("combobox").selectOption("Svenska")
     ///Kielen vaihto ei vielä mahdollista
   })
 
-playwright.test('language stays after back button is pressed', async ({ page }) => {
+  playwright.test('language stays after back button is pressed', async () => {
     ///Kielen vaihto ei vielä mahdollista
   })
 
