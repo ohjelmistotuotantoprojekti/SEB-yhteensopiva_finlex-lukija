@@ -28,6 +28,11 @@ spec:
                 configMapKeyRef:
                   name: finlex-lukija-config
                   key: PG_URI
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  name: finlex-lukija-config
+                  key: DATABASE_PASSWORD
             - name: NODE_ENV
               value: "production"
           resources:
