@@ -10,8 +10,6 @@ if (!process.env.PG_URI) {
   exit(1);
 }
 
-//setPool(process.env.PG_URI);
-
 // Luo db clientti ympäristön mukaan
 if (process.env.NODE_ENV === 'production') {
   console.log('Running in production mode')
@@ -26,31 +24,6 @@ if (process.env.NODE_ENV === 'production') {
   console.log('Running in unknown mode')
   exit(1)
 }
-/*
-// Alusta tietokanta
-async function initDatabase() {
-  try {
-    if (!await dbIsReady()) {
-      console.log('Database is not ready, creating tables...')
-      await createTables()
-    }
-    console.log('Database is ready.')
-    const { upToDate, laws, judgments } = await dbIsUpToDate()
-    if (!upToDate) {
-      console.log('Database is not up to date, filling database...')
-      await fillDb(laws, judgments)
-      console.log('Database is now up to date.')
-    } else {
-      console.log('Database is up to date.')
-    }
-
-  } catch (error) {
-    console.error('Error initializing database:', error)
-    exit(1)
-  }
-}
-
-await initDatabase()*/
 
 const PORT = 3001
 app.listen(PORT, () => {
