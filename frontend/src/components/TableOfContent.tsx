@@ -24,6 +24,7 @@ const TableOfContent = ({headings}: {headings: Headings[]}) => {
         left: '0pn',
         width: '300px',
         display: 'flex',
+        flexDirection: 'column-reverse',
         border: '0px solid red',
        
     }
