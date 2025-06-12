@@ -10,6 +10,18 @@ import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
 
+interface StatuteVersion {
+  baseUri: string;      // URI without version
+  language: string;     // 'fin' or 'swe'
+  year: string;        // year after @, if any
+  number: string;      // number after year, if any
+  fullUri: string;     // complete original URI
+}
+
+interface StatuteVersionResponse {
+  akn_uri: string;
+  status: string;
+}
 
 
 function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string } {
@@ -301,6 +313,124 @@ async function setSingleJudgment(uri: string) {
   await setJudgment(judgment)
 }
 
+
+async function listStatuteVersionsByYear(year: number, filter: boolean = true): Promise<string[]> {
+  const path = '/akn/fi/act/statute-consolidated/list';
+  const queryParams = {
+    format: 'json',
+    page: 1,
+    limit: 10,
+    startYear: year,
+    endYear: year,
+  };
+
+  const uris: string[] = [];
+
+  try {
+    do {
+      const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
+        params: queryParams,
+        headers: { 
+          Accept: 'application/json',
+          'Accept-Encoding': 'gzip'
+        }
+      });
+
+      if (!Array.isArray(result.data)) {
+        throw new Error('Invalid response format: expected an array');
+      }
+
+      const newUris = result.data.map(item => item.akn_uri);
+      uris.push(...newUris);
+
+      if (result.data.length < queryParams.limit) {
+        break; // No more pages to fetch
+      }
+
+      queryParams.page += 1;
+    } while (true);
+
+    console.log(`Found ${uris.length} statute versions for year ${year}`);
+    
+    if (filter) {
+      const latestVersions = getLatestStatuteVersions(uris);
+      console.log(`Filtered to ${latestVersions.length} latest versions`);
+      return latestVersions;
+    }
+    
+    return uris;
+
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      console.error(`Failed to fetch statute versions for year ${year}: ${error.message}`);
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response data:', error.response.data);
+      }
+    } else {
+      console.error(`Unexpected error while fetching statute versions: ${error}`);
+    }
+    return [];
+  }
+}
+
+function parseStatuteVersion(uri: string): StatuteVersion {
+  // Match pattern: base/year/number/language@[year][number]
+  const match = uri.match(/^(.+\/\d+\/\d+\/(fin|swe))@(.+)?$/);
+  if (!match) {
+    return {
+      baseUri: uri.split('@')[0],
+      language: uri.includes('/fin@') ? 'fin' : 'swe',
+      year: '',
+      number: '',
+      fullUri: uri
+    };
+  }
+
+  const [_, baseUri, language, version = ''] = match;
+  const versionMatch = version.match(/^(\d+)?(\d+)?$/);
+  
+  return {
+    baseUri,
+    language,
+    year: versionMatch?.[1] || '',
+    number: versionMatch?.[2] || '',
+    fullUri: uri
+  };
+}
+
+function getLatestStatuteVersions(uris: string[]): string[] {
+  // Group URIs by their base (without version) and language
+  const groups = new Map<string, StatuteVersion[]>();
+  
+  uris.forEach(uri => {
+    const version = parseStatuteVersion(uri);
+    const key = version.baseUri;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(version);
+  });
+
+  // Process each group to find latest version
+  return Array.from(groups.values()).map(versions => {
+    // If only one version with no designator, use that
+    if (versions.length === 1 && !versions[0].year && !versions[0].number) {
+      return versions[0].fullUri;
+    }
+
+    // Sort versions by year and number (descending)
+    const sorted = versions.sort((a, b) => {
+      if (a.year !== b.year) {
+        return (b.year || '0').localeCompare(a.year || '0');
+      }
+      return (b.number || '0').localeCompare(a.number || '0');
+    });
+
+    return sorted[0].fullUri;
+  });
+}
+
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list'
   const queryParams = {
@@ -373,4 +503,20 @@ async function listJudgmentsByYear(year: number, language: string, level: string
   return Array.from(judgmentURLsSet);
 }
 
-export { listStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }
+async function setStatutesByYear(year: number, language: string) {
+  const uris = await listStatutesByYear(year, language)
+  for (const uri of uris) {
+    await setSingleStatute(uri)
+  }
+  console.log(`Set ${uris.length} statutes for year ${year} in language ${language}`)
+}
+
+async function setJudgmentsByYear(year: number, language: string, level: string) {
+  const uris = await listJudgmentsByYear(year, language, level)
+  for (const uri of uris) {
+    await setSingleJudgment(uri)
+  }
+  console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
+}
+
+export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, listStatuteVersionsByYear }
