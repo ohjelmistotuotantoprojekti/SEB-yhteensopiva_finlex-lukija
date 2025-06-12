@@ -20,7 +20,10 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   let path = `/api/${apipath}/id/${docyear}/${docnumber}/${lan}`
   let headerpath = `/api/${apipath}/structure/id/${docyear}/${docnumber}/${lan}/`
 
- 
+  if (apipath !== "statute") {
+      path = `/api/${apipath}/id/${docyear}/${docnumber}/${lan}/${doclevel}`
+  }
+
   const topStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
@@ -159,7 +162,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const getHeadings = async () => {
 
     try {
-      const response = await axios.get(`${headerpath}/${doclevel ? doclevel : ''}`)
+      const response = await axios.get(`${headerpath}${doclevel ? doclevel : ''}`)
       setHeadings(response.data)
     } catch(error) {
       console.error(error)
