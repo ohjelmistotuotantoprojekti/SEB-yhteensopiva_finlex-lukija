@@ -9,4 +9,4 @@ RUN npm --omit=dev --no-fund --no-audit --no-update-notifier ci
 
 EXPOSE 3001
 
-CMD ["node", "index.js"]
+CMD ["node", "start.js"]

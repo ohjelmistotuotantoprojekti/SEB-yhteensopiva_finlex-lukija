@@ -1,9 +1,10 @@
 
 import { Pool, QueryResult } from 'pg';
-import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment } from './load.js';
-import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsByYear } from './akoma.js';
-import { LawKey } from '../types/akoma.js';
+import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment, getCommonNames } from './load.js';
+import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsByYear, setCommonName } from './akoma.js';
+import { CommonName, LawKey } from '../types/akoma.js';
 import { JudgmentKey } from '../types/judgment.js';
+import { v4 as uuidv4 } from 'uuid';
 
 let pool: Pool;
 
@@ -16,12 +17,26 @@ async function setPool(uri: string) {
 async function fillDb(laws: LawKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
+    let commonNames = await getCommonNames('fin');
+    for (const commonName of commonNames) {
+      const uuid = uuidv4();
+      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
+      setCommonName(commonNameObj);
+    }
+    commonNames = await getCommonNames('swe');
+    for (const commonName of commonNames) {
+      const uuid = uuidv4();
+      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
+      setCommonName(commonNameObj);
+    }
+
     for (const key of laws) {
       await setSingleStatute(buildFinlexUrl(key));
     }
     for (const key of judgments) {
       await setSingleJudgment(buildJudgmentUrl(key));
     }
+
     console.log("Database is filled")
   } catch (error) {
     console.error('Error filling database:', error);
@@ -40,8 +55,12 @@ async function dbIsReady(): Promise<boolean> {
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'judgments');")
     const judgmentsExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'common_names');")
+    const commonNamesExists = result.rows[0].exists;
+
     client.release();
-    return imagesExists && lawsExists && judgmentsExists
+    return imagesExists && lawsExists && judgmentsExists && commonNamesExists;
 
 
   } catch (error) {
@@ -215,6 +234,14 @@ async function createTables(): Promise<void> {
       + "content XML NOT NULL,"
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_act UNIQUE (number, year, language)"
+      + ")");
+    await client.query("CREATE TABLE IF NOT EXISTS common_names ("
+      + "uuid UUID PRIMARY KEY,"
+      + "common_name TEXT NOT NULL,"
+      + "number TEXT NOT NULL,"
+      + "year INTEGER NOT NULL,"
+      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "CONSTRAINT unique_name UNIQUE (number, year, language, common_name)"
       + ")");
     await client.query("CREATE TABLE IF NOT EXISTS judgments ("
       + "uuid UUID PRIMARY KEY,"

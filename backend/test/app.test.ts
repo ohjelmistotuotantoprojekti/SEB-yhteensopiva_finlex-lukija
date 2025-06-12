@@ -137,6 +137,7 @@ test('list of judgments per keyword is returned as valid json', async () => {
 test('law headings, ids and subheadings are returned', async () => {
   await api
     .get('/api/statute/structure/id/2023/9/fin')
+    .expect(200)
     .expect((response) => {
       if (response.body[0].name !== "1 luku - Yleiset säännökset") {
         throw new Error("Heading name does not match")
@@ -171,3 +172,19 @@ test('judgment headings, ids and subheadings are returned', async () => {
       }
     })
 })
+
+/*
+test('invalid law returns error', async () => {
+  await api
+    .get('/api/statute/id/2100/15/fin')
+    .expect(404)
+    .expect('Content-Type', /application\/json/)
+})
+
+test('wrong path returns error', async () => {
+  await api
+    .get('/api/statutes/id/12/12/fin')
+    .expect(404)
+    .expect('Content-Type', /application\/json/)
+})
+*/

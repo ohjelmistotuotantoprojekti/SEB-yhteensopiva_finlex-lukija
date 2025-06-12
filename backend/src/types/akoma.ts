@@ -14,4 +14,13 @@ export interface LawKey {
     year: number;
     language: string;
     version: string | null;
+    commonName?: string;
+}
+
+export interface CommonName {
+    uuid: string;
+    commonName: string;
+    number: string;
+    year: number;
+    language: string;
 }

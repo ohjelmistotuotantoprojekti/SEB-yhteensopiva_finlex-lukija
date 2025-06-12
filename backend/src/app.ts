@@ -2,16 +2,50 @@ import express from 'express';
 import { parseStringPromise } from 'xml2js';
 import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
+app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
 
 import { fileURLToPath } from 'url';
+import _ from 'lodash';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 export const VALID_LANGUAGES = ['fin', 'swe'];
 export const VALID_LEVELS = ['any', 'kho', 'kko'];
+
+let databaseStatus = 'notready';
+
+app.get('/api/check-db-status', (req: express.Request, res: express.Response): void => {
+  if (databaseStatus === 'ready') {
+    res.status(200).json({ status: 'ready' });
+  } else {
+    res.status(503).json({
+      error: 'Service Unavailable: Database is not ready',
+      status: databaseStatus
+    });
+  }
+});
+
+app.post('/api/update-db-status', (req: express.Request, res: express.Response): void => {
+  const password = req.body.password as string;
+  const status = req.body.status as string;
+
+  if (!password || password !== process.env.DATABASE_PASSWORD) {
+    res.status(403).json({ error: 'Forbidden: Invalid password' });
+    return;
+  }
+
+  const allowedStatuses = ['ready', 'notready'];
+  if (!status || !allowedStatuses.includes(status)) {
+    res.status(400).json({ error: 'Bad Request: Invalid status' });
+    return;
+  }
+
+  databaseStatus = status;
+  res.json({ message: `Database status updated to "${status}"` });
+});
 
 app.get('/favicon.ico', (request: express.Request, response: express.Response): void => {
   response.status(204).end();
@@ -132,8 +166,8 @@ app.get('/api/statute/id/:year/:number/:language', async (request: express.Reque
 
 // Hae lakien sisällöstä
 async function searchLawsByKeywordAndLanguage(keyword: string, language: string) {
-  const results = await getLawsByContent(keyword, language);
-  const preparedResults = results.map((result) => {
+  let results = await getLawsByContent(keyword, language);
+  const contentResults = results.map((result) => {
     return {
       docYear: result.year,
       docNumber: result.number,
@@ -141,6 +175,17 @@ async function searchLawsByKeywordAndLanguage(keyword: string, language: string)
       isEmpty: result.is_empty
     };
   });
+  results = await getLawsByCommonName(keyword, language);
+  const commonNameResults = results.map((result) => {
+    return {
+      docYear: result.year,
+      docNumber: result.number,
+      docTitle: result.title,
+      isEmpty: result.is_empty
+    };
+  });
+
+  const preparedResults = _.uniqBy([...contentResults, ...commonNameResults], result => `${result.docYear}-${result.docNumber}`);
   return preparedResults;
 }
 

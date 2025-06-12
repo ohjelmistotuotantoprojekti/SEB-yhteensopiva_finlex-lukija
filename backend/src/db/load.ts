@@ -422,4 +422,52 @@ async function setJudgmentsByYear(year: number, language: string, level: string)
   console.log(`Set ${uris.length} judgment for year ${year} in language ${language} and level ${level}`)
 }
 
-export { listStatutesByYear, setJudgmentsByYear, setStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }
+export async function getCommonNames(language: string): Promise<LawKey[]> {
+  console.log(`Fetching common names for language: ${language}`);
+  let url: string;
+  if (language == 'fin') {
+    url = "https://finlex.fi/fi/lainsaadanto/arkinimet"
+  } else if (language == 'swe') {
+    url = "https://finlex.fi/sv/lagstiftning/vardagliga-namn"
+  } else {
+    throw new Error(`Unsupported language: ${language}`);
+  }
+
+  const response = await axios.get<string>(url, { responseType: 'text' });
+  const html     = response.data;
+
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+
+  const tables = doc.querySelectorAll('table');
+  if (tables.length === 0) {
+    throw new Error('No table found in the document');
+  }
+  const entries: LawKey[] = [];
+  for (const table of tables) {
+
+    const rows    = table.querySelectorAll('tbody tr');
+
+    rows.forEach(tr => {
+      const nameDiv = tr.querySelector('th > div');
+      const link    = tr.querySelector<HTMLAnchorElement>('td a');
+
+      if (!nameDiv || !link) return;
+
+      const name = nameDiv.textContent?.trim() ?? '';
+      const href = link.getAttribute('href')     ?? '';
+      const parts = href.split('/').filter(p => p);
+
+      if (parts.length >= 4) {
+        const [ , , yearPart, numberPart ] = parts;
+        const yearNum = parseInt(yearPart, 10);
+        if (!isNaN(yearNum)) {
+          entries.push({ commonName: name, language: language, year: yearNum, number: numberPart });
+        }
+      }
+    });
+  }
+  return entries;
+}
+
+export { listStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }

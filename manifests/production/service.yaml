@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: finlex-lukija-svc
+spec:
+  selector:
+    app: finlex-lukija
+  ports:
+    - protocol: TCP
+      port: 8080         
+      targetPort: 3001
+  type: ClusterIP
