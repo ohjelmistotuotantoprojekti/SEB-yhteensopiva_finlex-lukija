@@ -62,8 +62,18 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
 
     // lisää haku localStorageen
     localStorage.setItem(`query_${apisection}`, search)
+    doSearch()
+  }
+
+  // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
+  const handleSearchInputChange = (event: React.SyntheticEvent) => {
+    setSearch((event.target as HTMLInputElement).value)
+  }
+
+  const doSearch = async () => {
 
     try {
+      console.log("dosearch", language, "search:", search, "apisection:", apisection)
       const response = await axios.get(`/api/${apisection}/search`,
         { params: { q: search, language: language } }
       )
@@ -95,11 +105,6 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     }
   }
 
-  // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
-  const handleSearchInputChange = (event: React.SyntheticEvent) => {
-    setSearch((event.target as HTMLInputElement).value)
-  }
-
   function showError(errorMessage: string) {
     setErrorMessage(
           errorMessage
@@ -109,11 +114,19 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
           setErrorMessage("")
         }, 2500)
   }
+
+
+  const handleSelect = (event: React.SyntheticEvent) => {
+      const currentValue = (event.target as HTMLInputElement).value
+      localStorage.setItem("language", currentValue)
+      setLanguage(currentValue)
+  }
+
   
   return (
     <div id="lawpagediv">
         <div style={topStyle} id="topdiv">
-            <TopMenu language={language} setLanguage={setLanguage} />
+            <TopMenu language={language} handleSelect={handleSelect} />
            
         </div>
         <div style={contentStyle} id="contentdiv">
