@@ -13,29 +13,30 @@ import { XMLParser } from 'fast-xml-parser';
 import { getLatestStatuteVersions } from '../util/parse.js';
 
 
-function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string } {
+function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string; docVersion: string | null } {
   try {
     const urlObj = new URL(url);
 
-    // Esim:
-    // /finlex/avoindata/v1/akn/fi/act/statute/2003/1081/fin@
-    // Splitataan '/' and poistetaan tyhjät segmentit:
-    // ["finlex", "avoindata", "v1", "akn", "fi", "act", "statute", "2003", "1081", "fin@"]
-    const segments = urlObj.pathname.split('/').filter(Boolean);
+    // Split URL into parts before and after @
+    const [basePath, version] = urlObj.pathname.split('@');
+    
+    // Split base path and filter empty segments
+    const segments = basePath.split('/').filter(Boolean);
 
-    // Tarkista, että kaikki löytyy
-    if (segments.length < 10) {
-      throw new Error("Invalid URL format: Not enough segments.");
+    // Check for valid URL format
+    if (segments.length < 9) {
+      throw new Error("Invalid URL format: Not enough segments");
     }
 
-    // Poimi vuosi ja numero
+    // Extract year, number and language
     const docYear = parseInt(segments[7]);
     const docNumber = segments[8];
+    const docLanguage = segments[9];
+    
+    // Handle version - null if no version specified
+    const docVersion = version ? version : null;
 
-    // Poimi kieli
-    const docLanguage = segments[9].replace('@', '');
-
-    return { docYear, docNumber, docLanguage };
+    return { docYear, docNumber, docLanguage, docVersion };
   } catch (error) {
     console.error("Failed to parse URL:", error);
     throw error;
@@ -251,7 +252,8 @@ async function setSingleStatute(uri: string) {
   const xmlContent = result.data as string;
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
-  const { docYear, docNumber, docLanguage } = parseFinlexUrl(uri)
+  const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
+  console.log(`Parsed document: Year=${docYear}, Number=${docNumber}, Language=${docLanguage}, Version=${docVersion}`);
   const lawUuid = uuidv4()
   const law: Akoma = {
     uuid: lawUuid,
@@ -259,6 +261,7 @@ async function setSingleStatute(uri: string) {
     number: docNumber,
     year: docYear,
     language: docLanguage,
+    version: docVersion,
     content: result.data as string,
     is_empty: is_empty
   }
@@ -329,10 +332,7 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
         throw new Error('Invalid response format: expected an array');
       }
 
-      const newUris = result.data
-        .map(item => item.akn_uri)
-        .filter(uri => uri.includes(`/${language}@`)); // Filter by language
-      
+      const newUris = result.data.map(item => item.akn_uri);
       uris.push(...newUris);
 
       if (result.data.length < queryParams.limit) {
@@ -342,9 +342,15 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
       queryParams.page += 1;
     } while (true);
 
-    console.log(`Found ${uris.length} statute versions for year ${year} in language ${language}`);
+    console.log(`Found ${uris.length} total statute versions for year ${year}`);
     
-    return uris;
+    // Get latest versions and filter by language
+    const latestVersions = getLatestStatuteVersions(uris)
+      .filter(uri => uri.includes(`/${language}@`));
+    
+    console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+    
+    return latestVersions;
 
   } catch (error) {
     if (axios.isAxiosError(error)) {

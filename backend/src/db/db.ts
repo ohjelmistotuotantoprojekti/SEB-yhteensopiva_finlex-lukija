@@ -210,6 +210,7 @@ async function createTables(): Promise<void> {
       + "number TEXT NOT NULL,"
       + "year INTEGER NOT NULL,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "version TEXT,"
       + "content XML NOT NULL,"
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_act UNIQUE (number, year, language)"
@@ -238,6 +239,7 @@ async function dropTables(): Promise<void> {
     await client.query("DROP TABLE IF EXISTS images");
     await client.query("DROP TABLE IF EXISTS laws");
     await client.query("DROP TABLE IF EXISTS judgments");
+    await client.query("DROP TABLE IF EXISTS common_names");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);

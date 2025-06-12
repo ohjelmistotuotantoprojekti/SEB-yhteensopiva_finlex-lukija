@@ -44,8 +44,8 @@ async function getJudgmentsByContent(keyword: string, language: string, level: s
 }
 
 async function setLaw(law: Akoma) {
-  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (number, year, language) DO NOTHING';
-  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content, law.is_empty]);
+  const sql = 'INSERT INTO laws (uuid, title, number, year, language, version, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (number, year, language) DO NOTHING';
+  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
 }
 
 async function setJudgment(judgment: Judgment) {
