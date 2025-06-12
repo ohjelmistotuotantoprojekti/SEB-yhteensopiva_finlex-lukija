@@ -2,6 +2,7 @@ import express from 'express';
 import { parseStringPromise } from 'xml2js';
 import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
+app.use(express.json());
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
@@ -27,9 +28,9 @@ app.get('/api/check-db-status', (req: express.Request, res: express.Response): v
   }
 });
 
-app.get('/api/update-db-status', (req: express.Request, res: express.Response): void => {
-  const password = req.query.password as string;
-  const status = req.query.status as string;
+app.post('/api/update-db-status', (req: express.Request, res: express.Response): void => {
+  const password = req.body.password as string;
+  const status = req.body.status as string;
 
   if (!password || password !== process.env.DATABASE_PASSWORD) {
     res.status(403).json({ error: 'Forbidden: Invalid password' });
