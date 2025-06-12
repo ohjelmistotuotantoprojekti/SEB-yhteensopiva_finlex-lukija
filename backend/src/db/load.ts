@@ -2,6 +2,7 @@ import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
 import { Akoma, LawKey } from '../types/akoma.js';
 import { Judgment, JudgmentKey } from '../types/judgment.js';
+import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
 import { setJudgment, setLaw } from './akoma.js';
@@ -9,19 +10,7 @@ import { setImage } from './image.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
-
-interface StatuteVersion {
-  baseUri: string;      // URI without version
-  language: string;     // 'fin' or 'swe'
-  year: string;        // year after @, if any
-  number: string;      // number after year, if any
-  fullUri: string;     // complete original URI
-}
-
-interface StatuteVersionResponse {
-  akn_uri: string;
-  status: string;
-}
+import { getLatestStatuteVersions } from '../util/parse.js';
 
 
 function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string } {
@@ -374,62 +363,6 @@ async function listStatuteVersionsByYear(year: number, filter: boolean = true): 
   }
 }
 
-function parseStatuteVersion(uri: string): StatuteVersion {
-  // Match pattern: base/year/number/language@[year][number]
-  const match = uri.match(/^(.+\/\d+\/\d+\/(fin|swe))@(.+)?$/);
-  if (!match) {
-    return {
-      baseUri: uri.split('@')[0],
-      language: uri.includes('/fin@') ? 'fin' : 'swe',
-      year: '',
-      number: '',
-      fullUri: uri
-    };
-  }
-
-  const [_, baseUri, language, version = ''] = match;
-  const versionMatch = version.match(/^(\d+)?(\d+)?$/);
-  
-  return {
-    baseUri,
-    language,
-    year: versionMatch?.[1] || '',
-    number: versionMatch?.[2] || '',
-    fullUri: uri
-  };
-}
-
-function getLatestStatuteVersions(uris: string[]): string[] {
-  // Group URIs by their base (without version) and language
-  const groups = new Map<string, StatuteVersion[]>();
-  
-  uris.forEach(uri => {
-    const version = parseStatuteVersion(uri);
-    const key = version.baseUri;
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
-    groups.get(key)!.push(version);
-  });
-
-  // Process each group to find latest version
-  return Array.from(groups.values()).map(versions => {
-    // If only one version with no designator, use that
-    if (versions.length === 1 && !versions[0].year && !versions[0].number) {
-      return versions[0].fullUri;
-    }
-
-    // Sort versions by year and number (descending)
-    const sorted = versions.sort((a, b) => {
-      if (a.year !== b.year) {
-        return (b.year || '0').localeCompare(a.year || '0');
-      }
-      return (b.number || '0').localeCompare(a.number || '0');
-    });
-
-    return sorted[0].fullUri;
-  });
-}
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list'
