@@ -341,8 +341,6 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
 
       queryParams.page += 1;
     } while (true);
-
-    console.log(`Found ${uris.length} total statute versions for year ${year}`);
     
     // Get latest versions and filter by language
     const latestVersions = getLatestStatuteVersions(uris)

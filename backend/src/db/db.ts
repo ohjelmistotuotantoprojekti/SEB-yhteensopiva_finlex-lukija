@@ -97,17 +97,17 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const expectedLaws = []
     for (const lawUrl of [...expectedFin, ...expectedSwe]) {
       const law = parseFinlexUrl(lawUrl);
-      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage });
+      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage, version: law.docVersion });
     }
     const existingLawsFin = await getLawsByYear(year, 'fin');
     const existingLawsSwe = await getLawsByYear(year, 'swe');
     const existingLaws: LawKey[] = [];
 
     for (const law of existingLawsFin) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'fin' });
+      existingLaws.push({ number: law.number, year: law.year, language: 'fin', version: law.version });
     }
     for (const law of existingLawsSwe) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'swe' });
+      existingLaws.push({ number: law.number, year: law.year, language: 'swe', version: law.version });
     }
 
     const missingLaws: LawKey[] = [];
@@ -115,7 +115,8 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
       if (!existingLaws.some(existing =>
         existing.number === law.number &&
         existing.year === law.year &&
-        existing.language === law.language
+        existing.language === law.language &&
+        existing.version === law.version
       )) {
         missingLaws.push(law);
       }

@@ -8,8 +8,8 @@ async function getLawByNumberYear(number: string, year: number, language: string
   return result.rows[0]?.content || null;
 }
 
-async function getLawsByYear(year: number, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
-  const sql = 'SELECT title, number, year, is_empty FROM laws WHERE year = $1 AND language = $2 ORDER BY is_empty ASC, number ASC';
+async function getLawsByYear(year: number, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean, version: string | null }[]> {
+  const sql = 'SELECT title, number, year, is_empty, version FROM laws WHERE year = $1 AND language = $2 ORDER BY is_empty ASC, number ASC';
   const result = await query(sql, [year, language]);
   return result.rows;
 }

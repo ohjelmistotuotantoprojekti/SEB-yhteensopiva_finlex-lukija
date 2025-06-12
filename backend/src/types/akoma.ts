@@ -13,5 +13,5 @@ export interface LawKey {
     number: string;
     year: number;
     language: string;
-    version?: string;
+    version: string | null;
 }
