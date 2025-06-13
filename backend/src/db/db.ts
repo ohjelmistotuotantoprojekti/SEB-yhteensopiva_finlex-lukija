@@ -116,17 +116,17 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const expectedLaws = []
     for (const lawUrl of [...expectedFin, ...expectedSwe]) {
       const law = parseFinlexUrl(lawUrl);
-      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage });
+      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage, version: law.docVersion });
     }
     const existingLawsFin = await getLawsByYear(year, 'fin');
     const existingLawsSwe = await getLawsByYear(year, 'swe');
     const existingLaws: LawKey[] = [];
 
     for (const law of existingLawsFin) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'fin' });
+      existingLaws.push({ number: law.number, year: law.year, language: 'fin', version: law.version });
     }
     for (const law of existingLawsSwe) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'swe' });
+      existingLaws.push({ number: law.number, year: law.year, language: 'swe', version: law.version });
     }
 
     const missingLaws: LawKey[] = [];
@@ -134,13 +134,12 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
       if (!existingLaws.some(existing =>
         existing.number === law.number &&
         existing.year === law.year &&
-        existing.language === law.language
+        existing.language === law.language &&
+        existing.version === law.version
       )) {
         missingLaws.push(law);
       }
     }
-    console.log(`Found ${missingLaws.length} missing laws for year ${year}`);
-    console.debug(`Missing laws for year ${year}:`, missingLaws);
     return missingLaws;
   }
 
@@ -179,8 +178,6 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
         missingJudgments.push(judgment);
       }
     }
-    console.log(`Found ${missingJudgments.length} missing judgments for year ${year}`);
-    console.debug(`Missing judgments for year ${year}:`, missingJudgments);
     return missingJudgments;
   }
 
@@ -191,7 +188,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700
+    const startYear = 1700;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
@@ -229,6 +226,7 @@ async function createTables(): Promise<void> {
       + "number TEXT NOT NULL,"
       + "year INTEGER NOT NULL,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "version TEXT,"
       + "content XML NOT NULL,"
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_act UNIQUE (number, year, language)"

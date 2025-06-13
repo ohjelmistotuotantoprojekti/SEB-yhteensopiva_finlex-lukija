@@ -4,6 +4,7 @@ export interface Akoma {
     number: string;
     year: number;
     language: string;
+    version: string | null;
     content: string;
     is_empty: boolean;
 }
@@ -12,6 +13,7 @@ export interface LawKey {
     number: string;
     year: number;
     language: string;
+    version: string | null;
     commonName?: string;
 }
 
