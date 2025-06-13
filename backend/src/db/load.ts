@@ -207,9 +207,9 @@ async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
-async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
+async function setImages(docYear: number, docNumber: string, language: string, version: string | null, uris: string[]) {
   for (const uri of uris) {
-    const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@/${uri}`
+    const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@${version ?? ''}/${uri}`
     const url = `${baseURL}${path}`
     try {
       const result = await axios.get(url, {
@@ -264,7 +264,7 @@ async function setSingleStatute(uri: string) {
     is_empty: is_empty
   }
 
-  setImages(docYear, docNumber, docLanguage, imageLinks)
+  setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
   await setLaw(law)
 }
 
