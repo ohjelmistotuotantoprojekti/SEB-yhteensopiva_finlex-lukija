@@ -34,7 +34,7 @@ const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChang
           value={search}
           style={inputStyle}
           placeholder={placeholdertext}
-          />
+          maxLength={60}/>
         &nbsp; <button style={buttonStyle} type="submit">{buttontext}</button>
         </form>
       </div>
