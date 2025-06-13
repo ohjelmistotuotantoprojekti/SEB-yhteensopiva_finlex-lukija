@@ -70,11 +70,6 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
 
     // lisää haku localStorageen
     localStorage.setItem(`query_${apisection}`, search)
-    setLaws([])
-    const loadingScreen = document.getElementById("loadingScreen")
-    if (loadingScreen) {
-        loadingScreen.style.display = "inline";
-      }
     doSearch()
   }
 
@@ -84,7 +79,11 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   }
 
   const doSearch = async () => {
-
+    setLaws([])
+    const loadingScreen = document.getElementById("loadingScreen")
+    if (loadingScreen) {
+        loadingScreen.style.display = "inline";
+      }
 
     try {
       console.log("dosearch", language, "search:", search, "apisection:", apisection)
