@@ -26,13 +26,16 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
+    position: 'fixed',
+    top: '0px',
+    left: '0px',
     justifyContent: 'center',
     alignContent: 'center',
     width: '100%',
     height: '50px',
     backgroundColor: '#0C6FC0',
     padding: '0px',
-    margin: '2px',
+    margin: '0px',
     border: '0px solid red'
   }
 
@@ -56,6 +59,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     width: '100%',
     padding: '0px',
     margin: '0px',
+    marginTop: '70px',
     border: '0px solid pink'
   }
    const tocStyle: React.CSSProperties = {
