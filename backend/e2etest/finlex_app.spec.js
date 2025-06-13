@@ -173,25 +173,25 @@ playwright.describe("Case law page", () => {
 
   playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("beslut")
+    await page.getByRole("textbox").fill("europeiska")
     await page.getByRole("button", {name: "Sök"}).click()
     await page.getByText(":").first().click()
     await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("kho:2022:3")
+    await page.getByRole("textbox").fill("kho:2005:13")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("1.1 Kysymyksenasettelu")
+    const locator1 = await page.getByText("Asian aikaisempi käsittely")
     await playwright.expect(locator1).toBeVisible()
     await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("kho:2022:3")
+    await page.getByRole("textbox").fill("kho:2005:13")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("fick uppföras (AT).")
+    const locator1 = await page.getByText("med stöd av 33")
     await playwright.expect(locator1).toBeVisible()
     await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
@@ -200,11 +200,11 @@ playwright.describe("Case law page", () => {
 
 playwright.describe("Single case law page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001/oikeuskaytanto/2022/3/kho')
+    await page.goto('http://localhost:3001/oikeuskaytanto/2005/13/kho')
   })
 
   playwright.test('back button brings back to case law page', async ({ page }) => {
-    const locator1 = await page.getByText("1.1 Kysymyksenasettelu")
+    const locator1 = await page.getByText("Asian aikaisempi käsittely")
     await playwright.expect(locator1).toBeVisible()
     await page.getByRole('link', { name: 'Takaisin', exact: true}).click()
     await playwright.expect(page.getByPlaceholder("Vuosi tai oikeusaste:vuosi:numero")).toBeVisible()
