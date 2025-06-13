@@ -1,5 +1,5 @@
 import app from './app.js'
-import { setPool } from './db/db.js'
+import { setPool, setupTestDatabase } from './db/db.js'
 import { exit } from 'process';
 import dotenv from 'dotenv'
 dotenv.config()
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'production') {
   setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'test') {
   console.log('Running in test mode')
-  // testit asettavat poolin osana testiajoa
+  setupTestDatabase(process.env.PG_URI)
 } else {
   console.log('Running in unknown mode')
   exit(1)

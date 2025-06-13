@@ -294,5 +294,25 @@ async function closePool() {
   }
 }
 
+async function setupTestDatabase(uri: string): Promise<void> {
+  await setPool(uri);
+  await createTables();
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/swe@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/4/fin@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/4/swe@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/5/fin@")
+  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/5/swe@")
+  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-hallinto-oikeus/ennakkopaatokset/2005/13")
+  await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-forvaltningsdomstolen/prejudikat/2005/13")
+  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/2023/5")
+  await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/2023/5")
+  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1990/10")
+  await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1990/10")
+  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
+  await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1975/II-16")
+  console.log('Test database setup complete');
+}
 
-export { query, setPool, closePool, createTables, dropTables, dbIsReady, fillDb, dbIsUpToDate };
+
+export { query, setPool, closePool, createTables, dropTables, dbIsReady, fillDb, dbIsUpToDate, setupTestDatabase };

@@ -2,14 +2,14 @@ import { test, before, after } from 'node:test'
 import supertest from 'supertest'
 import app, {VALID_LEVELS} from '../src/app.js'
 
+import dotenv from 'dotenv'
+dotenv.config()
+
 const api = supertest(app)
 
-import { PostgreSqlContainer } from '@testcontainers/postgresql';
-import { setPool, createTables, closePool } from '../src/db/db.js'
-import { setSingleJudgment, setSingleStatute } from '../src/db/load.js'
+import { closePool, setupTestDatabase } from '../src/db/db.js'
 
-let container;
-let databaseUrl: string;
+const databaseUrl = process.env.PG_URI as string;
 
 const validateSearchResponse = (response) => {
   if (response.body.length === 0) {
@@ -66,22 +66,11 @@ const validateJudgmentContent = (response) => {
 }
 
 before(async () => {
-  container = await new PostgreSqlContainer().start();
-  databaseUrl = container.getConnectionUri();
-  await setPool(databaseUrl);
-  await createTables();
-  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
-  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/4/fin@")
-  await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/5/fin@")
-  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-hallinto-oikeus/ennakkopaatokset/2005/13")
-  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/2023/5")
-  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1990/10")
-  await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
+  await setupTestDatabase(databaseUrl);
 });
 
 after(async () => {
   await closePool();
-  await container.stop();
 });
 
 test('list of laws per year is returned as valid json', async () => {
