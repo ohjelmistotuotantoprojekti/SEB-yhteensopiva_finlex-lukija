@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { useState } from 'react'
+import { ThreeDot } from 'react-loading-indicators'
 import SearchForm from './SearchForm'
 import DocumentList from './DocumentList'
 import Notification  from './Notification'
@@ -48,20 +49,30 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     border: '0px solid black',
   }
 
+  const loadingStyle = {
+    display: 'none',
+    width: '50px',
+    height: '50px',
+  }
+
   function logError(error: unknown, msg: string) {
     console.error("Error:", error);
     localStorage.removeItem(`results_${apisection}`)
-    setLaws([])
     setErrorMessage(msg)
     showError(msg)
   }
-  
+
   // Käsittelee SearchForm-komponentin submit-aktionia.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
     // lisää haku localStorageen
     localStorage.setItem(`query_${apisection}`, search)
+    setLaws([])
+    const loadingScreen = document.getElementById("loadingScreen")
+    if (loadingScreen) {
+        loadingScreen.style.display = "inline";
+      }
 
     try {
       const response = await axios.get(`/api/${apisection}/search`,
@@ -69,12 +80,21 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
       )
       if (response.data.type === "resultList") {
         localStorage.setItem(`results_${apisection}`, JSON.stringify(response.data.content))
+        if (loadingScreen) {
+          loadingScreen.style.display = "none";
+        }
         setLaws(response.data.content)
       } else if (response.data.type === "redirect") {
         const { number, year, level } = response.data.content
+        if (loadingScreen) {
+          loadingScreen.style.display = "none";
+        }
         window.location.href = `/${frontsection}/${year}/${number}${level ? '/'+level : ''}`
       }
     } catch (error) {
+      if (loadingScreen) {
+        loadingScreen.style.display = "none";
+      }
       if (axios.isAxiosError(error) && error.response) {
         // Axios virhe, joka sisältää vastauksen
         console.error("Axios error:", error.response.data);
@@ -89,6 +109,9 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
         }
       } else {
         // Muu virhe, esim verkko-ongelma
+        if (loadingScreen) {
+          loadingScreen.style.display = "none";
+        }
         logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
       }
       
@@ -129,6 +152,9 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
    
                 <div id="errorblock">
                     <Notification message={errorMessage} />
+                </div>
+                <div style={loadingStyle} id="loadingScreen">
+                  <ThreeDot color="#0c6fc0" size="medium" text="" textColor="" />
                 </div>
    
                 <DocumentList laws={laws} frontsection={frontsection} language={language} />
