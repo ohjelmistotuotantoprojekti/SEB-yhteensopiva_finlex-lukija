@@ -238,7 +238,6 @@ async function setImages(docYear: number, docNumber: string, language: string, u
 }
 
 async function setSingleStatute(uri: string) {
-  console.log(`Processing statute from URL: ${uri}`);
   const result = await axios.get(`${uri}`, {
     headers: { 'Accept': 'application/xml', 'Accept-Encoding': 'gzip' }
   })
@@ -253,7 +252,6 @@ async function setSingleStatute(uri: string) {
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
-  console.log(`Parsed document: Year=${docYear}, Number=${docNumber}, Language=${docLanguage}, Version=${docVersion}`);
   const lawUuid = uuidv4()
   const law: Akoma = {
     uuid: lawUuid,
@@ -447,7 +445,7 @@ export async function getCommonNames(language: string): Promise<LawKey[]> {
         const [ , , yearPart, numberPart ] = parts;
         const yearNum = parseInt(yearPart, 10);
         if (!isNaN(yearNum)) {
-          entries.push({ commonName: name, language: language, year: yearNum, number: numberPart });
+          entries.push({ commonName: name, language: language, year: yearNum, number: numberPart, version: null });
         }
       }
     });

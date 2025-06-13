@@ -140,8 +140,6 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
         missingLaws.push(law);
       }
     }
-    console.log(`Found ${missingLaws.length} missing laws for year ${year}`);
-    console.debug(`Missing laws for year ${year}:`, missingLaws);
     return missingLaws;
   }
 
@@ -180,8 +178,6 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
         missingJudgments.push(judgment);
       }
     }
-    console.log(`Found ${missingJudgments.length} missing judgments for year ${year}`);
-    console.debug(`Missing judgments for year ${year}:`, missingJudgments);
     return missingJudgments;
   }
 
@@ -192,7 +188,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
+    const startYear = 2020;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
