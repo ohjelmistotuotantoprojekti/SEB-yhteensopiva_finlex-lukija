@@ -7,3 +7,11 @@ export interface Judgment {
     content: string;
     is_empty: boolean;
   }
+
+
+export interface JudgmentKey {
+    level: string;
+    number: string;
+    year: number;
+    language: string;
+}

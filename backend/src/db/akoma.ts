@@ -1,49 +1,57 @@
 import { query } from './db.js';
-import { Akoma } from '../types/akoma.js';
+import { Akoma, CommonName } from '../types/akoma.js';
 import { Judgment } from '../types/judgment.js';
 
 async function getLawByNumberYear(number: string, year: number, language: string): Promise<string | null> {
   const sql = 'SELECT content FROM laws WHERE number = $1 AND year = $2 AND language = $3';
   const result = await query(sql, [number, year, language]);
-  return result.rows[0].content || null;
+  return result.rows[0]?.content || null;
 }
 
-async function getLawsByYear(year: number, language: string): Promise<{ title: string; number: string; year: number }[]> {
-  const sql = 'SELECT title, number, year FROM laws WHERE year = $1 AND language = $2';
+async function getLawsByYear(year: number, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean, version: string | null }[]> {
+  const sql = 'SELECT title, number, year, is_empty, version FROM laws WHERE year = $1 AND language = $2 ORDER BY is_empty ASC, number ASC';
   const result = await query(sql, [year, language]);
   return result.rows;
 }
 
-async function getLawsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number }[]> {
-  const escapedKeyword = keyword.replace(/'/g, "''");
-  const sql = "SELECT title, number, year FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0)";
-  const xpath_query = `//akn:p/text()[contains(., '${keyword}')]`;
+async function getLawsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
+  const escapedKeyword = keyword.replaceAll('\'', '');
+  const sql = "SELECT title, number, year, is_empty FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0) ORDER BY is_empty ASC, year ASC, number ASC";
+  const xpath_query = `//akn:p/text()[contains(., '${escapedKeyword}')]`;
   const result = await query(sql, [language, `%${escapedKeyword}%`, xpath_query]);
   return result.rows;
 }
 
-async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
-  const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level = $4';
-  const result = await query(sql, [number, year, language, level]);
-  return result.rows[0].content || null;
+async function getLawsByCommonName(commonName: string, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
+  const sql = 'SELECT l.title, l.number, l.year, l.is_empty FROM laws l JOIN common_names c ON l.number = c.number AND l.year = c.year AND l.language = c.language WHERE c.common_name ILIKE $1 AND l.language = $2 ORDER BY l.is_empty ASC, l.year ASC, l.number ASC';
+  const result = await query(sql, [`%${commonName}%`, language]);
+  return result.rows;
 }
 
-async function getJudgmentsByYear(year: number, language: string, level: string): Promise<{ title: string; number: string; year: number, level: string }[]> {
-  const sql = 'SELECT level, number, year FROM judgments WHERE year = $1 AND language = $2 AND level = $3';
+async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
+  if (level === 'any') level = '%';
+  const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level ILIKE $4';
+  const result = await query(sql, [number, year, language, level]);
+  return result.rows[0]?.content || null;
+}
+
+async function getJudgmentsByYear(year: number, language: string, level: string): Promise<{ title: string; number: string; year: number, level: string, is_empty: boolean }[]> {
+  if (level === 'any') level = '%';
+  const sql = 'SELECT level, number, year, is_empty FROM judgments WHERE year = $1 AND language = $2 AND level ILIKE $3 ORDER BY is_empty ASC, number ASC, level ASC';
   const result = await query(sql, [year, language, level]);
   return result.rows;
 }
 
-async function getJudgmentsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number, level: string }[]> {
-  const escapedKeyword = keyword.replace(/'/g, "''");
-  const sql = 'SELECT number, level, year FROM judgments WHERE language = $1 AND content ILIKE $2'
-  const result = await query(sql, [language, `%${escapedKeyword}%`]);
+async function getJudgmentsByContent(keyword: string, language: string, level: string): Promise<{ title: string; number: string; year: number, level: string, is_empty: boolean }[]> {
+  if (level === 'any') level = '%';
+  const sql = 'SELECT number, level, year, is_empty FROM judgments WHERE language = $1 AND level LIKE $2 AND content ILIKE $3 ORDER BY is_empty ASC, number ASC, level ASC';
+  const result = await query(sql, [language, level, `%${keyword}%`]);
   return result.rows;
 }
 
 async function setLaw(law: Akoma) {
-  const sql = 'INSERT INTO laws (uuid, title, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (number, year, language) DO NOTHING';
-  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.content, law.is_empty]);
+  const sql = 'INSERT INTO laws (uuid, title, number, year, language, version, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (number, year, language) DO NOTHING';
+  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
 }
 
 async function setJudgment(judgment: Judgment) {
@@ -57,22 +65,15 @@ async function getLawCountByYear(year: number): Promise<number> {
   return parseInt(result.rows[0].count, 10);
 }
 
-async function getLatestYearLaw() : Promise<number> {
-  const sql = 'SELECT MAX(year) AS latest_year FROM laws';
-  const result = await query(sql);
-  return parseInt(result.rows[0].latest_year, 10);
-}
-
 async function getJudgmentCountByYear(year: number): Promise<number> {
   const sql = 'SELECT COUNT(*) FROM judgments where year = $1';
   const result = await query(sql, [year]);
   return parseInt(result.rows[0].count, 10);
 }
 
-async function getLatestYearJudgment() : Promise<number> {
-  const sql = 'SELECT MAX(year) AS latest_year FROM judgments';
-  const result = await query(sql);
-  return parseInt(result.rows[0].latest_year, 10);
+async function setCommonName(commonName: CommonName) {
+  const sql = 'INSERT INTO common_names (uuid, common_name, number, year, language) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (common_name, number, year, language) DO NOTHING';
+  await query(sql, [commonName.uuid, commonName.commonName, commonName.number, commonName.year, commonName.language]);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getLatestYearLaw, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, getLatestYearJudgment };
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };

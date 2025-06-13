@@ -3,6 +3,8 @@ import { vi } from 'vitest'
 import SearchForm from './SearchForm'
 import userEvent from '@testing-library/user-event'
 
+const buttonetext = "Hae"
+const placeholdertext = "Vuosi tai numero/vuosi"
 
 test('renders content', () => {
 
@@ -13,11 +15,16 @@ test('renders content', () => {
     const handleSubmit = () => {
         return
     }
-    const language = "fin"
    
     // Testaa että hakukenttä renderöidään.
-    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
-    const element = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
+    render(<SearchForm 
+                search={search}
+                buttontext={buttonetext}  
+                placeholdertext={placeholdertext}
+                handleSearchInputChange={handleInput}
+                handleSearchEvent={handleSubmit} 
+            />)
+    const element = screen.getByPlaceholderText(placeholdertext)
     expect(element).toBeDefined()
     
 })
@@ -27,10 +34,16 @@ test('call handleInput', () => {
     const search: string =  '' 
     const handleInput = vi.fn()
     const handleSubmit = vi.fn()
-    const language = "fin"
+
     
-    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
-    const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
+    render(<SearchForm 
+                search={search}
+                buttontext={buttonetext}  
+                placeholdertext={placeholdertext}
+                handleSearchInputChange={handleInput}
+                handleSearchEvent={handleSubmit} 
+            />)
+    const searchInput = screen.getByPlaceholderText(placeholdertext)
    
     // Testaa hakukentän toimintaa.
     fireEvent.change(searchInput, { target: {value: "Test"}})
@@ -42,13 +55,18 @@ test('call handleInput', async () => {
     const user = userEvent.setup()
     const handleInput = vi.fn()
     const handleSubmit = vi.fn()
-    const language = "fin"
 
     const search: string = '' 
 
-    render(<SearchForm language={language} search={search} handleSearchInputChange={handleInput} handleSearchEvent={handleSubmit} />)
-    const searchInput = screen.getByPlaceholderText('Vuosi tai numero/vuosi')
-    const button = screen.getByText("Hae")
+    render(<SearchForm 
+                search={search}
+                buttontext={buttonetext}  
+                placeholdertext={placeholdertext}
+                handleSearchInputChange={handleInput}
+                handleSearchEvent={handleSubmit} 
+            />)
+    const searchInput = screen.getByPlaceholderText(placeholdertext)
+    const button = screen.getByText(buttonetext)
    
     // Testaa että hakukentän toimintaa.
     await user.type(searchInput, "Testi")
