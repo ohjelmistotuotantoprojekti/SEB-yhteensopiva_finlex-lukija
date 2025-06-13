@@ -13,7 +13,7 @@
 
  export interface TopMenuProps {
   language:  string,
-  setLanguage: (Status: string) => void
+  handleSelect: (event: React.SyntheticEvent) => void,
 }
 
  export interface Document {
@@ -60,7 +60,7 @@ export interface Server {
 
 export interface Lang {
   language: string,
-  setLanguage: (Status: string) => void
+  handleSelect: (event: React.SyntheticEvent) => void,
 }
 
 export interface Headings {

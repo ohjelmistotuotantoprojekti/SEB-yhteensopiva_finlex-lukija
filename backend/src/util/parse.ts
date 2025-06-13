@@ -1,5 +1,6 @@
 import { JSDOM } from 'jsdom';
 import { Heading, Chapter, hContainer } from '../types/structure.js';
+import { StatuteVersion } from '../types/versions.js';
 
 // Pakota input taulukkoon, jossei se jo ole
 export function toArray<T>(input: T | T[]): T[] {
@@ -104,4 +105,61 @@ function parseXmlSubSections(obj: Chapter) {
     sub_headings.push({name: sec_key, id: sec_id, content:[]})
   }
   return sub_headings
+}
+
+function parseStatuteVersion(uri: string): StatuteVersion {
+  // Match pattern: base/year/number/language@[year][number]
+  const match = uri.match(/^(.+\/\d+\/\d+\/(fin|swe))@(.+)?$/);
+  if (!match) {
+    return {
+      baseUri: uri.split('@')[0],
+      language: uri.includes('/fin@') ? 'fin' : 'swe',
+      year: '',
+      number: '',
+      fullUri: uri
+    };
+  }
+
+  const [, baseUri, language, version = ''] = match;
+  const versionMatch = version.match(/^(\d+)?(\d+)?$/);
+
+  return {
+    baseUri,
+    language,
+    year: versionMatch?.[1] || '',
+    number: versionMatch?.[2] || '',
+    fullUri: uri
+  };
+}
+
+export function getLatestStatuteVersions(uris: string[]): string[] {
+  // Group URIs by their base (without version) and language
+  const groups = new Map<string, StatuteVersion[]>();
+
+  uris.forEach(uri => {
+    const version = parseStatuteVersion(uri);
+    const key = version.baseUri;
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key)!.push(version);
+  });
+
+  // Process each group to find latest version
+  return Array.from(groups.values()).map(versions => {
+    // If only one version with no designator, use that
+    if (versions.length === 1 && !versions[0].year && !versions[0].number) {
+      return versions[0].fullUri;
+    }
+
+    // Sort versions by year and number (descending)
+    const sorted = versions.sort((a, b) => {
+      if (a.year !== b.year) {
+        return (b.year || '0').localeCompare(a.year || '0');
+      }
+      return (b.number || '0').localeCompare(a.number || '0');
+    });
+
+    return sorted[0].fullUri;
+  });
 }

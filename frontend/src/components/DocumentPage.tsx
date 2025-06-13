@@ -1,6 +1,6 @@
 import axios from 'axios'
 import type { Headings, DocumentPageProps } from "../types"
-import { useState } from 'react'
+import { useState} from 'react'
 import TableOfContent from './TableOfContent'
 import { useParams } from 'react-router-dom'
 import {Helmet} from "react-helmet";
@@ -17,6 +17,12 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
   const [law, setLaw] = useState<string>('')
   const [headings, setHeadings] = useState<Headings[]>([])
   const [lan, setLan] = useState<string>(language)
+  let path = `/api/${apipath}/id/${docyear}/${docnumber}/${lan}`
+  let headerpath = `/api/${apipath}/structure/id/${docyear}/${docnumber}/${lan}/`
+
+  if (apipath !== "statute") {
+      path = `/api/${apipath}/id/${docyear}/${docnumber}/${lan}/${doclevel}`
+  }
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -89,7 +95,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
 
    // Hakee backendiltä dataa
   const getLawHtml = async (path: string) => {
-
+   
     try {
       // Hae XML (APIsta)
       const xmlResp = await axios.get(path)
@@ -126,25 +132,46 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
       console.error(error)
     }
   }
-   
+
+  const handleSelect = (event: React.SyntheticEvent) => {
+      const currentValue = (event.target as HTMLInputElement).value
+      setLan(currentValue)
+      localStorage.setItem("language", currentValue)
+      
+      if(apipath === "statute") {
+        path = `/api/${apipath}/id/${docyear}/${docnumber}/${currentValue}`
+      } else {
+        path = `/api/${apipath}/id/${docyear}/${docnumber}/${currentValue}/${doclevel}`
+      }
+      
+      headerpath = `/api/${apipath}/structure/id/${docyear}/${docnumber}/${currentValue}/`
+      updateHTML()
+      
+  }
+
+  const updateHTML = () => {
+        if(apipath === "statute") {
+          getLawHtml(path) 
+        } else {
+          getHtml(path) 
+        }
+        getHeadings()
+  }
+
    // Hakee backendiltä sisällysluettelon
   const getHeadings = async () => {
 
     try {
-      const response = await axios.get(`/api/${apipath}/structure/id/${docyear}/${docnumber}/${language}/${doclevel ? doclevel : ''}`)
+      const response = await axios.get(`${headerpath}${doclevel ? doclevel : ''}`)
       setHeadings(response.data)
     } catch(error) {
       console.error(error)
     }
   }
-
+   
   // estää sivua lataamasta usemapaan kertaan.
   if (law === '') {
-    if(apipath === "statute") {
-      getLawHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}`) 
-    } else {
-      getHtml(`/api/${apipath}/id/${docyear}/${docnumber}/${language}/${doclevel}`) 
-    }
+    updateHTML()
   }
 
   // estää sisällysluetteloa lataamasta moneen kertaan silloin kun lista on saatu palvelimelta. 
@@ -162,7 +189,7 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     </Helmet>
     <div id="topId" style={topStyle}>
        
-     <TopMenu language={lan} setLanguage={setLan} />
+     <TopMenu language={lan} handleSelect={handleSelect} />
     </div>
 
     <div id="contentDiv" style={contentStyle}>

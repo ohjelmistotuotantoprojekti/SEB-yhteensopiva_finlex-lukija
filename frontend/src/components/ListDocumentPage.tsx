@@ -23,6 +23,8 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   const [search, setSearch] = useState<string>(defaultSearch)
   const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
+  let lan: string = language
+
 
    const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -73,10 +75,21 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     if (loadingScreen) {
         loadingScreen.style.display = "inline";
       }
+    doSearch()
+  }
+
+  // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
+  const handleSearchInputChange = (event: React.SyntheticEvent) => {
+    setSearch((event.target as HTMLInputElement).value)
+  }
+
+  const doSearch = async () => {
+
 
     try {
+      console.log("dosearch", language, "search:", search, "apisection:", apisection)
       const response = await axios.get(`/api/${apisection}/search`,
-        { params: { q: search, language: language } }
+        { params: { q: search, language: lan } }
       )
       if (response.data.type === "resultList") {
         localStorage.setItem(`results_${apisection}`, JSON.stringify(response.data.content))
@@ -118,11 +131,6 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     }
   }
 
-  // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
-  const handleSearchInputChange = (event: React.SyntheticEvent) => {
-    setSearch((event.target as HTMLInputElement).value)
-  }
-
   function showError(errorMessage: string) {
     setErrorMessage(
           errorMessage
@@ -132,11 +140,21 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
           setErrorMessage("")
         }, 2500)
   }
+
+
+  const handleSelect = (event: React.SyntheticEvent) => {
+      const currentValue = (event.target as HTMLInputElement).value
+      localStorage.setItem("language", currentValue)
+      setLanguage(currentValue)
+      lan = currentValue
+      doSearch()
+  }
+
   
   return (
     <div id="lawpagediv">
         <div style={topStyle} id="topdiv">
-            <TopMenu language={language} setLanguage={setLanguage} />
+            <TopMenu language={language} handleSelect={handleSelect} />
            
         </div>
         <div style={contentStyle} id="contentdiv">

@@ -19,16 +19,16 @@
     "Ville Suonurmi"
   ],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/start.js",
   "scripts": {
-    "start": "NODE_ENV=production node dist/index.js",
+    "start": "NODE_ENV=production node dist/start.js",
     "build": "rm -rf dist && tsc && cp -r src/frontend dist/frontend",
-    "dev": "NODE_ENV=development tsx --watch src/index.ts",
+    "dev": "NODE_ENV=development tsx --watch src/startdev.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",
-    "start:test": "NODE_ENV=test node index.js",
-    "db:reset": "tsx db_tool.ts"
+    "test:bg": "NODE_ENV=test node dist/index.js &",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.9.8",
@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@playwright/test": "^1.52.0",
     "@testcontainers/postgresql": "^10.27.0",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.1",

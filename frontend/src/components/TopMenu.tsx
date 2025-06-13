@@ -2,7 +2,7 @@ import LanguageSelection from "./LanguageSelection"
 import type { TopMenuProps } from "../types"
 
 
-const TopMenu = ({language, setLanguage}: TopMenuProps) => {
+const TopMenu = ({language, handleSelect}: TopMenuProps) => {
 
     const menyStyle: React.CSSProperties = {
         color: '#fefefe',
@@ -50,7 +50,7 @@ const TopMenu = ({language, setLanguage}: TopMenuProps) => {
         <div id="oikkaytdiv" style={!lawpage ? secdivActiveStyle:  secdivStyle}>
             <a style={!lawpage ? menyActiveStyle:  menyStyle} href="/oikeuskaytanto/">{(language === "fin") ? "Oikeuskäytäntö": "Rättspraxis"}</a>
         </div>
-        <LanguageSelection language={language} setLanguage={setLanguage}/>
+        <LanguageSelection language={language} handleSelect={handleSelect}/>
    </div>
    )
 }

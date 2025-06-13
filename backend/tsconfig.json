@@ -122,6 +122,8 @@
       "**/*.spec.ts",
       "**/*.test.ts",
       "**/*.spec.js",
-      "**/*.test.js"
+      "**/*.test.js",
+      "**/startdev.ts",
+
   ]
 }
