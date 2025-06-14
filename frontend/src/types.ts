@@ -26,8 +26,6 @@
 
 export interface DocumentPageProps {
   apipath: string,
-  backpath: string,
-  backtext: string,
   language: string
 }
 

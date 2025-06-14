@@ -13,7 +13,6 @@ const App = () => {
     return localStorage.getItem("language") || "fin"
   })
 
-  const backtext: string = language==="fin" ? "Takaisin" : "Tillbaka"
   const buttontext: string = language==="fin" ? "Hae" : "Sök"
  
   if (window.location.pathname === "/") {
@@ -36,8 +35,7 @@ const App = () => {
                   } 
       />
       <Route key="lawpage" path="/lainsaadanto/:year/:id" 
-          element={<DocumentPage language={language} backpath='/lainsaadanto/' 
-                            backtext={backtext} apipath="statute" />
+          element={<DocumentPage language={language}  apipath="statute" />
                   } 
       />
       <Route key="caselistpage" path="/oikeuskaytanto" 
@@ -48,8 +46,7 @@ const App = () => {
                   } 
       />
       <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
-          element={<DocumentPage language={language} backpath='/oikeuskaytanto/' 
-                            backtext={backtext} apipath="judgment" />
+          element={<DocumentPage language={language} apipath="judgment" />
                   } 
       />
     </Routes>

@@ -28,6 +28,9 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
 
    const topStyle: React.CSSProperties = {
     display: 'flex',
+    position: 'fixed',
+    top: '0px',
+    left: '0px',
     justifyContent: 'center',
     alignContent: 'center',
     width: '100%',
@@ -35,7 +38,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     backgroundColor: '#0C6FC0',
     padding: '0px',
     paddingBottom: '0px',
-    margin: '2px',
+    margin: '0px',
     border: '0px solid #0C6FC0'
   }
 
@@ -49,6 +52,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   const contentContainerStyle = {
     width: '700px',
     border: '0px solid black',
+    marginTop:'50px',
   }
 
   const loadingStyle = {
