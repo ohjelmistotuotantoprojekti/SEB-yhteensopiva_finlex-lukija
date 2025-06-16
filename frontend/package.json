@@ -4,11 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "docker-compose -f runDev.yaml up --build --abort-on-container-exit",
+    "dev": "docker compose -f runDev.yaml up --build --abort-on-container-exit",
     "build": "tsc -b && vite build && rm -rf ../backend/src/frontend && cp -r dist ../backend/src/frontend",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "docker-compose -f runUnitTests.yaml up --build --exit-code-from unit_tests",
+    "test": "docker compose -f runUnitTests.yaml up --build --exit-code-from unit_tests",
     "preview": "vite preview"
   },
   "dependencies": {

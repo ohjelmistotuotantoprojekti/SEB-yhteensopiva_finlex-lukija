@@ -1,4 +1,5 @@
-version: "2"
+# PG_URI: postgres://postgres:postgres@localhost:5555/devdb
+
 services:
   postgres:
     image: postgres:17
@@ -13,6 +14,7 @@ services:
   backend-dev:
     build:
       context: .
+      dockerfile: Dockerfile.dev
     ports:
       - 3001:3001
     environment:
@@ -20,8 +22,6 @@ services:
       NODE_ENV: development
       DATABASE_PASSWORD: AAA
       START_YEAR: 2024
-    depends_on:
-      - postgres
 
 volumes:
   pgdata:
