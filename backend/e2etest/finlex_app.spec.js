@@ -108,10 +108,10 @@ playwright.describe("Single law page", () => {
     await playwright.expect(page.getByRole("link", { name: "1 kap. - Allmänna bestämmelser" }))
   })
 
-
   playwright.test('image is visible', async ({ page }) => {
-    await img.scrollIntoViewIfNeeded()
-    await playwright.expect(page.getByRole("image")).toBeVisible()
+    const locator = await page.getByRole("image")
+    await locator.scrollIntoViewIfNeeded()
+    await playwright.expect(locator).toBeVisible()
   })
 
 })
