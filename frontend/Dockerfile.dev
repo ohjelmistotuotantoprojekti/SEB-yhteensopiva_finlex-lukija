@@ -1,19 +1,18 @@
 FROM node:24
-USER node
-WORKDIR /home/node/app
+WORKDIR /app
 
-COPY --chown=node:node ./package-lock.json .
-COPY --chown=node:node ./package.json .
-COPY --chown=node:node ./.npmrc .
+COPY ./package-lock.json .
+COPY ./package.json .
+COPY ./.npmrc .
 RUN npm ci
 
-COPY --chown=node:node ./tsconfig.json .
-COPY --chown=node:node ./tsconfig.node.json .
-COPY --chown=node:node ./tsconfig.app.json .
-COPY --chown=node:node ./vite.config.ts .
-COPY --chown=node:node ./testSetup.ts .
-COPY --chown=node:node ./index.html .
-COPY --chown=node:node ./src ./src
-COPY --chown=node:node ./public ./public
+COPY ./tsconfig.json .
+COPY ./tsconfig.node.json .
+COPY ./tsconfig.app.json .
+COPY ./vite.config.ts .
+COPY ./testSetup.ts .
+COPY ./index.html .
+COPY ./src ./src
+COPY ./public ./public
 
 CMD npx vite --host
