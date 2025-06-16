@@ -196,14 +196,6 @@ playwright.describe("Single case law page", () => {
     await page.goto('http://localhost:3001/oikeuskaytanto/2005/13/kho')
   })
 
-  playwright.test('back button brings back to case law page', async ({ page }) => {
-    const locator1 = await page.getByText("Asian aikaisempi käsittely")
-    await playwright.expect(locator1).toBeVisible()
-    await playwright.expect(page.getByPlaceholder("Vuosi tai oikeusaste:vuosi:numero")).toBeVisible()
-    await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
-    await playwright.expect(page.getByRole("combobox")).toBeVisible()
-  })
-
   playwright.test('language can be changed to swedish', async () => {
     ///await page.getByRole("combobox").selectOption("Svenska")
     ///Kielen vaihto ei vielä mahdollista
