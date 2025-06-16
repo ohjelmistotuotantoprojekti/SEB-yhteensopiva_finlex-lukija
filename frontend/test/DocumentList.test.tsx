@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
-import type {Law} from '../types'
-import DocumentList from './DocumentList'
+import type {Law} from '../src/types'
+import DocumentList from '../src/components/DocumentList'
 
 
 test('renders content', () => {

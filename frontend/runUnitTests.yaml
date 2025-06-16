@@ -1,0 +1,5 @@
+services:
+  unit_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.unit_tests

@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testdb
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  e2e-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.e2e
+    ports:
+      - 9323:9323
+    environment:
+      PG_URI: postgres://postgres:postgres@postgres:5432/testdb
+      NODE_ENV: test
+      DATABASE_PASSWORD: AAA
+    depends_on:
+      postgres:
+        condition: service_healthy

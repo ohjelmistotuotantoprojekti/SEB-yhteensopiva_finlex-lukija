@@ -1,0 +1,1 @@
+docker compose -f runE2E.yaml up --build --exit-code-from e2e-test

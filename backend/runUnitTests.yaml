@@ -1,0 +1,24 @@
+# PG_URI: postgres://postgres:postgres@localhost:5555/devdb
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testdb
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  unit_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.unit_tests
+    environment:
+      PG_URI: postgres://postgres:postgres@postgres:5432/testdb
+      NODE_ENV: test
+  

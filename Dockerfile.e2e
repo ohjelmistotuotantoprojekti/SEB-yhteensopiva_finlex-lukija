@@ -1,0 +1,36 @@
+FROM mcr.microsoft.com/playwright:v1.52.0-noble
+USER 1001
+
+WORKDIR /home/playwright/frontend
+COPY --chown=1001:1001 frontend/package-lock.json .
+COPY --chown=1001:1001 frontend/package.json .
+COPY --chown=1001:1001 frontend/.npmrc .
+RUN npm ci
+
+COPY --chown=1001:1001 frontend/tsconfig.json .
+COPY --chown=1001:1001 frontend/tsconfig.node.json .
+COPY --chown=1001:1001 frontend/tsconfig.app.json .
+COPY --chown=1001:1001 frontend/vite.config.ts .
+COPY --chown=1001:1001 frontend/index.html .
+COPY --chown=1001:1001 frontend/public ./public
+COPY --chown=1001:1001 frontend/src ./src
+RUN mkdir -p ../backend/src/frontend
+RUN npm run build
+
+WORKDIR /home/playwright/backend
+COPY --chown=1001:1001 backend/package-lock.json .
+COPY --chown=1001:1001 backend/package.json .
+COPY --chown=1001:1001 backend/.npmrc .
+RUN npm ci
+
+COPY --chown=1001:1001 backend/tsconfig.json .
+COPY --chown=1001:1001 backend/src ./src
+RUN npm run build
+
+COPY --chown=1001:1001 backend/playwright.config.ts .
+COPY --chown=1001:1001 finlex_app.spec.js .
+
+CMD node dist/start.js & \
+    sleep 2 && \
+    npx playwright test;\
+    npx playwright show-report --host=0.0.0.0 --port=9323

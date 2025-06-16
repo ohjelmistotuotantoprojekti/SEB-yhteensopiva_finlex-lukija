@@ -1,31 +1,12 @@
-import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate } from "./db/db.js";
-import dotenv from "dotenv";
+import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate, setupTestDatabase } from "./db/db.js";
 import { exit } from 'process';
 import axios from 'axios';
-
+import dotenv from "dotenv";
 dotenv.config();
 
-if (!process.env.PG_URI) {
-  console.error("PG_URI environment variable is not set.");
-  process.exit(1);
-}
+const timeLong = 24 * 60 * 60 * 1000;
+const timeShort = 60 * 1000;
 
-// Luo db clientti ympäristön mukaan
-if (process.env.NODE_ENV === 'production') {
-  console.log('Running in production mode')
-  setPool(process.env.PG_URI)
-} else if (process.env.NODE_ENV === 'development') {
-  console.log('Running in development mode')
-  setPool(process.env.PG_URI)
-} else if (process.env.NODE_ENV === 'test') {
-  console.log('Running in test mode')
-  // testit asettavat poolin osana testiajoa
-} else {
-  console.log('Running in unknown mode')
-  exit(1)
-}
-
-// Alusta tietokanta
 async function initDatabase() {
   try {
     if (!await dbIsReady()) {
@@ -44,7 +25,7 @@ async function initDatabase() {
 
   } catch (error) {
     console.error('Error initializing database:', error)
-    exit(1)
+    throw error
   }
 }
 
@@ -67,14 +48,28 @@ async function sendStatusUpdate(success: boolean) {
   }
 }
 
-const timeLong = 24 * 60 * 60 * 1000;
-const timeShort = 60 * 1000;
-let time = timeLong;
+if (!process.env.PG_URI) {
+  console.error("PG_URI environment variable is not set. Exiting.");
+  process.exit(1);
+}
 
+if (!process.env.DATABASE_PASSWORD) {
+  console.error("DATABASE_PASSWORD environment variable is not set. Exiting.");
+  exit(1);
+}
+
+// Luo db clientti
+setPool(process.env.PG_URI)
+
+// Valitse täytetäänkö oikealla vai testidatalla
+const dbSetupFunc = process.env.NODE_ENV === 'test' ? setupTestDatabase : initDatabase;
+
+
+let time = timeLong;
 while (true) {
   try {
-    await initDatabase();
-    time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
+    await dbSetupFunc();
+    time = timeLong;
     await sendStatusUpdate(true);
   } catch {
     time = timeShort;

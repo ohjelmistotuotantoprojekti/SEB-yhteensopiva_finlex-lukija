@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { vi } from 'vitest'
-import SearchForm from './SearchForm'
+import SearchForm from '../src/components/SearchForm'
 import userEvent from '@testing-library/user-event'
 
 const buttonetext = "Hae"

@@ -5,6 +5,9 @@ import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsB
 import { CommonName, LawKey } from '../types/akoma.js';
 import { JudgmentKey } from '../types/judgment.js';
 import { v4 as uuidv4 } from 'uuid';
+import dotenv from 'dotenv';
+dotenv.config();
+const startYear = process.env.START_YEAR ? parseInt(process.env.START_YEAR) : 1700;
 
 let pool: Pool;
 
@@ -39,7 +42,7 @@ async function fillDb(laws: LawKey[], judgments: JudgmentKey[]): Promise<void> {
 
     console.log("Database is filled")
   } catch (error) {
-    console.error('Error filling database:', error);
+    console.error('Error filling database');
     throw error;
   }
 }
@@ -188,7 +191,6 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
@@ -292,8 +294,8 @@ async function closePool() {
   }
 }
 
-async function setupTestDatabase(uri: string): Promise<void> {
-  await setPool(uri);
+async function setupTestDatabase(): Promise<void> {
+  console.log('Setting up test database...');
   await createTables();
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/swe@")

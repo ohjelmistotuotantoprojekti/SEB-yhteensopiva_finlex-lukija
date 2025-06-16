@@ -22,12 +22,12 @@
   "main": "dist/start.js",
   "scripts": {
     "start": "NODE_ENV=production node dist/start.js",
+    "start:ci": "node dist/index.js &",
     "build": "rm -rf dist && tsc && cp -r src/frontend dist/frontend",
-    "dev": "NODE_ENV=development tsx --watch src/startdev.ts",
+    "dev": "docker compose -f runDev.yaml up --build --abort-on-container-exit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "NODE_ENV=test tsx test/*.test.ts",
-    "test:bg": "NODE_ENV=test node dist/index.js &",
+    "test": "docker compose -f runUnitTests.yaml up --build --exit-code-from unit_tests",
     "e2e": "playwright test"
   },
   "dependencies": {

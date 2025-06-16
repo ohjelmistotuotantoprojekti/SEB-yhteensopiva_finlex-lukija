@@ -7,15 +7,15 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://backend-dev:3001',
         changeOrigin: true
       },
       '/media': {
-        target: 'http://localhost:3001',
+        target: 'http://backend-dev:3001',
         changeOrigin: true
       },
       '/favicon.ico': {
-        target: 'http://localhost:3001',
+        target: 'http://backend-dev:3001',
         changeOrigin: true
       }
     }

@@ -1,15 +1,12 @@
 import { test, before, after } from 'node:test'
 import supertest from 'supertest'
 import app, {VALID_LEVELS} from '../src/app.js'
-
+import { setPool, closePool, setupTestDatabase } from '../src/db/db.js'
 import dotenv from 'dotenv'
 dotenv.config()
 
+setPool(process.env.PG_URI as string)
 const api = supertest(app)
-
-import { closePool, setupTestDatabase } from '../src/db/db.js'
-
-const databaseUrl = process.env.PG_URI as string;
 
 const validateSearchResponse = (response) => {
   if (response.body.length === 0) {
@@ -66,7 +63,7 @@ const validateJudgmentContent = (response) => {
 }
 
 before(async () => {
-  await setupTestDatabase(databaseUrl);
+  await setupTestDatabase();
 });
 
 after(async () => {

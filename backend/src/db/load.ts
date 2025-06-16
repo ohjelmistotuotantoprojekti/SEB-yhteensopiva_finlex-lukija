@@ -211,6 +211,7 @@ async function setImages(docYear: number, docNumber: string, language: string, v
   for (const uri of uris) {
     const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@${version ?? ''}/${uri}`
     const url = `${baseURL}${path}`
+    console.log(`Fetching image from: ${url}`);
     try {
       const result = await axios.get(url, {
         headers: { 'Accept': 'image/*', 'Accept-Encoding': 'gzip' },
