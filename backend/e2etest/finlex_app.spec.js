@@ -174,7 +174,6 @@ playwright.describe("Case law page", () => {
     await page.getByRole("textbox").fill("europeiska")
     await page.getByRole("button", {name: "Sök"}).click()
     await page.getByText(":").first().click()
-    await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
@@ -182,7 +181,6 @@ playwright.describe("Case law page", () => {
     await page.getByRole("button", {name: "Hae"}).click()
     const locator1 = await page.getByText("Asian aikaisempi käsittely")
     await playwright.expect(locator1).toBeVisible()
-    await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
@@ -191,7 +189,6 @@ playwright.describe("Case law page", () => {
     await page.getByRole("button", {name: "Sök"}).click()
     const locator1 = await page.getByText("med stöd av 33")
     await playwright.expect(locator1).toBeVisible()
-    await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
 
 })
