@@ -1,13 +1,14 @@
 FROM node:24
-WORKDIR /app
+USER node
+WORKDIR /home/node/app
 
-COPY ./package-lock.json .
-COPY ./package.json .
-COPY ./.npmrc .
+COPY --chown=node:node ./package-lock.json .
+COPY --chown=node:node ./package.json .
+COPY --chown=node:node ./.npmrc .
 RUN npm ci
 
-COPY ./tsconfig.json .
-COPY ./src ./src
-COPY ./test ./test
+COPY --chown=node:node ./tsconfig.json .
+COPY --chown=node:node ./src ./src
+COPY --chown=node:node ./test ./test
 
 CMD npx tsx test/*.test.ts
