@@ -104,13 +104,31 @@ playwright.describe("Single law page", () => {
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-  playwright.test('language can be changed to swedish', async () => {
-    ///await page.getByRole("combobox").selectOption("Svenska")
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('language can be changed to swedish', async ({ page }) => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    const locator1 = await page.getByText("9/2023 – Naturvårdslag")
+    await playwright.expect(locator1).toBeVisible()
+    /// toiminnallisuutta korjataan, atm siinä on bugi
+    ///await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true}))
+
   })
 
   playwright.test('language stays after back button is pressed', async () => {
-    ///Kielen vaihto ei vielä mahdollista
+    /*
+    Toiminnallisuutta korjataan, atm siinä on bugi. Muista lisätä { page }
+    await page.getByRole("combobox").selectOption("Svenska")
+    await page.getByRole('link', { name: 'Tillbaka', exact: true}).click()
+    const locator = await page.getByText("Lagstiftning")
+    await playwright.expect(locator).toBeVisible()
+    await playwright.expect(page.getByPlaceholder("År eller nummer/år")).toBeVisible()
+    await playwright.expect(page.getByRole("button", {name: "Sök"})).toBeVisible()
+    await playwright.expect(page.getByRole("combobox")).toBeVisible()
+    */
+  })
+
+  playwright.test('picture is visible', async ({ page }) => {
+    await page.goto('http://localhost:3001/lainsaadanto/2018/729#chp_5__sec_91')
+    await playwright.expect(page.getByRole("image")).toBeVisible()
   })
 
 })
@@ -212,13 +230,25 @@ playwright.describe("Single case law page", () => {
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
-  playwright.test('language can be changed to swedish', async () => {
-    ///await page.getByRole("combobox").selectOption("Svenska")
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('language can be changed to swedish', async ({ page }) => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    const locator = await page.getByText("med stöd av 33 §")
+    await playwright.expect(locator).toBeVisible()
+    ///Toiminnallisuutta korjataan, atm siinä on bugi
+    ///await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true}))
   })
 
   playwright.test('language stays after back button is pressed', async () => {
-    ///Kielen vaihto ei vielä mahdollista
+      /*
+      Toiminnallisuutta korjataan, atm siinä on bugi. Muista lisätä { page }
+      await page.getByRole("combobox").selectOption("Svenska")
+      await page.getByRole('link', { name: 'Tillbaka', exact: true}).click()
+      const locator = await page.getByText("Rättspraxis")
+      await playwright.expect(locator).toBeVisible()
+      await playwright.expect(page.getByPlaceholder("År eller domstol_år:nummer")).toBeVisible()
+      await playwright.expect(page.getByRole("button", {name: "Sök"})).toBeVisible()
+      await playwright.expect(page.getByRole("combobox")).toBeVisible()
+      */
   })
 
 })
