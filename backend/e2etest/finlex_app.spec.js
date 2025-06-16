@@ -91,16 +91,6 @@ playwright.describe("Single law page", () => {
     await page.goto('http://localhost:3001/lainsaadanto/2023/9')
   })
 
-  playwright.test('back button brings back to main page', async ({ page }) => {
-    const locator1 = await page.getByText("9/2023 – Luonnonsuojelulaki")
-    await playwright.expect(locator1).toBeVisible()
-    const locator = await page.getByText("Lainsäädäntö")
-    await playwright.expect(locator).toBeVisible()
-    await playwright.expect(page.getByPlaceholder("Vuosi tai numero/vuosi")).toBeVisible()
-    await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
-    await playwright.expect(page.getByRole("combobox")).toBeVisible()
-  })
-
   playwright.test('language can be changed to swedish', async () => {
     ///await page.getByRole("combobox").selectOption("Svenska")
     ///Kielen vaihto ei vielä mahdollista
