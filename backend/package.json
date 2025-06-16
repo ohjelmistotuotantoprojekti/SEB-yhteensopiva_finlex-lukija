@@ -24,10 +24,10 @@
     "start": "NODE_ENV=production node dist/start.js",
     "start:ci": "node dist/index.js &",
     "build": "rm -rf dist && tsc && cp -r src/frontend dist/frontend",
-    "dev": "docker compose -f runDev.yaml up --build --abort-on-container-exit",
+    "dev": "docker-compose -f runDev.yaml up --build --abort-on-container-exit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "docker compose -f runUnitTests.yaml up --build --exit-code-from unit_tests",
+    "test": "docker-compose -f runUnitTests.yaml up --build --exit-code-from unit_tests",
     "e2e": "playwright test"
   },
   "dependencies": {
