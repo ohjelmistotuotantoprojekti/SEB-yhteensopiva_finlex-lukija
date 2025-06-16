@@ -7,7 +7,7 @@ import {Helmet} from "react-helmet";
 import TopMenu from './TopMenu'
 
 
-const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProps) => {
+const DocumentPage = ({language, apipath} : DocumentPageProps) => {
 
   const docnumber: string = useParams().id ?? ""
   const docyear: string = useParams().year ?? ""
@@ -26,13 +26,16 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
+    position: 'fixed',
+    top: '0px',
+    left: '0px',
     justifyContent: 'center',
     alignContent: 'center',
     width: '100%',
     height: '50px',
     backgroundColor: '#0C6FC0',
     padding: '0px',
-    margin: '2px',
+    margin: '0px',
     border: '0px solid red'
   }
 
@@ -46,16 +49,13 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
     
   }
 
-  const returnStyle: React.CSSProperties = {
-    padding: '20px'
-  }
-
    const contentBlockStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
     padding: '0px',
     margin: '0px',
+    marginTop: '70px',
     border: '0px solid pink'
   }
    const tocStyle: React.CSSProperties = {
@@ -86,6 +86,11 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
       // Hae HTML (APIsta)
       const htmlResp = await axios.get(path)
       const htmlText: string = htmlResp.data
+      /* place holder. ei pysty edistään kun db rikki
+      const container = document.createElement('div')
+      container.appendChild(htmlText as unknown as Node)
+      const title =  document.getElementById("descriotion")
+      console.log("title:", title)*/ 
       setLaw(htmlText)
     }
     catch (error) {
@@ -194,9 +199,6 @@ const DocumentPage = ({language, apipath, backpath, backtext} : DocumentPageProp
 
     <div id="contentDiv" style={contentStyle}>
       <div id="contentBlock" style={contentBlockStyle}>
-        <div id="returndiv" style={returnStyle}>
-          <a href={backpath}>{backtext}</a>
-        </div>
         <div id="leftMargin" style={tocStyle}>
           
           <TableOfContent headings={headings} />
