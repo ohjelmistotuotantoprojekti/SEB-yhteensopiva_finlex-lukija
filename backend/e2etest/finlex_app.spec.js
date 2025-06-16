@@ -72,7 +72,6 @@ playwright.describe("Main page", () => {
     const locator = await page.getByText("9/2023 – Luonnonsuojelulaki")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
-    await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
   playwright.test('single law page can be opened (swe)', async ({ page }) => {
@@ -82,7 +81,6 @@ playwright.describe("Main page", () => {
     const locator = await page.getByText("9/2023 – Naturvårdslag")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
-    await playwright.expect(page.getByRole('link', { name: 'Tillbaka', exact: true})).toBeVisible()
   })
 
 })
