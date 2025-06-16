@@ -94,7 +94,6 @@ playwright.describe("Single law page", () => {
   playwright.test('back button brings back to main page', async ({ page }) => {
     const locator1 = await page.getByText("9/2023 – Luonnonsuojelulaki")
     await playwright.expect(locator1).toBeVisible()
-    await page.getByRole('link', { name: 'Takaisin', exact: true}).click()
     const locator = await page.getByText("Lainsäädäntö")
     await playwright.expect(locator).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai numero/vuosi")).toBeVisible()
@@ -201,7 +200,6 @@ playwright.describe("Single case law page", () => {
   playwright.test('back button brings back to case law page', async ({ page }) => {
     const locator1 = await page.getByText("Asian aikaisempi käsittely")
     await playwright.expect(locator1).toBeVisible()
-    await page.getByRole('link', { name: 'Takaisin', exact: true}).click()
     await playwright.expect(page.getByPlaceholder("Vuosi tai oikeusaste:vuosi:numero")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
