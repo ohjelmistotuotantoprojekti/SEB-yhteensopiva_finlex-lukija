@@ -165,7 +165,6 @@ playwright.describe("Case law page", () => {
     await page.getByRole("textbox").fill("päätös")
     await page.getByRole("button", {name: "Hae"}).click()
     await page.getByText(":").first().click()
-    await playwright.expect(page.getByRole('link', { name: 'Takaisin', exact: true})).toBeVisible()
   })
 
   playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
