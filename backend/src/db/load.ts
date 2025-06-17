@@ -103,7 +103,8 @@ async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string
   }
 
   // Poimi docTitle preface-elementistä
-  const docTitle = resultNode?.act?.preface?.p?.docTitle
+  const docTitle = resultNode?.act?.preface?.p?.docTitle ||
+    resultNode?.decree?.preface?.p?.docTitle;
   if (!docTitle) {
     throw new Error('docTitle not found')
   }
