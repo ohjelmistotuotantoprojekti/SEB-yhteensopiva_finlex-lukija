@@ -51,7 +51,7 @@ async function extractParagraphs(xmlString: string) {
         const pArr = obj.p as unknown[];
         for (const p of pArr) {
           if (typeof p === "string") paras.push(p.trim());
-          else if (typeof p === "object" && p !== null && "_" in p) paras.push((p as { _: string })._.trim());
+          else if (typeof p === "object" && p !== null && "_" in p) paras.push((p as { _: string })._.replace(/\s+/g, " ").trim());
         }
       } else {
         const value = obj[key];
@@ -118,6 +118,8 @@ export async function syncLanguage(lang: string) {
     )
     SELECT
         l.uuid   AS id,
+        l.number AS number,
+        l.year   AS year,
         l.title  AS title,
         l.is_empty AS is_empty,
         l.content::text AS content,
@@ -182,7 +184,8 @@ export async function searchLaws(lang: string, queryStr: string) {
     prefix: "true",
     num_typos: 2,
     text_match_type: "max_weight", // sum_score olisi ehkä parempi, mutta tämä client ei tue sitä
-    sort_by: "has_content:desc,_text_match:desc,year:desc,number:desc",
+    sort_by: "has_content:desc,_text_match:desc,year:desc",
+    per_page: 250
   };
 
   const searchResults = await tsClient
