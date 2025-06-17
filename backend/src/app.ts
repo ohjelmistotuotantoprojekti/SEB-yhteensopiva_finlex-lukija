@@ -4,8 +4,9 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawByUuid } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
+import { searchLaws } from './search.js';
 
 import { fileURLToPath } from 'url';
 import _ from 'lodash';
@@ -166,26 +167,18 @@ app.get('/api/statute/id/:year/:number/:language', async (request: express.Reque
 
 // Hae lakien sisällöstä
 async function searchLawsByKeywordAndLanguage(keyword: string, language: string) {
-  let results = await getLawsByContent(keyword, language);
-  const contentResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docTitle: result.title,
-      isEmpty: result.is_empty
-    };
-  });
-  results = await getLawsByCommonName(keyword, language);
-  const commonNameResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docTitle: result.title,
-      isEmpty: result.is_empty
-    };
-  });
-
-  const preparedResults = _.uniqBy([...contentResults, ...commonNameResults], result => `${result.docYear}-${result.docNumber}`);
+  const preparedResults = [];
+  const results_uuid = await searchLaws(language, keyword);
+  for (const result of results_uuid) {
+    const law = await getLawByUuid(result);
+    if (law === null) continue;
+    preparedResults.push({
+      docYear: law.year,
+      docNumber: law.number,
+      docTitle: law.title,
+      isEmpty: law.is_empty
+    });
+  }
   return preparedResults;
 }
 

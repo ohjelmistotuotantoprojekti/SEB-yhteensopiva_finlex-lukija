@@ -2,6 +2,7 @@ import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate } from "./db/db.
 import dotenv from "dotenv";
 import { exit } from 'process';
 import axios from 'axios';
+import { syncLanguage, deleteCollection } from "./search.js";
 
 dotenv.config();
 
@@ -70,13 +71,16 @@ async function sendStatusUpdate(success: boolean) {
 const timeLong = 24 * 60 * 60 * 1000;
 const timeShort = 60 * 1000;
 let time = timeLong;
-
+await sleep(2000)
 while (true) {
   try {
-    await initDatabase();
+    //await initDatabase();
+    await deleteCollection('fin');
+    await syncLanguage('fin');
     time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
     await sendStatusUpdate(true);
-  } catch {
+  } catch (error) {
+    console.error('Error during database initialization or sync:', error);
     time = timeShort;
     await sendStatusUpdate(false);
   }

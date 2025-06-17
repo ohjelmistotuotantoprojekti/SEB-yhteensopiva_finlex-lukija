@@ -14,20 +14,6 @@ async function getLawsByYear(year: number, language: string): Promise<{ title: s
   return result.rows;
 }
 
-async function getLawsByContent(keyword: string, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
-  const escapedKeyword = keyword.replaceAll('\'', '');
-  const sql = "SELECT title, number, year, is_empty FROM laws WHERE language = $1 AND (title ILIKE $2 OR cardinality(xpath($3, content, ARRAY[ARRAY['akn', 'http://docs.oasis-open.org/legaldocml/ns/akn/3.0']])) > 0) ORDER BY is_empty ASC, year ASC, number ASC";
-  const xpath_query = `//akn:p/text()[contains(., '${escapedKeyword}')]`;
-  const result = await query(sql, [language, `%${escapedKeyword}%`, xpath_query]);
-  return result.rows;
-}
-
-async function getLawsByCommonName(commonName: string, language: string): Promise<{ title: string; number: string; year: number, is_empty: boolean }[]> {
-  const sql = 'SELECT l.title, l.number, l.year, l.is_empty FROM laws l JOIN common_names c ON l.number = c.number AND l.year = c.year AND l.language = c.language WHERE c.common_name ILIKE $1 AND l.language = $2 ORDER BY l.is_empty ASC, l.year ASC, l.number ASC';
-  const result = await query(sql, [`%${commonName}%`, language]);
-  return result.rows;
-}
-
 async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {
   if (level === 'any') level = '%';
   const sql = 'SELECT content FROM judgments WHERE number = $1 AND year = $2 AND language = $3 AND level ILIKE $4';
@@ -76,4 +62,10 @@ async function setCommonName(commonName: CommonName) {
   await query(sql, [commonName.uuid, commonName.commonName, commonName.number, commonName.year, commonName.language]);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };
+async function getLawByUuid(uuid: string): Promise<{ title: string; year: number; number: string; is_empty: boolean } | null> {
+  const sql = 'SELECT title, year, number, is_empty FROM laws WHERE uuid = $1';
+  const result = await query(sql, [uuid]);
+  return result.rows[0] || null;
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawByUuid };
