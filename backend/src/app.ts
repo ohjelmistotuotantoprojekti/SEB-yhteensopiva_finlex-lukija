@@ -369,8 +369,9 @@ app.get('/api/statute/search', async (request: express.Request, response: expres
   let results;
   try {
     results = await searchLawsByKeywordAndLanguage(query, language);
-  } catch {
+  } catch (error){
     response.status(500).json({ error: 'Internal server error' });
+    console.error("Error during search:", error);
     return;
   }
   if (results.length > 0) {

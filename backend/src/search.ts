@@ -84,13 +84,14 @@ export async function syncLanguage(lang: string) {
   const schema: CollectionCreateSchema = {
     name: collectionName,
     fields: [
-      { name: "id", type: "string" },
+      { name: "id", type: "string", index: false },
       { name: "title", type: "string", locale: lang_short },
-      { name: "year", type: "int32" },
+      { name: "year_num", type: "int32" },
+      { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "common_names", type: "string[]", locale: lang_short },
-      { name: "headings", type: "string[]", locale: lang_short },
-      { name: "paragraphs", type: "string[]", locale: lang_short },
+      { name: "headings", type: "string[]", locale: lang_short, stem: true },
+      { name: "paragraphs", type: "string[]", locale: lang_short, stem: true },
       { name: "has_content", type: "int32" },
     ],
   };
@@ -145,7 +146,8 @@ export async function syncLanguage(lang: string) {
     tsDocs.push({
       id: row.id,
       title: row.title,
-      year: row.year,
+      year: String(row.year),
+      year_num: parseInt(row.year, 10),
       number: row.number,
       has_content: row.is_empty ? 0 : 1,
       common_names: row.common_names || [],
@@ -179,12 +181,12 @@ export async function deleteCollection(lang: string) {
 export async function searchLaws(lang: string, queryStr: string) {
   const searchParameters: SearchParams = {
     q: queryStr,
-    query_by: "title,common_names,headings,paragraphs",
-    query_by_weights: "50,49,10,1",
+    query_by: "title,common_names,headings,year,number,paragraphs",
+    query_by_weights: "50,49,20,15,10,1",
     prefix: "true",
     num_typos: 2,
     text_match_type: "max_weight", // sum_score olisi ehkä parempi, mutta tämä client ei tue sitä
-    sort_by: "has_content:desc,_text_match:desc,year:desc",
+    sort_by: "has_content:desc,_text_match:desc,year_num:desc",
     per_page: 250
   };
 
