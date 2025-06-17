@@ -1,5 +1,12 @@
 import type {DocumentListProps, Document} from "../types"
 
+function getCourtName(level: string, language: string): string {
+  if (language === 'swe') {
+    return level.toLowerCase() === 'kko' ? 'HD' : 'HFD';
+  }
+  return level.toUpperCase();
+}
+
 
 const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
  
@@ -29,7 +36,8 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
 
   function prepareLabel(doc: Document): string {
     if (doc.docLevel) {
-      return `${doc.docLevel.toUpperCase()}:${doc.docYear}:${doc.docNumber}`;
+      const courtName = getCourtName(doc.docLevel, language);
+      return `${courtName}:${doc.docYear}:${doc.docNumber}`;
     }
     else {
       return `${doc.docNumber}/${doc.docYear}`;
