@@ -9,11 +9,14 @@ import { parseXmlHeadings, parseHtmlHeadings } from './util/parse.js';
 import { query } from "./db/db.js"
 import { dropWords, dropwords_fin, dropwords_swe } from "./util/dropwords.js";
 import { JSDOM } from "jsdom";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const tsClient = new Typesense.Client({
   nodes: [
     {
-      host: "finlex-typesense-svc",
+      host: process.env.TYPESENSE_HOST || "localhost",
       port: 8108,
       protocol: "http",
     },

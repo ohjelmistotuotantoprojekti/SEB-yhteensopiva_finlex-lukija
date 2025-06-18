@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PG_URI: postgres://postgres:postgres@localhost:5432/testdb
+      TYPESENSE_HOST: finlex-typesense-svc
     services:
       postgres:
         image: postgres:17
@@ -23,6 +24,17 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      finlex-typesense-svc:
+        image: typesense/typesense:28.0
+        env:
+          TYPESENSE_API_KEY: 'xyz'
+        ports:
+          - 8108:8108
+        options: >-
+          --health-cmd "curl -f http://localhost:8108/health"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
