@@ -9,7 +9,6 @@ import { getImageByName } from './db/image.js';
 import { searchLaws } from './search.js';
 
 import { fileURLToPath } from 'url';
-import _ from 'lodash';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

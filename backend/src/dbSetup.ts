@@ -75,10 +75,10 @@ await sleep(2000)
 while (true) {
   try {
     //await initDatabase();
-    await deleteCollection('fin');
-    await deleteCollection('swe');
-    await syncLanguage('fin');
-    await syncLanguage('swe');
+    //await deleteCollection('fin');
+    //await deleteCollection('swe');
+    //await syncLanguage('fin');
+    //await syncLanguage('swe');
     time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
     await sendStatusUpdate(true);
   } catch (error) {

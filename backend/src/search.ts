@@ -4,8 +4,10 @@ import { Errors } from "typesense";
 import { CollectionCreateSchema } from "typesense/lib/Typesense/Collections.js";
 import { SearchParams } from "typesense/lib/Typesense/Documents.js";
 import { parseStringPromise } from "xml2js";
+import xmldom from '@xmldom/xmldom';
 import { parseXmlHeadings } from './util/parse.js';
 import { query } from "./db/db.js"
+import { dropWords, dropwords_fin } from "./util/dropwords.js";
 
 const tsClient = new Typesense.Client({
   nodes: [
@@ -34,38 +36,37 @@ function flattenHeadings(headings: Heading[]) {
   return out;
 }
 
-async function extractParagraphs(xmlString: string) {
-  const parsed = await parseStringPromise(xmlString, {
-    trim: true,
-    explicitChildren: false,
-    explicitArray: true,
-    preserveChildrenOrder: true,
-  });
-  const paras: string[] = [];
+function normalizeText(input: string | string[]): string | string[] {
+  const process = (str: string): string => {
+    const words = str
+      .toLowerCase()
+      .replace(/\p{Punctuation}+/gu, ' ')
+      .split(/\s+/);
 
-  function recurse(node: unknown) {
-    if (!node || typeof node !== "object") return;
-    const obj = node as Record<string, unknown>;
-    for (const key of Object.keys(obj)) {
-      if (key === "p") {
-        const pArr = obj.p as unknown[];
-        for (const p of pArr) {
-          if (typeof p === "string") paras.push(p.trim());
-          else if (typeof p === "object" && p !== null && "_" in p) paras.push((p as { _: string })._.replace(/\s+/g, " ").trim());
-        }
-      } else {
-        const value = obj[key];
-        if (Array.isArray(value)) {
-          for (const child of value) recurse(child);
-        } else {
-          recurse(value);
-        }
-      }
-    }
+    const filtered = words
+      .map(word => word.trim())
+      .filter(word => word.length > 3);
+
+    const cleaned = dropWords(dropwords_fin, filtered);
+
+    return cleaned.join(' ').trim();
+  };
+
+  if (Array.isArray(input)) {
+    return input.map(process).filter((str) => str.length > 0);
+  } else {
+    return process(input);
   }
+}
 
-  recurse(parsed);
-  return paras;
+
+export function extractParagraphs(xmlString: string): string[] {
+  const doc = new xmldom.DOMParser().parseFromString(xmlString, "application/xml");
+  const pNodes = doc.getElementsByTagName("p");
+  return Array.from(pNodes).map((node) => {
+    if (!(node?.textContent)) return ""
+    return node.textContent
+  });
 }
 
 
@@ -90,8 +91,8 @@ export async function syncLanguage(lang: string) {
       { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "common_names", type: "string[]", locale: lang_short },
-      { name: "headings", type: "string[]", locale: lang_short, stem: true },
-      { name: "paragraphs", type: "string[]", locale: lang_short, stem: true },
+      { name: "headings", type: "string[]", locale: lang_short },
+      { name: "paragraphs", type: "string[]", locale: lang_short },
       { name: "has_content", type: "int32" },
     ],
   };
@@ -141,7 +142,7 @@ export async function syncLanguage(lang: string) {
     const parsed_xml = await parseStringPromise(row.content, { explicitArray: false })
     const headingTree: Heading[] = parseXmlHeadings(parsed_xml) ?? [];
     const headings = flattenHeadings(headingTree);
-    const paragraphs = await extractParagraphs(row.content);
+    const paragraphs = extractParagraphs(row.content);
 
     tsDocs.push({
       id: row.id,
@@ -150,9 +151,9 @@ export async function syncLanguage(lang: string) {
       year_num: parseInt(row.year, 10),
       number: row.number,
       has_content: row.is_empty ? 0 : 1,
-      common_names: row.common_names || [],
-      headings,
-      paragraphs,
+      common_names: row.common_names,
+      headings: normalizeText(headings),
+      paragraphs: normalizeText(paragraphs),
     });
   }
 
@@ -187,7 +188,7 @@ export async function searchLaws(lang: string, queryStr: string) {
     num_typos: 2,
     text_match_type: "max_weight", // sum_score olisi ehkä parempi, mutta tämä client ei tue sitä
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
-    per_page: 250
+    per_page: 20
   };
 
   const searchResults = await tsClient
