@@ -1,11 +1,11 @@
 import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
-import { Akoma, LawKey } from '../types/akoma.js';
+import { Akoma, LawKey, KeyWord } from '../types/akoma.js';
 import { Judgment, JudgmentKey } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
-import { setJudgment, setLaw } from './akoma.js';
+import { setJudgment, setLaw, setKeyword } from './akoma.js';
 import { setImage } from './image.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
@@ -128,6 +128,34 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
   return imageLinks
 }
 
+async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<string[]> {
+  const keyword_list: string[] = [];
+
+  // Parsi XML data JSON-muotoon
+  const xmlData = result.data as Promise<string>;
+  const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
+
+  // Poimi results-lista akomantoso-elementistä
+  const resultNode = parsedXmlData?.akomaNtoso
+  if (!resultNode) {
+    throw new Error('Result node not found in XML')
+  }
+  // Poimi keywordit jos classification-elementti löytyy
+  const classificationNode = resultNode?.act?.meta?.classification
+  if (classificationNode?.keyword) {
+    if (Array.isArray(classificationNode?.keyword)) {
+      for (const word of classificationNode?.keyword) {
+        if (word?.showAs) {
+          keyword_list.push(word?.showAs)
+        }
+      }
+    } else if (classificationNode?.keyword?.showAs) {
+      keyword_list.push(classificationNode?.keyword?.showAs)
+    }
+  }
+  console.log(keyword_list)
+  return keyword_list
+}
 
 function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
   const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
@@ -243,6 +271,7 @@ async function setSingleStatute(uri: string) {
   })
   const docTitle = await parseTitlefromXML(result)
   const imageLinks = await parseImagesfromXML(result)
+  const keywordList = await parseKeywordsfromXML(result)
   if (imageLinks.length > 0) {
     console.log(imageLinks.length)
     console.log(imageLinks)
@@ -262,6 +291,18 @@ async function setSingleStatute(uri: string) {
     version: docVersion,
     content: result.data as string,
     is_empty: is_empty
+  }
+
+  for (const keyword of keywordList) {
+    const keyUuid = uuidv4()
+    const key: KeyWord = {
+      uuid: keyUuid,
+      keyword: keyword,
+      law_number: docNumber,
+      law_year: docYear,
+      language: docLanguage,
+    }
+    await setKeyword(key)
   }
 
   setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)

@@ -24,3 +24,11 @@ export interface CommonName {
     year: number;
     language: string;
 }
+
+export interface KeyWord {
+    uuid: string;
+    keyword: string;
+    law_number: string;
+    law_year: number;
+    language: string;
+}

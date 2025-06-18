@@ -1,5 +1,5 @@
 import { query } from './db.js';
-import { Akoma, CommonName } from '../types/akoma.js';
+import { Akoma, CommonName, KeyWord } from '../types/akoma.js';
 import { Judgment } from '../types/judgment.js';
 
 async function getLawByNumberYear(number: string, year: number, language: string): Promise<string | null> {
@@ -54,6 +54,11 @@ async function setLaw(law: Akoma) {
   await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
 }
 
+async function setKeyword(key: KeyWord) {
+  const sql = 'INSERT INTO keywords (uuid, keyword, law_number, law_year, language) VALUES ($1, $2, $3, $4, $5)';
+  await query(sql, [key.uuid, key.keyword, key.law_number, key.law_year, key.language]);
+}
+
 async function setJudgment(judgment: Judgment) {
   const sql = 'INSERT INTO judgments (uuid, level, number, year, language, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT (level, number, year, language) DO NOTHING';
   await query(sql, [judgment.uuid, judgment.level, judgment.number, judgment.year, judgment.language, judgment.content, judgment.is_empty]);
@@ -76,4 +81,4 @@ async function setCommonName(commonName: CommonName) {
   await query(sql, [commonName.uuid, commonName.commonName, commonName.number, commonName.year, commonName.language]);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };
