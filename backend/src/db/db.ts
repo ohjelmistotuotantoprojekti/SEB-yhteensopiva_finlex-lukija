@@ -188,7 +188,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
+    const startYear = 2023;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
@@ -254,7 +254,7 @@ async function createTables(): Promise<void> {
       + "keyword TEXT NOT NULL,"
       + "law_number TEXT NOT NULL,"
       + "law_year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
       + ")");
     client.release();
   }

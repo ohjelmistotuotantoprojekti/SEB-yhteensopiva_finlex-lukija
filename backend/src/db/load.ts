@@ -145,15 +145,14 @@ async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<str
   if (classificationNode?.keyword) {
     if (Array.isArray(classificationNode?.keyword)) {
       for (const word of classificationNode?.keyword) {
-        if (word?.showAs) {
-          keyword_list.push(word?.showAs)
+        if (word?.$?.showAs) {
+          keyword_list.push(word?.$?.showAs)
         }
       }
-    } else if (classificationNode?.keyword?.showAs) {
-      keyword_list.push(classificationNode?.keyword?.showAs)
+    } else if (classificationNode?.keyword?.$?.showAs) {
+      keyword_list.push(classificationNode?.keyword?.$?.showAs)
     }
   }
-  console.log(keyword_list)
   return keyword_list
 }
 
@@ -300,7 +299,7 @@ async function setSingleStatute(uri: string) {
       keyword: keyword,
       law_number: docNumber,
       law_year: docYear,
-      language: docLanguage,
+      language: docLanguage
     }
     await setKeyword(key)
   }
