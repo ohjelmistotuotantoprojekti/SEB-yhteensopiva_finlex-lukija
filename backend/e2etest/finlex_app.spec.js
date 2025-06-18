@@ -1,6 +1,5 @@
 import playwright from '@playwright/test'
 
-
 playwright.describe("Main page", () => {
   playwright.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:3001')
@@ -152,7 +151,7 @@ playwright.describe("Case law page", () => {
 
 
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("päätös")
+    await page.getByRole("textbox").fill("viikonloppu")
     await page.getByRole("button", {name: "Hae"}).click()
     await page.getByText(":").first().click()
   })
