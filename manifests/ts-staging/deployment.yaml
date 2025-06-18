@@ -17,7 +17,7 @@ spec:
           image: typesense/typesense:28.0
           imagePullPolicy: Always
           ports:
-            - containerPort: 3001
+            - containerPort: 8108
           env:
             - name: TYPESENSE_API_KEY
               value: "xyz"
@@ -28,11 +28,11 @@ spec:
               mountPath: /data
           resources:
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1250Mi"
+              cpu: "1000m"
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1150Mi"
+              cpu: "1000m"
       volumes:
         - name: finlex-typesense-volume
           persistentVolumeClaim:
