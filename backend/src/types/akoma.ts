@@ -30,5 +30,6 @@ export interface KeyWord {
     keyword: string;
     law_number: string;
     law_year: number;
+    law_title: string;
     language: string;
 }

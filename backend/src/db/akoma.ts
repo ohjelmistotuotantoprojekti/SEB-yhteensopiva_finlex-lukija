@@ -55,7 +55,7 @@ async function setLaw(law: Akoma) {
 }
 
 async function setKeyword(key: KeyWord) {
-  const sql = 'INSERT INTO keywords (uuid, keyword, law_number, law_year, language) VALUES ($1, $2, $3, $4, $5)';
+  const sql = 'INSERT INTO keywords (uuid, keyword, law_number, law_year, law_title, language) VALUES ($1, $2, $3, $4, $5, $6)';
   await query(sql, [key.uuid, key.keyword, key.law_number, key.law_year, key.language]);
 }
 

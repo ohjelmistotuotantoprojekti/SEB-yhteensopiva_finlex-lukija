@@ -254,6 +254,7 @@ async function createTables(): Promise<void> {
       + "keyword TEXT NOT NULL,"
       + "law_number TEXT NOT NULL,"
       + "law_year INTEGER NOT NULL,"
+      + "law_title TEXT NOT NULL,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
       + ")");
     client.release();

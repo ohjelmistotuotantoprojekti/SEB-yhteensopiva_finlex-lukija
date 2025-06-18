@@ -299,6 +299,7 @@ async function setSingleStatute(uri: string) {
       keyword: keyword,
       law_number: docNumber,
       law_year: docYear,
+      law_title: docTitle,
       language: docLanguage
     }
     await setKeyword(key)
