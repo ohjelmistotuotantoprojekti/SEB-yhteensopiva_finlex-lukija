@@ -2,7 +2,7 @@ import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate } from "./db/db.
 import dotenv from "dotenv";
 import { exit } from 'process';
 import axios from 'axios';
-import { syncLanguage, deleteCollection } from "./search.js";
+import { syncLanguage, deleteCollection, syncJudgments } from "./search.js";
 
 dotenv.config();
 
@@ -75,10 +75,14 @@ await sleep(2000)
 while (true) {
   try {
     //await initDatabase();
-    //await deleteCollection('fin');
-    //await deleteCollection('swe');
+    //await deleteCollection('laws', 'fin');
+    //await deleteCollection('laws', 'swe');
+    await deleteCollection('judgments', 'fin');
+    await deleteCollection('judgments', 'swe');
     //await syncLanguage('fin');
     //await syncLanguage('swe');
+    await syncJudgments('fin');
+    await syncJudgments('swe');
     time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
     await sendStatusUpdate(true);
   } catch (error) {

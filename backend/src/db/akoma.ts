@@ -28,13 +28,6 @@ async function getJudgmentsByYear(year: number, language: string, level: string)
   return result.rows;
 }
 
-async function getJudgmentsByContent(keyword: string, language: string, level: string): Promise<{ title: string; number: string; year: number, level: string, is_empty: boolean }[]> {
-  if (level === 'any') level = '%';
-  const sql = 'SELECT number, level, year, is_empty FROM judgments WHERE language = $1 AND level LIKE $2 AND content ILIKE $3 ORDER BY is_empty ASC, number ASC, level ASC';
-  const result = await query(sql, [language, level, `%${keyword}%`]);
-  return result.rows;
-}
-
 async function setLaw(law: Akoma) {
   const sql = 'INSERT INTO laws (uuid, title, number, year, language, version, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (number, year, language) DO NOTHING';
   await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
@@ -68,4 +61,10 @@ async function getLawByUuid(uuid: string): Promise<{ title: string; year: number
   return result.rows[0] || null;
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawByUuid };
+async function getJudgmentByUuid(uuid: string): Promise<{ level: string; year: number; number: string; is_empty: boolean } | null> {
+  const sql = 'SELECT level, year, number, is_empty FROM judgments WHERE uuid = $1';
+  const result = await query(sql, [uuid]);
+  return result.rows[0] || null;
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentCountByYear, setCommonName, getLawByUuid, getJudgmentByUuid };

@@ -4,9 +4,9 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawByUuid } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getJudgmentsByYear, getJudgmentByNumberYear, getLawByUuid, getJudgmentByUuid } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
-import { searchLaws } from './search.js';
+import { searchLaws, searchJudgments } from './search.js';
 
 import { fileURLToPath } from 'url';
 
@@ -212,15 +212,18 @@ app.get('/api/judgment/id/:year/:number/:language/:level', async (request: expre
 
 // Hae oikeuskäytäntöpäätösten sisällöstä
 async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: string, level: string) {
-  const results = await getJudgmentsByContent(keyword, language, level);
-  const preparedResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docLevel: result.level,
-      isEmpty: result.is_empty
-    };
-  });
+  const preparedResults = [];
+  const results_uuid = await searchJudgments(language, keyword, level);
+  for (const result of results_uuid) {
+    const judgment = await getJudgmentByUuid(result);
+    if (judgment === null) continue;
+    preparedResults.push({
+      docYear: judgment.year,
+      docNumber: judgment.number,
+      docLevel: judgment.level,
+      isEmpty: judgment.is_empty
+    });
+  }
   return preparedResults;
 }
 
@@ -295,8 +298,9 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
   let results;
   try {
     results = await searchJudgmentsByKeywordAndLanguage(query, language, level);
-  } catch {
+  } catch (error) {
     response.status(500).json({ error: 'Internal server error' });
+    console.error("Error during search:", error);
     return;
   }
   if (results.length > 0) {
