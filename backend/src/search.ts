@@ -12,7 +12,7 @@ import { dropWords, dropwords_fin } from "./util/dropwords.js";
 const tsClient = new Typesense.Client({
   nodes: [
     {
-      host: "localhost",
+      host: "finlex-typesense-svc",
       port: 8108,
       protocol: "http",
     },
