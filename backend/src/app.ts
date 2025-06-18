@@ -4,11 +4,12 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
 
 import { fileURLToPath } from 'url';
 import _ from 'lodash';
+import { workerData } from 'worker_threads';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -149,6 +150,24 @@ app.get('/api/judgment/structure/id/:year/:number/:language/:level', async (requ
     return;
   }
 })
+
+// Hae valitun kielen kaikki avainsanat
+app.get('/api/statute/keywords/:language', async (request: express.Request, response: express.Response): Promise<void> => {
+  const language = request.params.language
+  let words;
+  try {
+    words = await getKeywords(language)
+  } catch (error) {
+    console.error("Error finding keywords", error)
+    return;
+  }
+  if (words === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  } else {
+    response.json(words)
+  }
+  })
 
 // Hae tietty laki vuodella ja numerolla
 app.get('/api/statute/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {

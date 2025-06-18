@@ -56,7 +56,7 @@ async function setLaw(law: Akoma) {
 
 async function setKeyword(key: KeyWord) {
   const sql = 'INSERT INTO keywords (uuid, keyword, law_number, law_year, law_title, language) VALUES ($1, $2, $3, $4, $5, $6)';
-  await query(sql, [key.uuid, key.keyword, key.law_number, key.law_year, key.language]);
+  await query(sql, [key.uuid, key.keyword, key.law_number, key.law_year, key.law_title, key.language]);
 }
 
 async function setJudgment(judgment: Judgment) {
@@ -71,7 +71,7 @@ async function getLawCountByYear(year: number): Promise<number> {
 }
 
 async function getJudgmentCountByYear(year: number): Promise<number> {
-  const sql = 'SELECT COUNT(*) FROM judgments where year = $1';
+  const sql = 'SELECT COUNT(*) FROM judgments WHERE year = $1';
   const result = await query(sql, [year]);
   return parseInt(result.rows[0].count, 10);
 }
@@ -81,4 +81,10 @@ async function setCommonName(commonName: CommonName) {
   await query(sql, [commonName.uuid, commonName.commonName, commonName.number, commonName.year, commonName.language]);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName };
+async function getKeywords(language: string) {
+  const sql = 'SELECT DISTINCT keyword FROM keywords WHERE language = $1 ORDER BY keyword';
+  const result = await query(sql, [language]);
+  return result.rows.map(row => row.keyword);
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName, getKeywords };

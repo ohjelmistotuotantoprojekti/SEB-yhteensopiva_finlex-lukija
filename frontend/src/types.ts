@@ -70,3 +70,7 @@ export interface Headings {
         content: never[]
     }[]
 }
+
+export interface KeywordPage {
+  language: string,
+}
