@@ -60,7 +60,7 @@ const App = () => {
         setAppReady(true)
       }
         
-    } catch (error) {
+    } catch (error) { // eslint-disable-line
       
       setAppReady(false)
       setTimeout(() => {
