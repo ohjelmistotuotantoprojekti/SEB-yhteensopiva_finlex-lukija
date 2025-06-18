@@ -4,7 +4,7 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords, getLawsByKeyword } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
 
 import { fileURLToPath } from 'url';
@@ -168,6 +168,24 @@ app.get('/api/statute/keywords/:language', async (request: express.Request, resp
     response.json(words)
   }
   })
+
+// Hae tiettyyn avainsanaan liittyvien lakien numero, vuosi ja otsikko
+app.get('/api/statute/keyword/:word', async (request: express.Request, response: express.Response): Promise<void> => {
+  const word = request.params.word
+  let laws;
+  try {
+    laws = await getLawsByKeyword(word)
+  } catch (error) {
+    console.error("Error finding laws", error)
+    return;
+  }
+  if (laws === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  } else {
+    response.json(laws)
+  }
+})
 
 // Hae tietty laki vuodella ja numerolla
 app.get('/api/statute/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {

@@ -87,4 +87,10 @@ async function getKeywords(language: string) {
   return result.rows.map(row => row.keyword);
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName, getKeywords };
+async function getLawsByKeyword(keyword: string) {
+  const sql = 'SELECT * FROM keywords WHERE keyword = $1';
+  const result = await query(sql, [keyword]);
+  return result.rows;
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName, getKeywords, getLawsByKeyword };
