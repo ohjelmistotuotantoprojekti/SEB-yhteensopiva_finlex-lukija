@@ -32,6 +32,8 @@ jobs:
         env:
           TYPESENSE_API_KEY: 'xyz'
           TYPESENSE_DATA_DIR: /data
+        volumes:
+          - /tmp/typesense-data:/data
         ports:
           - 8108:8108
         options: >-
