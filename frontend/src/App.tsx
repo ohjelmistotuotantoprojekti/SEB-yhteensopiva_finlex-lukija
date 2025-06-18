@@ -17,7 +17,7 @@ const App = () => {
 
   const buttontext: string = language==="fin" ? "Hae" : "Sök"
  
-  const [appReady, setAppReady] = useState<boolean>(false)
+  const [appReady, setAppReady] = useState<boolean>(true)
 
 
   if (window.location.pathname === "/") {
