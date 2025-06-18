@@ -46,7 +46,6 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     padding: '5px',
     margin: '10px',
     border: '0px solid blue'
-    
   }
 
    const contentBlockStyle: React.CSSProperties = {

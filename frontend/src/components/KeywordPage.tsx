@@ -29,6 +29,21 @@ const KeywordPage = ({language} : KeywordPage) => {
       border: '0px solid red'
     }
 
+    const contentStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
+      padding: '5px',
+    }
+
+    const contentContainerStyle = {
+      width: '700px',
+      border: '0px solid black',
+      marginTop:'50px',
+    }
+
+    
+
     const getKeywords = async (path: string) => {
         const keywords = await axios.get(path)
         setKeywords(keywords.data)
@@ -60,12 +75,16 @@ const KeywordPage = ({language} : KeywordPage) => {
     <div id="topId" style={topStyle}>  
      <TopMenu language={lan} handleSelect={handleSelect} />
     </div>
-    <h1>{title}</h1>
-    {keywords.map(keyword => 
-        <div key={keyword}>
-            <a href="/lainsaadanto/">{keyword}</a>
-        </div>
-    )}
+    <div style={contentStyle} id="contentdiv">
+      <div id="contentDiv" style={contentContainerStyle}>
+        <h1>{title}</h1>
+        {keywords.map(keyword => 
+            <div key={keyword}>
+                <a href="/lainsaadanto/">{keyword}</a>
+            </div>
+        )}
+      </div>
+    </div>
     </>
   )
 }

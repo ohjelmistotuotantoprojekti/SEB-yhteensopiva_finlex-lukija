@@ -36,6 +36,19 @@ const KeywordLawPage = ({language} : KeywordPage) => {
       margin: '4px',
     }
 
+    const contentStyle = {
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
+      padding: '5px',
+    }
+
+    const contentContainerStyle = {
+      width: '700px',
+      border: '0px solid black',
+      marginTop:'50px',
+    }
+
     const getLaws = async (path: string) => {
         const resp = await axios.get(path)
         console.log(resp.data)
@@ -65,15 +78,19 @@ const KeywordLawPage = ({language} : KeywordPage) => {
     <div id="topId" style={topStyle}>  
      <TopMenu language={lan} handleSelect={handleSelect} />
     </div>
-    <h1>{title}</h1>
-    <h2>{keyword}</h2>
-    {laws.map(law => 
-        <div style={listStyle} key={keyword}>
-            <a href={prepareLink(law)}>
-            {law.law_number}/{law.law_year} - {law.law_title}
-          </a>
-        </div>
-    )}
+    <div style={contentStyle} id="contentdiv">
+      <div id="contentDiv" style={contentContainerStyle}>
+        <h1>{title}</h1>
+        <h2>{keyword}</h2>
+        {laws.map(law => 
+            <div style={listStyle} key={keyword}>
+                <a href={prepareLink(law)}>
+                {law.law_number}/{law.law_year} - {law.law_title}
+              </a>
+            </div>
+        )}
+      </div>
+    </div>
     </>
   )
 }
