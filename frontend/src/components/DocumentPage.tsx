@@ -85,7 +85,7 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     try {
       // Hae HTML (APIsta)
       const htmlResp = await axios.get(path)
-      const htmlText: string = htmlResp.data
+      const htmlText: string = `<h1>${doclevel} ${docnumber}/${docyear} </h1> ${htmlResp.data}`
       /* place holder. ei pysty edistään kun db rikki
       const container = document.createElement('div')
       container.appendChild(htmlText as unknown as Node)
