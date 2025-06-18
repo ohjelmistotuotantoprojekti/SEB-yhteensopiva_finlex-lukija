@@ -1,21 +1,54 @@
 import axios from 'axios'
-import type { DocumentPageProps } from "../types"
-import { useState} from 'react'
+import type { KeywordPage } from "../types"
+import { useState } from 'react'
 import {Helmet} from "react-helmet";
+import TopMenu from './TopMenu'
 
 
 
-const KeywordPage = ({language} : DocumentPageProps) => {
+const KeywordPage = ({language} : KeywordPage) => {
+  
 
     const [keywords, setKeywords] = useState([])
+    const [lan, setLan] = useState<string>(language)
     let path = `/api/statute/keywords/${language}`
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
+
+    const topStyle: React.CSSProperties = {
+      display: 'flex',
+      position: 'fixed',
+      top: '0px',
+      left: '0px',
+      justifyContent: 'center',
+      alignContent: 'center',
+      width: '100%',
+      height: '50px',
+      backgroundColor: '#0C6FC0',
+      padding: '0px',
+      margin: '0px',
+      border: '0px solid red'
+    }
 
     const getKeywords = async (path: string) => {
         const keywords = await axios.get(path)
         setKeywords(keywords.data)
     }
     getKeywords(path)
+
+    /*
+    function prepareLink(keyword) {
+        const keyword = 
+        return `/lainsaadanto/${law.law_year}/${law.law_number}`;
+      }
+      */
+
+    const handleSelect = (event: React.SyntheticEvent) => {
+      const currentValue = (event.target as HTMLInputElement).value
+      setLan(currentValue)
+      localStorage.setItem("language", currentValue)
+      getKeywords(path)
+      
+    }
 
   return (
     <>
@@ -24,10 +57,13 @@ const KeywordPage = ({language} : DocumentPageProps) => {
         {title}
       </title>
     </Helmet>
+    <div id="topId" style={topStyle}>  
+     <TopMenu language={lan} handleSelect={handleSelect} />
+    </div>
     <h1>{title}</h1>
     {keywords.map(keyword => 
         <div key={keyword}>
-            <p>{keyword}</p>
+            <a href="/lainsaadanto/">{keyword}</a>
         </div>
     )}
     </>

@@ -40,7 +40,7 @@ const App = () => {
           element={<DocumentPage language={language}  apipath="statute" />
                   } 
       />
-      <Route key="keywords" path="/lainsaadanto/asiasanat" element={<KeywordPage language={language} />} />
+      <Route key="keywords" path="/lainsaadanto/asiasanat" element={<KeywordPage language={language} setLanguage={setLanguage} />} />
       <Route key="keyword_laws" path="/lainsaadanto/asiasanat/:keyword" element={<KeywordLawPage language={language} />} />
       <Route key="caselistpage" path="/oikeuskaytanto" 
         element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
