@@ -1,6 +1,7 @@
 import { test, before, after } from 'node:test'
 import supertest from 'supertest'
 import app, {VALID_LEVELS} from '../src/app.js'
+import { syncLanguage, syncJudgments } from '../src/search.js'
 
 import dotenv from 'dotenv'
 dotenv.config()
@@ -67,6 +68,10 @@ const validateJudgmentContent = (response) => {
 
 before(async () => {
   await setupTestDatabase(databaseUrl);
+  await syncLanguage('fin');
+  await syncLanguage('swe');
+  await syncJudgments('fin');
+  await syncJudgments('swe');
 });
 
 after(async () => {
