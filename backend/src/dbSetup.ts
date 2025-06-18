@@ -74,13 +74,13 @@ let time = timeLong;
 await sleep(2000)
 while (true) {
   try {
-    //await initDatabase();
-    //await deleteCollection('laws', 'fin');
-    //await deleteCollection('laws', 'swe');
+    await initDatabase();
+    await deleteCollection('laws', 'fin');
+    await deleteCollection('laws', 'swe');
     await deleteCollection('judgments', 'fin');
     await deleteCollection('judgments', 'swe');
-    //await syncLanguage('fin');
-    //await syncLanguage('swe');
+    await syncLanguage('fin');
+    await syncLanguage('swe');
     await syncJudgments('fin');
     await syncJudgments('swe');
     time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
