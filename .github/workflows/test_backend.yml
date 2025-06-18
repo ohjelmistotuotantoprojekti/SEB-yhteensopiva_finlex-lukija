@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PG_URI: postgres://postgres:postgres@localhost:5432/testdb
-      TYPESENSE_HOST: finlex-typesense-svc
+      TYPESENSE_HOST: localhost
     services:
       postgres:
         image: postgres:17
