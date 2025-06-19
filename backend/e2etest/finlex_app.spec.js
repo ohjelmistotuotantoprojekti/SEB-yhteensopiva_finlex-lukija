@@ -167,7 +167,7 @@ playwright.describe("Case law page", () => {
   playwright.test('single case can be searched (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("kho:2021:1")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("Kunnan vammaispalvelupäällikkö oli")
+    const locator1 = await page.getByText("Hallinto-oikeus katsoo, että A:n ja B:n")
     await playwright.expect(locator1).toBeVisible()
   })
 
@@ -175,7 +175,7 @@ playwright.describe("Case law page", () => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("kho:2021:1")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("Chefen för kommunens")
+    const locator1 = await page.getByText("Europeiska konventionen")
     await playwright.expect(locator1).toBeVisible()
   })
 
