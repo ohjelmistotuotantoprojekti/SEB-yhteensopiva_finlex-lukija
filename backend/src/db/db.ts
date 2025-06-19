@@ -231,6 +231,18 @@ async function createTables(): Promise<void> {
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_act UNIQUE (number, year, language)"
       + ")");
+    /*await client.query("CREATE TABLE IF NOT EXISTS statutes ("
+      + "uuid UUID PRIMARY KEY,"
+      + "title TEXT NOT NULL,"
+      + "number TEXT NOT NULL,"
+      + "year INTEGER NOT NULL,"
+      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
+      + "version TEXT,"
+      + "type TEXT NOT NULL CHECK (type IN ('act', 'decree')),"
+      + "content XML NOT NULL,"
+      + "is_empty BOOLEAN NOT NULL,"
+      + "CONSTRAINT unique_act UNIQUE (number, year, language)"
+      + ")");*/
     await client.query("CREATE TABLE IF NOT EXISTS common_names ("
       + "uuid UUID PRIMARY KEY,"
       + "common_name TEXT NOT NULL,"
