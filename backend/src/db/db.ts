@@ -250,11 +250,9 @@ async function createTables(): Promise<void> {
       + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
       + ")");
       await client.query("CREATE TABLE IF NOT EXISTS keywords ("
-      + "uuid UUID PRIMARY KEY,"
+      + "id TEXT NOT NULL,"
       + "keyword TEXT NOT NULL,"
-      + "law_number TEXT NOT NULL,"
-      + "law_year INTEGER NOT NULL,"
-      + "law_title TEXT NOT NULL,"
+      + "law_uuid UUID,"
       + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
       + ")");
     client.release();

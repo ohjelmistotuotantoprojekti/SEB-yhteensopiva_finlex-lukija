@@ -140,19 +140,19 @@ async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<str
   if (!resultNode) {
     throw new Error('Result node not found in XML')
   }
-  // Poimi keywordit jos classification-elementti löytyy
+  // Poimi keywordit ja id:t jos classification-elementti löytyy
   const classificationNode = resultNode?.act?.meta?.classification
   if (classificationNode?.keyword) {
     if (Array.isArray(classificationNode?.keyword)) {
       for (const word of classificationNode?.keyword) {
         if (word?.$?.showAs && word?.$?.value) {
-          const id = word?.$?.value.substr(word?.$?.value.lenght - 4)
-          keyword_list.push((word?.$?.showAs, id))
+          const id = word?.$?.value.substr(word?.$?.value.length - 4)
+          keyword_list.push([word?.$?.showAs, id])
         }
       }
     } else if (classificationNode?.keyword?.$?.showAs && classificationNode?.keyword?.$?.value) {
-      const id = classificationNode?.keyword?.$?.value.substr(classificationNode?.keyword?.$?.value.lenght - 4)
-      keyword_list.push((classificationNode?.keyword?.$?.showAs, id))
+      const id = classificationNode?.keyword?.$?.value.substr(classificationNode?.keyword?.$?.value.length - 4)
+      keyword_list.push([classificationNode?.keyword?.$?.showAs, id])
     }
   }
   return keyword_list
@@ -295,13 +295,10 @@ async function setSingleStatute(uri: string) {
   }
 
   for (const keyword of keywordList) {
-    const keyUuid = uuidv4()
     const key: KeyWord = {
-      uuid: keyUuid,
-      keyword: keyword,
-      law_number: docNumber,
-      law_year: docYear,
-      law_title: docTitle,
+      id: keyword[1],
+      keyword: keyword[0],
+      law_uuid: lawUuid,
       language: docLanguage
     }
     await setKeyword(key)

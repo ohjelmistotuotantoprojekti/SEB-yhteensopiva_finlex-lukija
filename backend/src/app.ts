@@ -4,7 +4,7 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords, getLawsByKeyword } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords, getLawsByKeywordID } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
 
 import { fileURLToPath } from 'url';
@@ -170,11 +170,12 @@ app.get('/api/statute/keywords/:language', async (request: express.Request, resp
   })
 
 // Hae tiettyyn avainsanaan liittyvien lakien numero, vuosi ja otsikko
-app.get('/api/statute/keyword/:word', async (request: express.Request, response: express.Response): Promise<void> => {
-  const word = request.params.word
+app.get('/api/statute/keyword/:language/:keyword_id', async (request: express.Request, response: express.Response): Promise<void> => {
+  const keyword_id = request.params.keyword_id
+  const language = request.params.language
   let laws;
   try {
-    laws = await getLawsByKeyword(word)
+    laws = await getLawsByKeywordID(language, keyword_id)
   } catch (error) {
     console.error("Error finding laws", error)
     return;

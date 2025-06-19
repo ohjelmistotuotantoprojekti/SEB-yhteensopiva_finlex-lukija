@@ -26,10 +26,8 @@ export interface CommonName {
 }
 
 export interface KeyWord {
-    uuid: string;
+    id: string;
     keyword: string;
-    law_number: string;
-    law_year: number;
-    law_title: string;
+    law_uuid: string;
     language: string;
 }

@@ -8,10 +8,11 @@ import TopMenu from './TopMenu'
 
 const KeywordLawPage = ({language} : KeywordPage) => {
 
-    const keyword: string = useParams().keyword ?? ""
+    const keyword_id: string = useParams().keyword_id ?? ""
     const [laws, setLaws] = useState([])
     const [lan, setLan] = useState<string>(language)
-    let path = `/api/statute/keyword/${keyword}`
+    let path = `/api/statute/keyword/${lan}/${keyword_id}`
+    console.log(path)
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
 
     const topStyle: React.CSSProperties = {
@@ -51,13 +52,12 @@ const KeywordLawPage = ({language} : KeywordPage) => {
 
     const getLaws = async (path: string) => {
         const resp = await axios.get(path)
-        console.log(resp.data)
         setLaws(resp.data)
     }
     getLaws(path)
 
     function prepareLink(law) {
-        return `/lainsaadanto/${law.law_year}/${law.law_number}`;
+        return `/lainsaadanto/${law.year}/${law.number}`;
       }
 
     const handleSelect = (event: React.SyntheticEvent) => {
@@ -81,11 +81,11 @@ const KeywordLawPage = ({language} : KeywordPage) => {
     <div style={contentStyle} id="contentdiv">
       <div id="contentDiv" style={contentContainerStyle}>
         <h1>{title}</h1>
-        <h2>{keyword}</h2>
+
         {laws.map(law => 
-            <div style={listStyle} key={keyword}>
+            <div style={listStyle} key={law.keyword}>
                 <a href={prepareLink(law)}>
-                {law.law_number}/{law.law_year} - {law.law_title}
+                {law.number}/{law.year} - {law.title}
               </a>
             </div>
         )}

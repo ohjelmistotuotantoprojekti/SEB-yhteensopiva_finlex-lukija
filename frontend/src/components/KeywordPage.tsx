@@ -43,19 +43,15 @@ const KeywordPage = ({language} : KeywordPage) => {
     }
 
     
-
     const getKeywords = async (path: string) => {
         const keywords = await axios.get(path)
         setKeywords(keywords.data)
     }
     getKeywords(path)
 
-    /*
-    function prepareLink(keyword) {
-        const keyword = 
-        return `/lainsaadanto/${law.law_year}/${law.law_number}`;
+    function prepareLink(keyword_id: string) {
+        return `/lainsaadanto/asiasanat/${keyword_id}`;
       }
-      */
 
     const handleSelect = (event: React.SyntheticEvent) => {
       const currentValue = (event.target as HTMLInputElement).value
@@ -79,8 +75,8 @@ const KeywordPage = ({language} : KeywordPage) => {
       <div id="contentDiv" style={contentContainerStyle}>
         <h1>{title}</h1>
         {keywords.map(keyword => 
-            <div key={keyword}>
-                <a href="/lainsaadanto/">{keyword}</a>
+            <div key={keyword.id}>
+                <a href={prepareLink(keyword.id)}>{keyword.keyword}</a>
             </div>
         )}
       </div>

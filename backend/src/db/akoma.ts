@@ -55,8 +55,8 @@ async function setLaw(law: Akoma) {
 }
 
 async function setKeyword(key: KeyWord) {
-  const sql = 'INSERT INTO keywords (uuid, keyword, law_number, law_year, law_title, language) VALUES ($1, $2, $3, $4, $5, $6)';
-  await query(sql, [key.uuid, key.keyword, key.law_number, key.law_year, key.law_title, key.language]);
+  const sql = 'INSERT INTO keywords (id, keyword, law_uuid, language) VALUES ($1, $2, $3, $4)';
+  await query(sql, [key.id, key.keyword, key.law_uuid, key.language]);
 }
 
 async function setJudgment(judgment: Judgment) {
@@ -82,15 +82,15 @@ async function setCommonName(commonName: CommonName) {
 }
 
 async function getKeywords(language: string) {
-  const sql = 'SELECT DISTINCT keyword FROM keywords WHERE language = $1 ORDER BY keyword';
+  const sql = 'SELECT DISTINCT keyword, id FROM keywords WHERE language = $1 ORDER BY keyword';
   const result = await query(sql, [language]);
-  return result.rows.map(row => row.keyword);
-}
-
-async function getLawsByKeyword(keyword: string) {
-  const sql = 'SELECT * FROM keywords WHERE keyword = $1';
-  const result = await query(sql, [keyword]);
   return result.rows;
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName, getKeywords, getLawsByKeyword };
+async function getLawsByKeywordID(language: string, keyword_id: string) {
+  const sql = 'SELECT laws.number, laws.year, laws.title, keywords.keyword FROM laws JOIN keywords ON laws.uuid=keywords.law_uuid WHERE keywords.language=$1 AND keywords.id=$2';
+  const result = await query(sql, [language, keyword_id]);
+  return result.rows;
+}
+
+export { setJudgment, getLawByNumberYear, getLawsByYear, getLawsByContent, setLaw, setKeyword, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentsByContent, getJudgmentCountByYear, setCommonName, getLawsByCommonName, getKeywords, getLawsByKeywordID };
