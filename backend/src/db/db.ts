@@ -5,6 +5,7 @@ import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsB
 import { CommonName, LawKey } from '../types/akoma.js';
 import { JudgmentKey } from '../types/judgment.js';
 import { v4 as uuidv4 } from 'uuid';
+import { syncJudgments, syncLanguage } from '../search.js';
 
 let pool: Pool;
 
@@ -188,7 +189,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
+    const startYear = 2022;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
@@ -292,8 +293,7 @@ async function closePool() {
   }
 }
 
-async function setupTestDatabase(uri: string): Promise<void> {
-  await setPool(uri);
+async function setupTestDatabase(): Promise<void> {
   await createTables();
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/swe@")
@@ -309,6 +309,10 @@ async function setupTestDatabase(uri: string): Promise<void> {
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1990/10")
   await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1975/II-16")
+  await syncLanguage('fin');
+  await syncLanguage('swe');
+  await syncJudgments('fin');
+  await syncJudgments('swe');
   console.log('Test database setup complete');
 }
 

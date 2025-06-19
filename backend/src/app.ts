@@ -4,11 +4,11 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getJudgmentsByYear, getJudgmentByNumberYear, getLawByUuid, getJudgmentByUuid } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
+import { searchLaws, searchJudgments } from './search.js';
 
 import { fileURLToPath } from 'url';
-import _ from 'lodash';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -166,26 +166,18 @@ app.get('/api/statute/id/:year/:number/:language', async (request: express.Reque
 
 // Hae lakien sisällöstä
 async function searchLawsByKeywordAndLanguage(keyword: string, language: string) {
-  let results = await getLawsByContent(keyword, language);
-  const contentResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docTitle: result.title,
-      isEmpty: result.is_empty
-    };
-  });
-  results = await getLawsByCommonName(keyword, language);
-  const commonNameResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docTitle: result.title,
-      isEmpty: result.is_empty
-    };
-  });
-
-  const preparedResults = _.uniqBy([...contentResults, ...commonNameResults], result => `${result.docYear}-${result.docNumber}`);
+  const preparedResults = [];
+  const results_uuid = await searchLaws(language, keyword);
+  for (const result of results_uuid) {
+    const law = await getLawByUuid(result);
+    if (law === null) continue;
+    preparedResults.push({
+      docYear: law.year,
+      docNumber: law.number,
+      docTitle: law.title,
+      isEmpty: law.is_empty
+    });
+  }
   return preparedResults;
 }
 
@@ -220,15 +212,18 @@ app.get('/api/judgment/id/:year/:number/:language/:level', async (request: expre
 
 // Hae oikeuskäytäntöpäätösten sisällöstä
 async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: string, level: string) {
-  const results = await getJudgmentsByContent(keyword, language, level);
-  const preparedResults = results.map((result) => {
-    return {
-      docYear: result.year,
-      docNumber: result.number,
-      docLevel: result.level,
-      isEmpty: result.is_empty
-    };
-  });
+  const preparedResults = [];
+  const results_uuid = await searchJudgments(language, keyword, level);
+  for (const result of results_uuid) {
+    const judgment = await getJudgmentByUuid(result);
+    if (judgment === null) continue;
+    preparedResults.push({
+      docYear: judgment.year,
+      docNumber: judgment.number,
+      docLevel: judgment.level,
+      isEmpty: judgment.is_empty
+    });
+  }
   return preparedResults;
 }
 
@@ -303,8 +298,9 @@ app.get('/api/judgment/search', async (request: express.Request, response: expre
   let results;
   try {
     results = await searchJudgmentsByKeywordAndLanguage(query, language, level);
-  } catch {
+  } catch (error) {
     response.status(500).json({ error: 'Internal server error' });
+    console.error("Error during search:", error);
     return;
   }
   if (results.length > 0) {
@@ -376,8 +372,9 @@ app.get('/api/statute/search', async (request: express.Request, response: expres
   let results;
   try {
     results = await searchLawsByKeywordAndLanguage(query, language);
-  } catch {
+  } catch (error){
     response.status(500).json({ error: 'Internal server error' });
+    console.error("Error during search:", error);
     return;
   }
   if (results.length > 0) {
