@@ -20,13 +20,13 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
 
   const tagStyle = {
     display: 'inline-block',
-    padding: '0.6em 0.6em',
-    fontSize: '0.9em',
+    padding: '1px 5px',
+    marginRight: '5px',
     color: '#721c24',
+    fontSize: '12px',
     backgroundColor: '#f8d7da',
     border: '1px solid #f5c6cb',
-    borderRadius: '0.25rem',
-    lineHeight: 1,
+    borderRadius: '2px',
     whiteSpace: 'normal'
   }
 
@@ -55,7 +55,7 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
         <div style={listStyle} key={prepareKey(law)} >
           {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span>: ""}
           <a href={prepareLink(law)}>
-            {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
+            <b>{prepareLabel(law)}</b> {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
         </div>
       )

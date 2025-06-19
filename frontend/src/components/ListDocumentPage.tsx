@@ -42,20 +42,20 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     border: '0px solid #0C6FC0'
   }
 
-  const contentStyle = {
+  const contentStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
     padding: '5px',
   }
 
-  const contentContainerStyle = {
+  const contentContainerStyle: React.CSSProperties = {
     width: '700px',
     border: '0px solid black',
     marginTop:'50px',
   }
 
-  const loadingStyle = {
+  const loadingStyle: React.CSSProperties = {
     display: 'none',
     width: '50px',
     height: '50px',
@@ -90,7 +90,6 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
       }
 
     try {
-      console.log("dosearch", language, "search:", search, "apisection:", apisection)
       const response = await axios.get(`/api/${apisection}/search`,
         { params: { q: search, language: lan } }
       )
@@ -153,36 +152,36 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
       doSearch()
   }
 
-  
-  return (
-    <div id="lawpagediv">
-        <div style={topStyle} id="topdiv">
-            <TopMenu language={language} handleSelect={handleSelect} />
-           
-        </div>
-        <div style={contentStyle} id="contentdiv">
-            <div id="ccDiv" style={contentContainerStyle}>
+    return (
+      <div id="lawpagediv">
+          <div style={topStyle} id="topdiv">
+              <TopMenu language={language} handleSelect={handleSelect} />
+            
+          </div>
+          <div style={contentStyle} id="contentdiv">
+              <div id="ccDiv" style={contentContainerStyle}>
 
 
-                <SearchForm search={search}
-                            buttontext={buttonetext}  
-                            placeholdertext={placeholdertext}
-                            handleSearchInputChange={handleSearchInputChange}
-                            handleSearchEvent={handleSearchEvent} 
-                />
-   
-                <div id="errorblock">
-                    <Notification message={errorMessage} />
-                </div>
-                <div style={loadingStyle} id="loadingScreen">
-                  <ThreeDot color="#0c6fc0" size="medium" text="" textColor="" />
-                </div>
-   
-                <DocumentList laws={laws} frontsection={frontsection} language={language} />
-            </div>
-        </div>
-    </div>
-  )
+                  <SearchForm search={search}
+                              buttontext={buttonetext}  
+                              placeholdertext={placeholdertext}
+                              handleSearchInputChange={handleSearchInputChange}
+                              handleSearchEvent={handleSearchEvent} 
+                  />
+    
+                  <div id="errorblock">
+                      <Notification message={errorMessage} />
+                  </div>
+                  <div style={loadingStyle} id="loadingScreen">
+                    <ThreeDot color="#0c6fc0" size="medium" text="" textColor="" />
+                  </div>
+    
+                  <DocumentList laws={laws} frontsection={frontsection} language={language} />
+              </div>
+          </div>
+      </div>
+    )
+ 
 }
 
 export default ListDocumentPage

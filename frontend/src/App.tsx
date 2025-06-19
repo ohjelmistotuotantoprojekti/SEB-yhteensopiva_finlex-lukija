@@ -5,7 +5,9 @@ import {
 import ListDocumentPage from './components/ListDocumentPage'
 import DocumentPage from './components/DocumentPage'
 import { useState } from 'react'
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet"
+import { ThreeDot } from 'react-loading-indicators'
+import axios from 'axios'
 
 
 const App = () => {
@@ -15,44 +17,111 @@ const App = () => {
 
   const buttontext: string = language==="fin" ? "Hae" : "Sök"
  
+  const [appReady, setAppReady] = useState<boolean>(true)
+
+
   if (window.location.pathname === "/") {
     window.location.href = "/lainsaadanto/"
   }
 
-  return (
-    <Router>
-    <div>
+  const topStyle: React.CSSProperties = {
+    display: 'flex',
+    position: 'fixed',
+    top: '0px',
+    left: '0px',
+    justifyContent: 'center',
+    alignContent: 'center',
+    width: '100%',
+    height: '50px',
+    backgroundColor: '#0C6FC0',
+    padding: '0px',
+    paddingBottom: '0px',
+    margin: '0px',
+    border: '0px solid #0C6FC0'
+  }
 
-    <Helmet>
-        <title>Finlex Lite</title>
-    </Helmet>
-    <Routes>
-      <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
-                        apisection="statute"
-                        frontsection='lainsaadanto'
-                        placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi tai avainsana" : "År eller nummer/år eller nyckelord"}
-                  />
-                  } 
-      />
-      <Route key="lawpage" path="/lainsaadanto/:year/:id" 
-          element={<DocumentPage language={language}  apipath="statute" />
-                  } 
-      />
-      <Route key="caselistpage" path="/oikeuskaytanto" 
-        element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
-                        frontsection='oikeuskaytanto'
-                        placeholdertext={language==="fin" ? "Vuosi tai oikeusaste:vuosi:numero tai avainsana" : "År eller domstol:år:nummer eller nyckelord"}
-                  />
-                  } 
-      />
-      <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
-          element={<DocumentPage language={language} apipath="judgment" />
-                  } 
-      />
-    </Routes>
-    </div>
-    </Router>
-  )
+  const contentStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    padding: '5px',
+  }
+
+  const appLoadingStyle: React.CSSProperties = {
+    marginTop: '100px',
+    width: '300px',
+  }
+
+   const checkDbStatus = async () => {
+
+    try {
+      const response = await axios.get(`/api/check-db-status` )
+      if (response.status === 200) {
+        setAppReady(true)
+      }
+        
+    } catch (error) { // eslint-disable-line
+      
+      setAppReady(false)
+      setTimeout(() => {
+        checkDbStatus()
+      }, 1000)
+    }
+  }
+checkDbStatus()
+  if (appReady) {
+    return (
+      <Router>
+      <div>
+
+      <Helmet>
+          <title>Finlex Lite</title>
+      </Helmet>
+      <Routes>
+        <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
+                          apisection="statute"
+                          frontsection='lainsaadanto'
+                          placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi tai avainsana" : "År eller nummer/år eller nyckelord"}
+                    />
+                    } 
+        />
+        <Route key="lawpage" path="/lainsaadanto/:year/:id" 
+            element={<DocumentPage language={language}  apipath="statute" />
+                    } 
+        />
+        <Route key="caselistpage" path="/oikeuskaytanto" 
+          element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
+                          frontsection='oikeuskaytanto'
+                          placeholdertext={language==="fin" ? "Vuosi tai oikeusaste:vuosi:numero tai avainsana" : "År eller domstol:år:nummer eller nyckelord"}
+                    />
+                    } 
+        />
+        <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
+            element={<DocumentPage language={language} apipath="judgment" />
+                    } 
+        />
+      </Routes>
+      </div>
+      </Router>
+    )
+  }  else {
+    
+    return ( 
+
+        <div id="lawpagediv">
+          <div style={topStyle} id="topdiv">
+          &nbsp;
+          </div>
+          <div style={contentStyle} id="contentdiv">
+              <div id="ccDiv" style={appLoadingStyle}>
+               <p>{(language === "fin") ? "Hetkinen, sovellus lataa.": "Vänta en stund, appen laddar."}</p>
+                <ThreeDot color="#0c6fc0" size="large" text="" textColor="" />
+          </div>
+        </div>
+        </div>
+
+    )
+  }
 }
 
 export default App
