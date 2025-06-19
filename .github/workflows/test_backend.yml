@@ -13,6 +13,9 @@ jobs:
     env:
       PG_URI: postgres://postgres:postgres@localhost:5432/testdb
       TYPESENSE_HOST: localhost
+      TYPESENSE_PORT: 8108
+      TYPESENSE_API_KEY: xyz
+      NODE_ENV: test
     services:
       postgres:
         image: postgres:17
@@ -31,6 +34,7 @@ jobs:
         image: typesense/typesense:28.0
         env:
           TYPESENSE_API_KEY: 'xyz'
+          TYPESENSE_PORT: 8108
           TYPESENSE_DATA_DIR: /data
         volumes:
           - /tmp/typesense-data:/data
