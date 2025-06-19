@@ -27,7 +27,6 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",
-    "test:bg": "NODE_ENV=test node dist/index.js &",
     "e2e": "playwright test"
   },
   "dependencies": {
@@ -37,7 +36,6 @@
     "express": "^5.1.0",
     "fast-xml-parser": "^5.2.3",
     "jsdom": "^26.1.0",
-    "lodash": "^4.17.21",
     "pg": "^8.16.0",
     "uuid": "^11.1.0",
     "xml2js": "^0.6.2"
@@ -62,6 +60,7 @@
     "supertest": "^7.1.1",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.32.1"
+    "typescript-eslint": "^8.32.1",
+    "typesense": "^2.0.3"
   }
 }
