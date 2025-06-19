@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finlex-typesense-dep
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finlex-typesense
+  template:
+    metadata:
+      labels:
+        app: finlex-typesense
+    spec:
+      containers:
+        - name: finlex-typesense
+          image: typesense/typesense:28.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8108
+          env:
+            - name: TYPESENSE_API_KEY
+              value: "xyz"
+            - name: TYPESENSE_DATA_DIR
+              value: "/data"
+          volumeMounts:
+            - name: finlex-typesense-volume
+              mountPath: /data
+          resources:
+            limits:
+              memory: "1250Mi"
+              cpu: "1000m"
+            requests:
+              memory: "1150Mi"
+              cpu: "1000m"
+      volumes:
+        - name: finlex-typesense-volume
+          persistentVolumeClaim:
+            claimName: finlex-typesense-claim

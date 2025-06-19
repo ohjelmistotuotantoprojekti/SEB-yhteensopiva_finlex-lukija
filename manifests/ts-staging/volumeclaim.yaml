@@ -1,0 +1,14 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+
+metadata:
+  name: finlex-typesense-claim
+  namespace: ohtuprojekti-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: data-2
+  volumeMode: Filesystem

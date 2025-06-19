@@ -1,5 +1,5 @@
 import app from './app.js'
-import { setPool, setupTestDatabase } from './db/db.js'
+import { setPool } from './db/db.js'
 import { exit } from 'process';
 import dotenv from 'dotenv'
 dotenv.config()
@@ -10,16 +10,13 @@ if (!process.env.PG_URI) {
   exit(1);
 }
 
-// Luo db clientti ympäristön mukaan
+setPool(process.env.PG_URI)
 if (process.env.NODE_ENV === 'production') {
   console.log('Running in production mode')
-  setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'development') {
   console.log('Running in development mode')
-  setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'test') {
   console.log('Running in test mode')
-  setupTestDatabase(process.env.PG_URI)
 } else {
   console.log('Running in unknown mode')
   exit(1)

@@ -1,9 +1,10 @@
 import playwright from '@playwright/test'
 
+const BASE_URL = process.env.BASE_URL || 'http://localhost:3001'
 
 playwright.describe("Main page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001')
+    await page.goto(BASE_URL)
   })
 
 
@@ -27,7 +28,7 @@ playwright.describe("Main page", () => {
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("luonnonsuojelulaki")
     await page.getByRole("button", {name: "Hae"}).click()
-    await page.getByText("Luonnonsuojelulaki").click()
+    await page.getByText("9/2023 - Luonnonsuojelulaki").click()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
@@ -88,7 +89,7 @@ playwright.describe("Main page", () => {
 
 playwright.describe("Single law page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001/lainsaadanto/2023/9')
+    await page.goto(`${BASE_URL}/lainsaadanto/2023/9`)
   })
 
   playwright.test('language can be changed to swedish', async () => {
@@ -104,7 +105,7 @@ playwright.describe("Single law page", () => {
 
 playwright.describe("Case law page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001/oikeuskaytanto')
+    await page.goto(`${BASE_URL}/oikeuskaytanto`)
   })
 
   playwright.test('page can be opened', async ({ page }) => {
@@ -152,7 +153,7 @@ playwright.describe("Case law page", () => {
 
 
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("päätös")
+    await page.getByRole("textbox").fill("viikonloppu")
     await page.getByRole("button", {name: "Hae"}).click()
     await page.getByText(":").first().click()
   })
@@ -183,7 +184,7 @@ playwright.describe("Case law page", () => {
 
 playwright.describe("Single case law page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001/oikeuskaytanto/2005/13/kho')
+    await page.goto(`${BASE_URL}/oikeuskaytanto/2005/13/kho`)
   })
 
   playwright.test('language can be changed to swedish', async () => {

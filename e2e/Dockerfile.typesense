@@ -1,0 +1,23 @@
+FROM typesense/typesense:28.0
+ENV TYPESENSE_API_KEY=xyz \
+    TYPESENSE_DATA_DIR=/data \
+    TYPESENSE_PORT=8108
+EXPOSE 8108
+RUN mkdir -p /data
+RUN apt update && apt install -y curl
+
+
+## 1. Build
+# docker build -f Dockerfile.typesense -t finlex-typesense .
+
+## 2. Volume
+# docker volume create finlex-typesense-data
+
+## 3. Ensimmäinen käynnistys
+# docker run --name finlex-typesense -d -p 8108:8108 -v finlex-typesense-data:/data finlex-typesense
+
+## 4. Seuraavat käynnistykset
+# docker start finlex-typesense
+
+## 5. Käyttö
+# TYPESENSE_HOST=localhost

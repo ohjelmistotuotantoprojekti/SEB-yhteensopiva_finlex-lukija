@@ -1,0 +1,12 @@
+FROM mcr.microsoft.com/playwright:v1.52.0-noble
+WORKDIR /app
+COPY backend/playwright.config.ts .
+COPY backend/e2etest/finlex_app.spec.js ./e2etest/
+RUN npm install -D @playwright/test@1.52.0
+CMD npx playwright test --reporter=dot
+
+# 1. Build
+# docker build -f Dockerfile.playwright -t finlex-playwright .
+
+# 2. Run
+# docker run --name finlex-playwright --env BASE_URL=http://localhost:3000 finlex-playwright
