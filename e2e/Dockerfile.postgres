@@ -1,0 +1,22 @@
+FROM postgres:17
+
+ENV POSTGRES_USER=postgres \
+POSTGRES_PASSWORD=postgres \
+POSTGRES_DB=devdb
+
+EXPOSE 5432
+
+## 1. Build
+# docker build -f Dockerfile.db -t finlex-postgres .
+
+## 2. Volume
+# docker volume create finlex-postgres-data
+
+## 3. Ensimmäinen käynnistys
+# docker run --name finlex-postgres -d -p 5555:5432 -v finlex-postgres-data:/var/lib/postgresql/data finlex-postgres
+
+## 4. Seuraavat käynnistykset
+# docker start finlex-postgres
+
+## 5. Käyttö
+# PG_URI=postgres://postgres:postgres@localhost:5555/devdb

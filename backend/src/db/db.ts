@@ -293,8 +293,7 @@ async function closePool() {
   }
 }
 
-async function setupTestDatabase(uri: string): Promise<void> {
-  await setPool(uri);
+async function setupTestDatabase(): Promise<void> {
   await createTables();
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/swe@")

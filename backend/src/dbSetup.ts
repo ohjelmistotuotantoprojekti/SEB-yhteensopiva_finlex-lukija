@@ -1,4 +1,4 @@
-import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate } from "./db/db.js";
+import { setPool, dbIsReady, fillDb, createTables, dbIsUpToDate, setupTestDatabase } from "./db/db.js";
 import dotenv from "dotenv";
 import { exit } from 'process';
 import axios from 'axios';
@@ -11,16 +11,15 @@ if (!process.env.PG_URI) {
   process.exit(1);
 }
 
-// Luo db clientti ympäristön mukaan
+setPool(process.env.PG_URI)
 if (process.env.NODE_ENV === 'production') {
   console.log('Running in production mode')
-  setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'development') {
   console.log('Running in development mode')
-  setPool(process.env.PG_URI)
 } else if (process.env.NODE_ENV === 'test') {
   console.log('Running in test mode')
-  // testit asettavat poolin osana testiajoa
+  setupTestDatabase()
+  sendStatusUpdate(true)
 } else {
   console.log('Running in unknown mode')
   exit(1)
@@ -53,7 +52,7 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function sendStatusUpdate(success: boolean) {
+export async function sendStatusUpdate(success: boolean) {
   // Lähetä status päivitys palvelimelle
   const status = success ? 'ready' : 'notready';
   while (true) {
@@ -70,25 +69,27 @@ async function sendStatusUpdate(success: boolean) {
 
 const timeLong = 24 * 60 * 60 * 1000;
 const timeShort = 60 * 1000;
-let time = timeLong;
-await sleep(2000)
-while (true) {
-  try {
-    await initDatabase();
-    await deleteCollection('laws', 'fin');
-    await deleteCollection('laws', 'swe');
-    await deleteCollection('judgments', 'fin');
-    await deleteCollection('judgments', 'swe');
-    await syncLanguage('fin');
-    await syncLanguage('swe');
-    await syncJudgments('fin');
-    await syncJudgments('swe');
-    time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
-    await sendStatusUpdate(true);
-  } catch (error) {
-    console.error('Error during database initialization or sync:', error);
-    time = timeShort;
-    await sendStatusUpdate(false);
+if (process.env.NODE_ENV !== 'test') {
+  let time = timeLong;
+  await sleep(2000)
+  while (true) {
+    try {
+      await initDatabase();
+      await deleteCollection('laws', 'fin');
+      await deleteCollection('laws', 'swe');
+      await deleteCollection('judgments', 'fin');
+      await deleteCollection('judgments', 'swe');
+      await syncLanguage('fin');
+      await syncLanguage('swe');
+      await syncJudgments('fin');
+      await syncJudgments('swe');
+      time = timeLong; // Alusta pidempi odotusaika, jos tietokanta on valmis
+      await sendStatusUpdate(true);
+    } catch (error) {
+      console.error('Error during database initialization or sync:', error);
+      time = timeShort;
+      await sendStatusUpdate(false);
+    }
+    await sleep(time);
   }
-  await sleep(time);
 }

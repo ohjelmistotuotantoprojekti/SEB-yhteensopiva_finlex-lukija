@@ -8,9 +8,8 @@ dotenv.config()
 
 const api = supertest(app)
 
-import { closePool, setupTestDatabase } from '../src/db/db.js'
-
-const databaseUrl = process.env.PG_URI as string;
+import { setPool, closePool, setupTestDatabase } from '../src/db/db.js'
+setPool(process.env.PG_URI as string)
 
 const validateSearchResponse = (response) => {
   if (response.body.length === 0) {
@@ -67,7 +66,7 @@ const validateJudgmentContent = (response) => {
 }
 
 before(async () => {
-  await setupTestDatabase(databaseUrl);
+  await setupTestDatabase();
   await syncLanguage('fin');
   await syncLanguage('swe');
   await syncJudgments('fin');
