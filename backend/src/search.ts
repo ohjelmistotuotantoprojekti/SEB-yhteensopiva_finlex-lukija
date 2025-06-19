@@ -13,15 +13,20 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+if (!process.env.TYPESENSE_API_KEY) {
+  console.error("TYPESENSE_API_KEY environment variable is not set.");
+  process.exit(1);
+}
+
 const tsClient = new Typesense.Client({
   nodes: [
     {
       host: process.env.TYPESENSE_HOST || "localhost",
-      port: 8108,
+      port: process.env.TYPESENSE_PORT ? parseInt(process.env.TYPESENSE_PORT) : 8108,
       protocol: "http",
     },
   ],
-  apiKey: "xyz",
+  apiKey: process.env.TYPESENSE_API_KEY,
   connectionTimeoutSeconds: 2,
   logLevel: "debug"
 });

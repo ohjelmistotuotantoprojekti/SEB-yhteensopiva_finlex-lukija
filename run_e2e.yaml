@@ -39,6 +39,8 @@ services:
       NODE_ENV: test
       DATABASE_PASSWORD: AAA
       TYPESENSE_HOST: typesense
+      TYPESENSE_PORT: 8108
+      TYPESENSE_API_KEY: xyz
     depends_on:
       postgres:
         condition: service_healthy
@@ -55,6 +57,8 @@ services:
       dockerfile: e2e/Dockerfile.playwright
     environment:
       BASE_URL: http://app:3001
+      TYPESENSE_PORT: 8108
+      TYPESENSE_API_KEY: xyz
     depends_on:
       app:
         condition: service_healthy
