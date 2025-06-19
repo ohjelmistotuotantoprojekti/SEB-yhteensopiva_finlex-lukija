@@ -4,11 +4,13 @@ import { parseHtmlHeadings, parseXmlHeadings } from './util/parse.js';
 const app = express()
 app.use(express.json());
 import path from 'path';
-import { getLawByNumberYear, getLawsByYear, getJudgmentsByYear, getJudgmentByNumberYear, getLawByUuid, getJudgmentByUuid } from './db/akoma.js';
+import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords, getLawsByKeywordID, getLawByUuid, getJudgmentByUuid } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
 import { searchLaws, searchJudgments } from './search.js';
 
 import { fileURLToPath } from 'url';
+import _ from 'lodash';
+import { workerData } from 'worker_threads';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -147,6 +149,43 @@ app.get('/api/judgment/structure/id/:year/:number/:language/:level', async (requ
     console.error("Error parsing XML content", error);
     response.status(500).json({ error: 'Internal server error' });
     return;
+  }
+})
+
+// Hae valitun kielen kaikki avainsanat
+app.get('/api/statute/keywords/:language', async (request: express.Request, response: express.Response): Promise<void> => {
+  const language = request.params.language
+  let words;
+  try {
+    words = await getKeywords(language)
+  } catch (error) {
+    console.error("Error finding keywords", error)
+    return;
+  }
+  if (words === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  } else {
+    response.json(words)
+  }
+  })
+
+// Hae tiettyyn avainsanaan liittyvien lakien numero, vuosi ja otsikko
+app.get('/api/statute/keyword/:language/:keyword_id', async (request: express.Request, response: express.Response): Promise<void> => {
+  const keyword_id = request.params.keyword_id
+  const language = request.params.language
+  let laws;
+  try {
+    laws = await getLawsByKeywordID(language, keyword_id)
+  } catch (error) {
+    console.error("Error finding laws", error)
+    return;
+  }
+  if (laws === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  } else {
+    response.json(laws)
   }
 })
 

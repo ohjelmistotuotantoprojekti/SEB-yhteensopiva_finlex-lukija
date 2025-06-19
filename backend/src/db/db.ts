@@ -189,7 +189,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 2022;
+    const startYear = 1700;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
@@ -250,6 +250,12 @@ async function createTables(): Promise<void> {
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
       + ")");
+      await client.query("CREATE TABLE IF NOT EXISTS keywords ("
+      + "id TEXT NOT NULL,"
+      + "keyword TEXT NOT NULL,"
+      + "law_uuid UUID,"
+      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
+      + ")");
     client.release();
   }
   catch (error) {
@@ -265,6 +271,7 @@ async function dropTables(): Promise<void> {
     await client.query("DROP TABLE IF EXISTS laws");
     await client.query("DROP TABLE IF EXISTS judgments");
     await client.query("DROP TABLE IF EXISTS common_names");
+    await client.query("DROP TABLE IF EXISTS keywords");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);
