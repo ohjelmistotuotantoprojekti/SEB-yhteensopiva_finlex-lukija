@@ -63,12 +63,13 @@ export async function sendStatusUpdate(success: boolean) {
     } catch (error) {
       console.error('Error sending status update:', error)
     }
-    await sleep(timeShort); // Odota ennen uudelleenyritystä
+    await sleep(timeVeryShort); // Odota ennen uudelleenyritystä
   }
 }
 
 const timeLong = 24 * 60 * 60 * 1000;
 const timeShort = 60 * 1000;
+const timeVeryShort = 2 * 1000;
 if (process.env.NODE_ENV !== 'test') {
   let time = timeLong;
   await sleep(2000)
