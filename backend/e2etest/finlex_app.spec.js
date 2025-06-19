@@ -165,17 +165,17 @@ playwright.describe("Case law page", () => {
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kho:2021:1")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("Asian aikaisempi käsittely")
+    const locator1 = await page.getByText("Kunnan vammaispalvelupäällikkö oli")
     await playwright.expect(locator1).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kho:2021:1")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("med stöd av 33")
+    const locator1 = await page.getByText("Chefen för kommunens")
     await playwright.expect(locator1).toBeVisible()
   })
 
