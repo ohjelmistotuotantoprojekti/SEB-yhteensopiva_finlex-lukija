@@ -48,7 +48,7 @@ playwright.describe("Main page", () => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("naturvårdslag")
     await page.getByRole("button", {name: "Sök"}).click()
-    await page.getByText("Naturvårdslag").click()
+    await page.getByRole('link', { name: '/2023 - Naturvårdslag' }).click()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
