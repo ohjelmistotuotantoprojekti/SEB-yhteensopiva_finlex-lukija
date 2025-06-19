@@ -27,7 +27,7 @@ playwright.describe("Main page", () => {
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("luonnonsuojelulaki")
     await page.getByRole("button", {name: "Hae"}).click()
-    await page.getByText("Luonnonsuojelulaki").click()
+    await page.getByRole('link', { name: '/2023 - Luonnonsuojelulaki' }).click()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
