@@ -57,6 +57,7 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     marginTop: '70px',
     border: '0px solid pink'
   }
+
    const tocStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'start',

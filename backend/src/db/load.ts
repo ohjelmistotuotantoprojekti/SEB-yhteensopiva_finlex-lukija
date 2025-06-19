@@ -145,12 +145,14 @@ async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<str
   if (classificationNode?.keyword) {
     if (Array.isArray(classificationNode?.keyword)) {
       for (const word of classificationNode?.keyword) {
-        if (word?.$?.showAs) {
-          keyword_list.push(word?.$?.showAs)
+        if (word?.$?.showAs && word?.$?.value) {
+          const id = word?.$?.value.substr(word?.$?.value.lenght - 4)
+          keyword_list.push((word?.$?.showAs, id))
         }
       }
-    } else if (classificationNode?.keyword?.$?.showAs) {
-      keyword_list.push(classificationNode?.keyword?.$?.showAs)
+    } else if (classificationNode?.keyword?.$?.showAs && classificationNode?.keyword?.$?.value) {
+      const id = classificationNode?.keyword?.$?.value.substr(classificationNode?.keyword?.$?.value.lenght - 4)
+      keyword_list.push((classificationNode?.keyword?.$?.showAs, id))
     }
   }
   return keyword_list
