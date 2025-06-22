@@ -20,7 +20,7 @@ spec:
             - containerPort: 8108
           env:
             - name: TYPESENSE_API_KEY
-              value: "xyz"
+              value: seppo
             - name: TYPESENSE_DATA_DIR
               value: "/data"
           volumeMounts:
@@ -28,10 +28,10 @@ spec:
               mountPath: /data
           resources:
             limits:
-              memory: "1250Mi"
+              memory: "3800Mi"
               cpu: "1000m"
             requests:
-              memory: "1150Mi"
+              memory: "2000Mi"
               cpu: "1000m"
       volumes:
         - name: finlex-typesense-volume
