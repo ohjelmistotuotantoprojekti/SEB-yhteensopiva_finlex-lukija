@@ -103,7 +103,8 @@ async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string
   }
 
   // Poimi docTitle preface-elementistä
-  const docTitle = resultNode?.act?.preface?.p?.docTitle
+  const docTitle = resultNode?.act?.preface?.p?.docTitle ||
+    resultNode?.decree?.preface?.p?.docTitle;
   if (!docTitle) {
     throw new Error('docTitle not found')
   }
@@ -347,60 +348,61 @@ async function setSingleJudgment(uri: string) {
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list';
-  const queryParams = {
-    format: 'json',
-    page: 1,
-    limit: 10,
-    startYear: year,
-    endYear: year,
-  };
-
   const uris: string[] = [];
-
-  try {
-    while (true) {
-      const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
-        params: queryParams,
-        headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip'
-        }
-      });
-
-      if (!Array.isArray(result.data)) {
-        throw new Error('Invalid response format: expected an array');
-      }
-
-      const newUris = result.data.map(item => item.akn_uri);
-      uris.push(...newUris);
-
-      if (result.data.length < queryParams.limit) {
-        break; // No more pages to fetch
-      }
-
-      queryParams.page += 1;
+  for (const typeStatute of ['act', 'decree']) {
+    const queryParams = {
+      format: 'json',
+      page: 1,
+      limit: 10,
+      startYear: year,
+      endYear: year,
+      typeStatute
     };
 
-    // Get latest versions and filter by language
-    const latestVersions = getLatestStatuteVersions(uris)
-      .filter(uri => uri.includes(`/${language}@`));
+    try {
+      while (true) {
+        const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
+          params: queryParams,
+          headers: {
+            Accept: 'application/json',
+            'Accept-Encoding': 'gzip'
+          }
+        });
 
-    console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+        if (!Array.isArray(result.data)) {
+          throw new Error('Invalid response format: expected an array');
+        }
 
-    return latestVersions;
+        const newUris = result.data.map(item => item.akn_uri);
+        uris.push(...newUris);
 
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error(`Failed to fetch statute versions for year ${year}: ${error.message}`);
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
+        if (result.data.length < queryParams.limit) {
+          break; // No more pages to fetch
+        }
+
+        queryParams.page += 1;
       }
-    } else {
-      console.error(`Unexpected error while fetching statute versions: ${error}`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(`Failed to fetch statute versions for year ${year}, type ${typeStatute}: ${error.message}`);
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+      } else {
+        console.error(`Unexpected error while fetching statute versions: ${error}`);
+      }
     }
-    return [];
   }
+
+  // Get latest versions and filter by language
+  const latestVersions = getLatestStatuteVersions(uris)
+    .filter(uri => uri.includes(`/${language}@`));
+
+  console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+
+  return latestVersions;
+
 }
 
 
