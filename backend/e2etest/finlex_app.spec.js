@@ -28,7 +28,7 @@ playwright.describe("Main page", () => {
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("luonnonsuojelulaki")
     await page.getByRole("button", {name: "Hae"}).click()
-    await page.getByText("9/2023 - Luonnonsuojelulaki").click()
+    await page.getByRole('link', { name: '/2023 - Luonnonsuojelulaki' }).click()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
@@ -49,7 +49,7 @@ playwright.describe("Main page", () => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("naturvårdslag")
     await page.getByRole("button", {name: "Sök"}).click()
-    await page.getByText("Naturvårdslag").click()
+    await page.getByRole('link', { name: '/2023 - Naturvårdslag' }).click()
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
@@ -166,20 +166,19 @@ playwright.describe("Case law page", () => {
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kko:2023:5")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("Asian aikaisempi käsittely")
+    const locator1 = await page.getByText("oikeusneuvokset Pekka Koponen")
     await playwright.expect(locator1).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kko:1990:10")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("med stöd av 33")
+    const locator1 = await page.getByText("Oy Alko Ab")
     await playwright.expect(locator1).toBeVisible()
   })
-
 })
 
 playwright.describe("Single case law page", () => {
