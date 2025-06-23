@@ -1,14 +1,11 @@
 import { test, before, after } from 'node:test'
 import supertest from 'supertest'
-import app, {VALID_LEVELS} from '../src/app.js'
-import { syncLanguage, syncJudgments } from '../src/search.js'
-
-import dotenv from 'dotenv'
-dotenv.config()
+import app from '../src/app.js'
+import * as config from '../src/util/config.js'
+import { setPool, closePool, setupTestDatabase } from '../src/db/db.js'
 
 const api = supertest(app)
 
-import { setPool, closePool, setupTestDatabase } from '../src/db/db.js'
 setPool(process.env.PG_URI as string)
 
 const validateSearchResponse = (response) => {
@@ -60,17 +57,13 @@ const validateJudgmentContent = (response) => {
     throw new Error('Response docNumber is not in valid format')
   }
   if (typeof resultList[0].docLevel !== 'string' ||
-      !VALID_LEVELS.includes(resultList[0].docLevel)) {
+      !config.VALID_LEVELS.includes(resultList[0].docLevel)) {
     throw new Error('Response docLevel is not a valid level')
   }
 }
 
 before(async () => {
   await setupTestDatabase();
-  await syncLanguage('fin');
-  await syncLanguage('swe');
-  await syncJudgments('fin');
-  await syncJudgments('swe');
 });
 
 after(async () => {
@@ -133,7 +126,7 @@ test('law headings, ids and subheadings are returned', async () => {
     .expect(200)
     .expect((response) => {
       if (response.body[0].name !== "1 luku - Yleiset säännökset") {
-        throw new Error("Heading name does not match")
+        throw new Error(`Heading name does not match: got "${JSON.stringify(response.body)}"`)
       }
       if (response.body[0].id !== "chp_1") {
         throw new Error("Heading id does not match")
@@ -152,7 +145,7 @@ test('judgment headings, ids and subheadings are returned', async () => {
     .get('/api/judgment/structure/id/2023/5/fin/kko')
     .expect((response) => {
       if (response.body[0].name !== "Asian käsittely alemmissa oikeuksissa") {
-        throw new Error("Heading name does not match")
+        throw new Error(`Heading name does not match: got "${JSON.stringify(response.body)}"`)
       }
       if (response.body[0].id !== "OT0") {
         throw new Error("Heading id does not match")

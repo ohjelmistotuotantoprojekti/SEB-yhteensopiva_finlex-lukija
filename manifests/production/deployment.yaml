@@ -28,11 +28,6 @@ spec:
                 configMapKeyRef:
                   name: finlex-lukija-config
                   key: PG_URI
-            - name: DATABASE_PASSWORD
-              valueFrom:
-                configMapKeyRef:
-                  name: finlex-lukija-config
-                  key: DATABASE_PASSWORD
             - name: NODE_ENV
               value: "production"
             - name: TYPESENSE_HOST
@@ -46,8 +41,8 @@ spec:
                   key: TYPESENSE_API_KEY
           resources:
             limits:
-              memory: "512Mi"
+              memory: "1250Mi"
               cpu: "500m"
             requests:
-              memory: "256Mi"
+              memory: "1150Mi"
               cpu: "250m"

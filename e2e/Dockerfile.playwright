@@ -9,4 +9,4 @@ CMD npx playwright test --reporter=dot
 # docker build -f Dockerfile.playwright -t finlex-playwright .
 
 # 2. Run
-# docker run --name finlex-playwright --env BASE_URL=http://localhost:3000 finlex-playwright
+# docker run --name finlex-playwright --env BASE_URL=http://localhost:3001 finlex-playwright

@@ -37,7 +37,6 @@ services:
     environment:
       PG_URI: postgres://postgres:postgres@postgres:5432/testdb
       NODE_ENV: test
-      DATABASE_PASSWORD: AAA
       TYPESENSE_HOST: typesense
       TYPESENSE_PORT: 8108
       TYPESENSE_API_KEY: xyz

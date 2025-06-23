@@ -15,3 +15,10 @@ export interface JudgmentKey {
     year: number;
     language: string;
 }
+
+export interface JudgmentListItem {
+    docYear: number;
+    docNumber: string;
+    docLevel: string;
+    isEmpty: boolean;
+}

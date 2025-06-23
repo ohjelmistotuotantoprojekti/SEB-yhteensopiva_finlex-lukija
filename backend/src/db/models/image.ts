@@ -1,5 +1,5 @@
-import { query } from './db.js';
-import { Image } from '../types/image.js';
+import { query } from '../db.js';
+import { Image } from '../../types/image.js';
 
 async function setImage(image: Image) {
   const sql = 'INSERT INTO images (uuid, name, mime_type, content) VALUES ($1, $2, $3, $4) ON CONFLICT (name) DO NOTHING';
