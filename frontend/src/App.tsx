@@ -1,7 +1,7 @@
-import { 
-        BrowserRouter as Router,
-        Routes, Route,
- } from 'react-router-dom'   
+import {
+  BrowserRouter as Router,
+  Routes, Route,
+} from 'react-router-dom'
 import ListDocumentPage from './components/ListDocumentPage'
 import DocumentPage from './components/DocumentPage'
 import KeywordPage from './components/KeywordPage'
@@ -17,8 +17,8 @@ const App = () => {
     return localStorage.getItem("language") || "fin"
   })
 
-  const buttontext: string = language==="fin" ? "Hae" : "Sök"
- 
+  const buttontext: string = language === "fin" ? "Hae" : "Sök"
+
   const [appReady, setAppReady] = useState<boolean>(true)
 
 
@@ -55,77 +55,77 @@ const App = () => {
     width: '300px',
   }
 
-   const checkDbStatus = async () => {
+  const checkDbStatus = async () => {
 
     try {
-      const response = await axios.get(`/api/check-db-status` )
+      const response = await axios.get(`/api/check-db-status`)
       if (response.status === 200) {
         setAppReady(true)
       }
-        
+
     } catch (error) { // eslint-disable-line
-      
+
       setAppReady(false)
       setTimeout(() => {
         checkDbStatus()
       }, 1000)
     }
   }
-checkDbStatus()
+  checkDbStatus()
   if (appReady) {
     return (
       <Router>
-      <div>
+        <div>
 
-      <Helmet>
-          <title>Finlex Lite</title>
-      </Helmet>
-      <Routes>
-        <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} 
-                          apisection="statute"
-                          frontsection='lainsaadanto'
-                          placeholdertext={language==="fin" ? "Vuosi tai numero/vuosi tai avainsana" : "År eller nummer/år eller nyckelord"}
-                    />
-                    } 
-        />
-        <Route key="lawpage" path="/lainsaadanto/:year/:id" 
-            element={<DocumentPage language={language}  apipath="statute" />
-                    } 
-        />
-        <Route key="keywords" path="/lainsaadanto/asiasanat" element={<KeywordPage language={language} />}
-        />
-        <Route key="keyword_laws" path="/lainsaadanto/asiasanat/:keyword_id" element={<KeywordLawPage language={language} />} 
-        />
-        <Route key="caselistpage" path="/oikeuskaytanto" 
-          element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
-                          frontsection='oikeuskaytanto'
-                          placeholdertext={language==="fin" ? "Vuosi tai oikeusaste:vuosi:numero tai avainsana" : "År eller domstol:år:nummer eller nyckelord"}
-                    />
-                    } 
-        />
-        <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level" 
-            element={<DocumentPage language={language} apipath="judgment" />
-                    } 
-        />
-      </Routes>
-      </div>
+          <Helmet>
+            <title>Finlex Lite</title>
+          </Helmet>
+          <Routes>
+            <Route key="listpage" path="/lainsaadanto/" element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext}
+              apisection="statute"
+              frontsection='lainsaadanto'
+              placeholdertext={language === "fin" ? "Vuosi tai numero/vuosi tai avainsana" : "År eller nummer/år eller nyckelord"}
+            />
+            }
+            />
+            <Route key="lawpage" path="/lainsaadanto/:year/:id"
+              element={<DocumentPage language={language}  apipath="statute" />
+              }
+            />
+            <Route key="keywords" path="/lainsaadanto/asiasanat" element={<KeywordPage language={language} />}
+            />
+            <Route key="keyword_laws" path="/lainsaadanto/asiasanat/:keyword_id" element={<KeywordLawPage language={language} />}
+            />
+            <Route key="caselistpage" path="/oikeuskaytanto"
+              element={<ListDocumentPage language={language} setLanguage={setLanguage} buttonetext={buttontext} apisection="judgment"
+                frontsection='oikeuskaytanto'
+                placeholdertext={language === "fin" ? "Vuosi tai oikeusaste:vuosi:numero tai avainsana" : "År eller domstol:år:nummer eller nyckelord"}
+              />
+              }
+            />
+            <Route key="caselawpage" path="/oikeuskaytanto/:year/:id/:level"
+              element={<DocumentPage language={language} apipath="judgment" />
+              }
+            />
+          </Routes>
+        </div>
       </Router>
     )
   }  else {
-    
-    return ( 
 
-        <div id="lawpagediv">
-          <div style={topStyle} id="topdiv">
+    return (
+
+      <div id="lawpagediv">
+        <div style={topStyle} id="topdiv">
           &nbsp;
-          </div>
-          <div style={contentStyle} id="contentdiv">
-              <div id="ccDiv" style={appLoadingStyle}>
-               <p>{(language === "fin") ? "Hetkinen, sovellus lataa.": "Vänta en stund, appen laddar."}</p>
-                <ThreeDot color="#0c6fc0" size="large" text="" textColor="" />
+        </div>
+        <div style={contentStyle} id="contentdiv">
+          <div id="ccDiv" style={appLoadingStyle}>
+            <p>{(language === "fin") ? "Hetkinen, sovellus lataa." : "Vänta en stund, appen laddar."}</p>
+            <ThreeDot color="#0c6fc0" size="large" text="" textColor="" />
           </div>
         </div>
-        </div>
+      </div>
 
     )
   }

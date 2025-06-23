@@ -9,7 +9,7 @@ function getCourtName(level: string, language: string): string {
 
 
 const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
- 
+
 
   const listStyle = {
     width: "500px",
@@ -47,19 +47,19 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
   function prepareKey(doc: Document): string {
     return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${language}`;
   }
-  
-  const emptyTagName = language === 'fin' ? 'Tyhjä': 'Tom'
+
+  const emptyTagName = language === 'fin' ? 'Tyhjä' : 'Tom'
   return (
     <>
-    { laws.map((law) => 
+      { laws.map((law) =>
         <div style={listStyle} key={prepareKey(law)} >
-          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span>: ""}
+          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span> : ""}
           <a href={prepareLink(law)}>
             <b>{prepareLabel(law)}</b> {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
         </div>
       )
-    }
+      }
     </>
   )
 }
