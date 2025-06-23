@@ -191,7 +191,6 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
        
      <TopMenu language={lan} handleSelect={handleSelect} />
     </div>
-
     <div id="contentDiv" style={contentStyle}>
       <div id="contentBlock" style={contentBlockStyle}>
         <div id="leftMargin" style={tocStyle}>
