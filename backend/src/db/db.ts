@@ -189,7 +189,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 2022;
+    const startYear = 1700;
 
     for (let year = startYear; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
