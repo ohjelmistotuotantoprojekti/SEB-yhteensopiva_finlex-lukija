@@ -24,3 +24,10 @@ export interface StatuteListItem {
     isEmpty: boolean;
     docVersion: string | null;
 }
+
+export interface KeyWord {
+    id: string;
+    keyword: string;
+    law_uuid: string;
+    language: string;
+}

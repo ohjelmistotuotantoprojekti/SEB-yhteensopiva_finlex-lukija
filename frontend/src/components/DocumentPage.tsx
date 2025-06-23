@@ -46,7 +46,6 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     padding: '5px',
     margin: '10px',
     border: '0px solid blue'
-    
   }
 
    const contentBlockStyle: React.CSSProperties = {
@@ -58,6 +57,7 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     marginTop: '70px',
     border: '0px solid pink'
   }
+
    const tocStyle: React.CSSProperties = {
     display: 'flex',
     justifyContent: 'start',
@@ -191,7 +191,6 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
        
      <TopMenu language={lan} handleSelect={handleSelect} />
     </div>
-
     <div id="contentDiv" style={contentStyle}>
       <div id="contentBlock" style={contentBlockStyle}>
         <div id="leftMargin" style={tocStyle}>

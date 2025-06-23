@@ -1,6 +1,6 @@
 import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
-import { Statute, StatuteKey } from '../types/statute.js';
+import { Statute, StatuteKey, KeyWord } from '../types/statute.js';
 import { Judgment, JudgmentKey } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { setLaw } from './models/statute.js';
 import { setJudgment } from './models/judgment.js';
 import { setImage } from './models/image.js';
+import { setKeyword } from './models/keyword.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
@@ -104,7 +105,8 @@ async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string
   }
 
   // Poimi docTitle preface-elementistä
-  const docTitle = resultNode?.act?.preface?.p?.docTitle
+  const docTitle = resultNode?.act?.preface?.p?.docTitle ||
+    resultNode?.decree?.preface?.p?.docTitle;
   if (!docTitle) {
     throw new Error('docTitle not found')
   }
@@ -129,6 +131,36 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
   return imageLinks
 }
 
+async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[string, string][]> {
+  const keyword_list: [string, string][] = [];
+
+  // Parsi XML data JSON-muotoon
+  const xmlData = result.data as Promise<string>;
+  const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
+
+  // Poimi results-lista akomantoso-elementistä
+  const resultNode = parsedXmlData?.akomaNtoso
+  if (!resultNode) {
+    throw new Error('Result node not found in XML')
+  }
+  // Poimi keywordit ja id:t jos classification-elementti löytyy
+  const classificationNode = resultNode?.act?.meta?.classification
+  const keywords = classificationNode?.keyword
+  if (keywords) {
+    if (Array.isArray(keywords)) {
+      for (const word of keywords) {
+        if (word?.$ && word?.$?.showAs && word?.$?.value) {
+          const id = word?.$?.value.substr(word?.$?.value.length - 4)
+          keyword_list.push([word?.$?.showAs, id])
+        }
+      }
+    } else if (classificationNode?.keyword?.$?.showAs && classificationNode?.keyword?.$?.value) {
+      const id = classificationNode?.keyword?.$?.value.substr(classificationNode?.keyword?.$?.value.length - 4)
+      keyword_list.push([classificationNode?.keyword?.$?.showAs, id])
+    }
+  }
+  return keyword_list
+}
 
 function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
   const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
@@ -244,6 +276,7 @@ async function setSingleStatute(uri: string) {
   })
   const docTitle = await parseTitlefromXML(result)
   const imageLinks = await parseImagesfromXML(result)
+  const keywordList = await parseKeywordsfromXML(result)
   if (imageLinks.length > 0) {
     console.log(imageLinks.length)
     console.log(imageLinks)
@@ -263,6 +296,16 @@ async function setSingleStatute(uri: string) {
     version: docVersion,
     content: result.data as string,
     is_empty: is_empty
+  }
+
+  for (const keyword of keywordList) {
+    const key: KeyWord = {
+      id: keyword[1],
+      keyword: keyword[0],
+      law_uuid: lawUuid,
+      language: docLanguage
+    }
+    await setKeyword(key)
   }
 
   setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
@@ -307,60 +350,61 @@ async function setSingleJudgment(uri: string) {
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list';
-  const queryParams = {
-    format: 'json',
-    page: 1,
-    limit: 10,
-    startYear: year,
-    endYear: year,
-  };
-
   const uris: string[] = [];
-
-  try {
-    while (true) {
-      const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
-        params: queryParams,
-        headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip'
-        }
-      });
-
-      if (!Array.isArray(result.data)) {
-        throw new Error('Invalid response format: expected an array');
-      }
-
-      const newUris = result.data.map(item => item.akn_uri);
-      uris.push(...newUris);
-
-      if (result.data.length < queryParams.limit) {
-        break; // No more pages to fetch
-      }
-
-      queryParams.page += 1;
+  for (const typeStatute of ['act', 'decree']) {
+    const queryParams = {
+      format: 'json',
+      page: 1,
+      limit: 10,
+      startYear: year,
+      endYear: year,
+      typeStatute
     };
 
-    // Get latest versions and filter by language
-    const latestVersions = getLatestStatuteVersions(uris)
-      .filter(uri => uri.includes(`/${language}@`));
+    try {
+      while (true) {
+        const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
+          params: queryParams,
+          headers: {
+            Accept: 'application/json',
+            'Accept-Encoding': 'gzip'
+          }
+        });
 
-    console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+        if (!Array.isArray(result.data)) {
+          throw new Error('Invalid response format: expected an array');
+        }
 
-    return latestVersions;
+        const newUris = result.data.map(item => item.akn_uri);
+        uris.push(...newUris);
 
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error(`Failed to fetch statute versions for year ${year}: ${error.message}`);
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
+        if (result.data.length < queryParams.limit) {
+          break; // No more pages to fetch
+        }
+
+        queryParams.page += 1;
       }
-    } else {
-      console.error(`Unexpected error while fetching statute versions: ${error}`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(`Failed to fetch statute versions for year ${year}, type ${typeStatute}: ${error.message}`);
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+      } else {
+        console.error(`Unexpected error while fetching statute versions: ${error}`);
+      }
     }
-    return [];
   }
+
+  // Get latest versions and filter by language
+  const latestVersions = getLatestStatuteVersions(uris)
+    .filter(uri => uri.includes(`/${language}@`));
+
+  console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+
+  return latestVersions;
+
 }
 
 

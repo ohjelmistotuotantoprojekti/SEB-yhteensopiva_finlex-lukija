@@ -161,13 +161,13 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
           <div style={contentStyle} id="contentdiv">
               <div id="ccDiv" style={contentContainerStyle}>
 
-
                   <SearchForm search={search}
                               buttontext={buttonetext}  
                               placeholdertext={placeholdertext}
                               handleSearchInputChange={handleSearchInputChange}
                               handleSearchEvent={handleSearchEvent} 
                   />
+                  <a href="/lainsaadanto/asiasanat">Asiasanahaku</a>
     
                   <div id="errorblock">
                       <Notification message={errorMessage} />

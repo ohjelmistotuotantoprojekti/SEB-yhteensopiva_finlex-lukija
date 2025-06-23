@@ -70,3 +70,19 @@ export interface Headings {
         content: never[]
     }[]
 }
+
+export interface KeywordPageType {
+  language: string,
+}
+
+export interface LawByKey {
+  number: string,
+  year: string,
+  title: string,
+  keyword: string
+}
+
+export interface KeysType {
+  id: string,
+  keyword: string
+}
