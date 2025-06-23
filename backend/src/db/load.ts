@@ -332,8 +332,8 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
           throw new Error('Invalid response format: expected an array');
         }
 
-      const newUris = result.data.map(item => item.akn_uri);
-      uris.push(...newUris);
+        const newUris = result.data.map(item => item.akn_uri);
+        uris.push(...newUris);
 
         if (result.data.length < queryParams.limit) {
           break; // No more pages to fetch
