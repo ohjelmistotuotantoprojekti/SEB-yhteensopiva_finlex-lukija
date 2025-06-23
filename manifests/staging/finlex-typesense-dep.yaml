@@ -20,7 +20,10 @@ spec:
             - containerPort: 8108
           env:
             - name: TYPESENSE_API_KEY
-              value: seppo
+              valueFrom:
+                configMapKeyRef:
+                  name: finlex-lukija-config
+                  key: TYPESENSE_API_KEY
             - name: TYPESENSE_DATA_DIR
               value: "/data"
           volumeMounts:
@@ -31,7 +34,7 @@ spec:
               memory: "3800Mi"
               cpu: "1000m"
             requests:
-              memory: "2000Mi"
+              memory: "1000Mi"
               cpu: "1000m"
       volumes:
         - name: finlex-typesense-volume
