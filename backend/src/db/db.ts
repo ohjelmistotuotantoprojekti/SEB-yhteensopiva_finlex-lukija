@@ -249,7 +249,7 @@ async function createTables(): Promise<void> {
       + "is_empty BOOLEAN NOT NULL,"
       + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
       + ")");
-      await client.query("CREATE TABLE IF NOT EXISTS keywords ("
+    await client.query("CREATE TABLE IF NOT EXISTS keywords ("
       + "id TEXT NOT NULL,"
       + "keyword TEXT NOT NULL,"
       + "law_uuid UUID,"

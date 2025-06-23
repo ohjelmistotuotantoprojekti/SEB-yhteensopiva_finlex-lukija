@@ -9,9 +9,9 @@ import TopMenu from './TopMenu'
 const KeywordPage = ({language} : KeywordPage) => {
   
 
-    const [keywords, setKeywords] = useState([])
+    const [keywords, setKeywords] = useState<KeywordPage[]>([])
     const [lan, setLan] = useState<string>(language)
-    let path = `/api/statute/keywords/${lan}`
+    const path = `/api/statute/keywords/${lan}`
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
 
     const topStyle: React.CSSProperties = {
@@ -29,14 +29,14 @@ const KeywordPage = ({language} : KeywordPage) => {
       border: '0px solid red'
     }
 
-    const contentStyle = {
+    const contentStyle: React.CSSProperties = {
       display: 'flex',
       justifyContent: 'center',
       width: '100%',
       padding: '5px',
     }
 
-    const contentContainerStyle = {
+    const contentContainerStyle: React.CSSProperties = {
       width: '700px',
       border: '0px solid black',
       marginTop:'50px',

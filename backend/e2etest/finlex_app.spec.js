@@ -165,17 +165,17 @@ playwright.describe("Case law page", () => {
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kko:2023:5")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("Asian aikaisempi käsittely")
+    const locator1 = await page.getByText("Äiti vaati 11.6.2018")
     await playwright.expect(locator1).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("kho:2005:13")
+    await page.getByRole("textbox").fill("kko:2023:5")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("med stöd av 33")
+    const locator1 = await page.getByText("Se KKO:2007:71")
     await playwright.expect(locator1).toBeVisible()
   })
 
@@ -183,7 +183,7 @@ playwright.describe("Case law page", () => {
 
 playwright.describe("Single case law page", () => {
   playwright.beforeEach(async ({ page }) => {
-    await page.goto('http://localhost:3001/oikeuskaytanto/2005/13/kho')
+    await page.goto('http://localhost:3001/oikeuskaytanto/2023/5/kko')
   })
 
   playwright.test('language can be changed to swedish', async () => {

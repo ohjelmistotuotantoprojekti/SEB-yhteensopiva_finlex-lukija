@@ -74,3 +74,10 @@ export interface Headings {
 export interface KeywordPage {
   language: string,
 }
+
+export interface LawByKey {
+  number: string,
+  year: string,
+  title: string,
+  keyword: string
+}

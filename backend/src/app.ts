@@ -6,10 +6,8 @@ app.use(express.json());
 import path from 'path';
 import { getLawByNumberYear, getLawsByYear, getLawsByContent, getJudgmentsByYear, getJudgmentByNumberYear, getJudgmentsByContent, getLawsByCommonName, getKeywords, getLawsByKeywordID } from './db/akoma.js';
 import { getImageByName } from './db/image.js';
-
 import { fileURLToPath } from 'url';
 import _ from 'lodash';
-import { workerData } from 'worker_threads';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -167,7 +165,7 @@ app.get('/api/statute/keywords/:language', async (request: express.Request, resp
   } else {
     response.json(words)
   }
-  })
+})
 
 // Hae tiettyyn avainsanaan liittyvien lakien numero, vuosi ja otsikko
 app.get('/api/statute/keyword/:language/:keyword_id', async (request: express.Request, response: express.Response): Promise<void> => {

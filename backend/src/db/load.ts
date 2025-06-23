@@ -128,8 +128,8 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
   return imageLinks
 }
 
-async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<string[]> {
-  const keyword_list: string[] = [];
+async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[string, string][]> {
+  const keyword_list: [string, string][] = [];
 
   // Parsi XML data JSON-muotoon
   const xmlData = result.data as Promise<string>;
@@ -142,10 +142,11 @@ async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<str
   }
   // Poimi keywordit ja id:t jos classification-elementti löytyy
   const classificationNode = resultNode?.act?.meta?.classification
-  if (classificationNode?.keyword) {
-    if (Array.isArray(classificationNode?.keyword)) {
-      for (const word of classificationNode?.keyword) {
-        if (word?.$?.showAs && word?.$?.value) {
+  const keywords = classificationNode?.keyword
+  if (keywords) {
+    if (Array.isArray(keywords)) {
+      for (const word of keywords) {
+        if (word?.$ && word?.$?.showAs && word?.$?.value) {
           const id = word?.$?.value.substr(word?.$?.value.length - 4)
           keyword_list.push([word?.$?.showAs, id])
         }
