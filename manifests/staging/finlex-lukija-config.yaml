@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: finlex-lukija-config
 data:
-  PG_URI: postgres://finlex_lukija_db:E2cETBXeCtGsdRaRO4nR@possu-test.it.helsinki.fi:5432/finlex_lukija_db?targetServerType=primary&ssl=true
+  PG_URI: PG_URI
   DATABASE_PASSWORD: SECRET_DB_PASSWORD
   TYPESENSE_API_KEY: SECRET_API_KEY
 
