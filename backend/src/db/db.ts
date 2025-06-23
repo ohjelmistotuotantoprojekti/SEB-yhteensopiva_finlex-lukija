@@ -63,8 +63,11 @@ async function dbIsReady(): Promise<boolean> {
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'common_names');")
     const commonNamesExists = result.rows[0].exists;
 
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords');")
+    const keywordsExists = result.rows[0].exists;
+
     client.release();
-    return imagesExists && lawsExists && judgmentsExists && commonNamesExists;
+    return imagesExists && lawsExists && judgmentsExists && commonNamesExists && keywordsExists;
 
 
   } catch (error) {
