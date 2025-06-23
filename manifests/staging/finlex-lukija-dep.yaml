@@ -35,10 +35,19 @@ spec:
                   key: DATABASE_PASSWORD
             - name: NODE_ENV
               value: "production"
+            - name: TYPESENSE_HOST
+              value: "finlex-typesense-svc"
+            - name: TYPESENSE_PORT
+              value: "8000"
+            - name: TYPESENSE_API_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: finlex-lukija-config
+                  key: TYPESENSE_API_KEY
           resources:
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "3800Mi"
+              cpu: "1000m"
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: "1000Mi"
+              cpu: "500m"
