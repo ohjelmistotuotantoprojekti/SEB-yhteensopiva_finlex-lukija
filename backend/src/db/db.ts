@@ -221,47 +221,57 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], j
 async function createTables(): Promise<void> {
   try {
     const client = await pool.connect();
-    await client.query("CREATE TABLE IF NOT EXISTS images ("
-      + "uuid UUID PRIMARY KEY,"
-      + "name TEXT NOT NULL UNIQUE,"
-      + "mime_type TEXT NOT NULL,"
-      + "content BYTEA NOT NULL"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS laws ("
-      + "uuid UUID PRIMARY KEY,"
-      + "title TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "version TEXT,"
-      + "content XML NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_act UNIQUE (number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS common_names ("
-      + "uuid UUID PRIMARY KEY,"
-      + "common_name TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "CONSTRAINT unique_name UNIQUE (number, year, language, common_name)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS judgments ("
-      + "uuid UUID PRIMARY KEY,"
-      + "level TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "content TEXT NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS keywords ("
-      + "id TEXT NOT NULL,"
-      + "keyword TEXT NOT NULL,"
-      + "law_uuid UUID,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
-      + ")");
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        uuid UUID PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        mime_type TEXT NOT NULL,
+        content BYTEA NOT NULL
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS laws (
+        uuid UUID PRIMARY KEY,
+        title TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        version TEXT,
+        content XML NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_act UNIQUE (number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS common_names (
+        uuid UUID PRIMARY KEY,
+        common_name TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_name UNIQUE (number, year, language, common_name)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS judgments (
+        uuid UUID PRIMARY KEY,
+        level TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        content TEXT NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_judgment UNIQUE (level, number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS keywords (
+        id TEXT NOT NULL,
+        keyword TEXT NOT NULL,
+        law_uuid UUID,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))
+      )
+    `);
     client.release();
   }
   catch (error) {
