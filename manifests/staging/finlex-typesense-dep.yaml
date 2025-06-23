@@ -20,7 +20,10 @@ spec:
             - containerPort: 8108
           env:
             - name: TYPESENSE_API_KEY
-              value: "xyz"
+              valueFrom:
+                configMapKeyRef:
+                  name: finlex-lukija-config
+                  key: TYPESENSE_API_KEY
             - name: TYPESENSE_DATA_DIR
               value: "/data"
           volumeMounts:
@@ -28,10 +31,10 @@ spec:
               mountPath: /data
           resources:
             limits:
-              memory: "1250Mi"
+              memory: "3800Mi"
               cpu: "1000m"
             requests:
-              memory: "1150Mi"
+              memory: "1000Mi"
               cpu: "1000m"
       volumes:
         - name: finlex-typesense-volume
