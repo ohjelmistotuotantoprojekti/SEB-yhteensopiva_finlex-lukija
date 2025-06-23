@@ -42,7 +42,7 @@ checkNodeEnv(VALID_NODE_ENVS);
 
 if (cluster.isPrimary) {
   const startFolder = process.argv[1].split('/').slice(0, -1).join('/');
-  const fileType = process.env.NODE_ENV === 'production' ? 'js' : 'ts';
+  const fileType = startFolder.includes('/dist') ? 'js' : 'ts';
   const appFile: string = `${startFolder}/index.${fileType}`;
   const dbSetupFile: string = `${startFolder}/dbSetup.${fileType}`;
   const ROLES: {[key: string]: {exec: string, execArgv: string[], restartDelay(code: number): number, onExit(code: number): void}} = {
