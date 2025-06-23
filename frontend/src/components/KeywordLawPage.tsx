@@ -12,7 +12,6 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
     const [laws, setLaws] = useState<LawByKey[]>([])
     const [lan, setLan] = useState<string>(language)
     const path = `/api/statute/keyword/${lan}/${keyword_id}`
-    console.log(path)
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
 
     const topStyle: React.CSSProperties = {
@@ -52,6 +51,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
 
     const getLaws = async (path: string) => {
         const resp = await axios.get(path)
+        setLaws([])
         setLaws(resp.data)
     }
     getLaws(path)
@@ -83,7 +83,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
         <h1>{title}</h1>
 
         {laws.map(law => 
-            <div style={listStyle} key={law.keyword}>
+            <div style={listStyle} key={law.number}>
                 <a href={prepareLink(law)}>
                 {law.number}/{law.year} - {law.title}
               </a>
