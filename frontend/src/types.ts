@@ -71,7 +71,7 @@ export interface Headings {
     }[]
 }
 
-export interface KeywordPage {
+export interface KeywordPageType {
   language: string,
 }
 
@@ -79,5 +79,10 @@ export interface LawByKey {
   number: string,
   year: string,
   title: string,
+  keyword: string
+}
+
+export interface KeysType {
+  id: string,
   keyword: string
 }

@@ -1,12 +1,12 @@
 import axios from 'axios'
 import { useState} from 'react'
-import type { KeywordPage, LawByKey } from "../types"
+import type { KeywordPageType, LawByKey } from "../types"
 import { useParams } from 'react-router-dom'
 import {Helmet} from "react-helmet";
 import TopMenu from './TopMenu'
 
 
-const KeywordLawPage = ({language} : KeywordPage) => {
+const KeywordLawPage = ({language} : KeywordPageType) => {
 
     const keyword_id: string = useParams().keyword_id ?? ""
     const [laws, setLaws] = useState<LawByKey[]>([])

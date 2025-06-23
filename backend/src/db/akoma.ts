@@ -84,4 +84,4 @@ async function getJudgmentByUuid(uuid: string): Promise<{ level: string; year: n
   return result.rows[0] || null;
 }
 
-export { setJudgment, getLawByNumberYear, getLawsByYear, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentCountByYear, setCommonName, getLawByUuid, getJudgmentByUuid, getKeywords, getLawsByKeywordID };
+export { setJudgment, getLawByNumberYear, getLawsByYear, setLaw, getLawCountByYear, getJudgmentByNumberYear, getJudgmentsByYear, getJudgmentCountByYear, setCommonName, getLawByUuid, getJudgmentByUuid, getKeywords, getLawsByKeywordID, setKeyword };

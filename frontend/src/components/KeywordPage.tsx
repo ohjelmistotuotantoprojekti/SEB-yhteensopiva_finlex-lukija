@@ -1,15 +1,15 @@
 import axios from 'axios'
-import type { KeywordPage } from "../types"
+import type { KeywordPageType, KeysType } from "../types"
 import { useState } from 'react'
 import {Helmet} from "react-helmet";
 import TopMenu from './TopMenu'
 
 
 
-const KeywordPage = ({language} : KeywordPage) => {
+const KeywordPage = ({language} : KeywordPageType) => {
   
 
-    const [keywords, setKeywords] = useState<KeywordPage[]>([])
+    const [keywords, setKeywords] = useState<KeysType[]>([])
     const [lan, setLan] = useState<string>(language)
     const path = `/api/statute/keywords/${lan}`
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
