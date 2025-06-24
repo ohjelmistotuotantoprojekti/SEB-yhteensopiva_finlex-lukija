@@ -121,7 +121,7 @@ const App = () => {
         </div>
         <div style={contentStyle} id="contentdiv">
           <div id="ccDiv" style={appLoadingStyle}>
-            <p>{(language === "fin") ? "Hetkinen, sovellus lataa." : "Vänta en stund, appen laddar."}</p>
+            <p>{(language === "fin") ? "Sovellus ei ole käytettävissä juuri nyt." : "Appen är inte i bruk just nu."}</p>
             <ThreeDot color="#0c6fc0" size="large" text="" textColor="" />
           </div>
         </div>
