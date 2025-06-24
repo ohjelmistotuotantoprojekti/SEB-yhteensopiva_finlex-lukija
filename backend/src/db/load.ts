@@ -1,12 +1,14 @@
 import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
-import { Akoma, LawKey, KeyWord } from '../types/akoma.js';
+import { Statute, StatuteKey, KeyWord } from '../types/statute.js';
 import { Judgment, JudgmentKey } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
 import { v4 as uuidv4 } from 'uuid';
-import { setJudgment, setLaw, setKeyword } from './akoma.js';
-import { setImage } from './image.js';
+import { setLaw } from './models/statute.js';
+import { setJudgment } from './models/judgment.js';
+import { setImage } from './models/image.js';
+import { setKeyword } from './models/keyword.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
@@ -43,7 +45,7 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
   }
 }
 
-function buildFinlexUrl(law: LawKey): string {
+function buildFinlexUrl(law: StatuteKey): string {
   const baseUrl = 'https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated';
   return `${baseUrl}/${law.year}/${law.number}/${law.language}@${law.version ? law.version : ''}`;
 }
@@ -284,8 +286,8 @@ async function setSingleStatute(uri: string) {
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
-  const lawUuid = uuidv4()
-  const law: Akoma = {
+  let lawUuid = uuidv4()
+  const law: Statute = {
     uuid: lawUuid,
     title: docTitle,
     number: docNumber,
@@ -295,6 +297,8 @@ async function setSingleStatute(uri: string) {
     content: result.data as string,
     is_empty: is_empty
   }
+
+  lawUuid = await setLaw(law)
 
   for (const keyword of keywordList) {
     const key: KeyWord = {
@@ -307,7 +311,6 @@ async function setSingleStatute(uri: string) {
   }
 
   setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
-  await setLaw(law)
 }
 
 async function setSingleJudgment(uri: string) {
@@ -448,7 +451,7 @@ async function listJudgmentsByYear(year: number, language: string, level: string
 }
 
 
-export async function getCommonNames(language: string): Promise<LawKey[]> {
+export async function getCommonNames(language: string): Promise<StatuteKey[]> {
   console.log(`Fetching common names for language: ${language}`);
   let url: string;
   if (language == 'fin') {
@@ -469,7 +472,7 @@ export async function getCommonNames(language: string): Promise<LawKey[]> {
   if (tables.length === 0) {
     throw new Error('No table found in the document');
   }
-  const entries: LawKey[] = [];
+  const entries: StatuteKey[] = [];
   for (const table of tables) {
 
     const rows    = table.querySelectorAll('tbody tr');

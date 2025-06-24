@@ -23,7 +23,7 @@
   "scripts": {
     "start": "NODE_ENV=production node dist/start.js",
     "build": "rm -rf dist && tsc && cp -r src/frontend dist/frontend",
-    "dev": "NODE_ENV=development tsx --watch src/startdev.ts",
+    "dev": "NODE_ENV=development node --import tsx --watch src/start.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "NODE_ENV=test tsx test/*.test.ts",

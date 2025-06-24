@@ -1,4 +1,4 @@
-export interface Akoma {
+export interface Statute {
     uuid: string;
     title: string;
     number: string;
@@ -9,7 +9,7 @@ export interface Akoma {
     is_empty: boolean;
 }
 
-export interface LawKey {
+export interface StatuteKey {
     number: string;
     year: number;
     language: string;
@@ -17,12 +17,12 @@ export interface LawKey {
     commonName?: string;
 }
 
-export interface CommonName {
-    uuid: string;
-    commonName: string;
-    number: string;
-    year: number;
-    language: string;
+export interface StatuteListItem {
+    docYear: number;
+    docNumber: string;
+    docTitle: string;
+    isEmpty: boolean;
+    docVersion: string | null;
 }
 
 export interface KeyWord {

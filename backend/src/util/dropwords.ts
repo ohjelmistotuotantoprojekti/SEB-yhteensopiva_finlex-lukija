@@ -1,15 +1,14 @@
 // poistaa tietyt sanat joko yhdestä stringistä tai listasta stringejä
-export function dropWords(dropWords: string[], input: string): string;
-export function dropWords(dropWords: string[], input: string[]): string[];
+export function dropWords(dropWords: Set<string>, input: string): string;
+export function dropWords(dropWords: Set<string>, input: string[]): string[];
 export function dropWords(
-  dropWords: string[],
+  dropWords: Set<string>,
   input: string | string[],
 ): string | string[] {
-  const dropSet = new Set(dropWords);
   const cleanSentence = (sentence: string): string =>
     sentence
       .split(/\s+/)
-      .filter(token => !dropSet.has(token))
+      .filter(token => !dropWords.has(token))
       .join(" ");
 
   if (typeof input === "string") {
@@ -19,7 +18,7 @@ export function dropWords(
   }
 }
 
-export const dropwords_fin = [
+const dropwords_fin = [
   "aiheuttaa",
   "aiheutuvat",
   "aika",
@@ -646,7 +645,7 @@ export const dropwords_fin = [
   "ylittää"
 ]
 
-export const dropwords_swe = [
+const dropwords_swe = [
   "alla",
   "allmänna",
   "ämnen",
@@ -844,3 +843,6 @@ export const dropwords_swe = [
   "villkor",
   "vissa"
 ]
+
+export const dropwords_set_fin = new Set(dropwords_fin);
+export const dropwords_set_swe = new Set(dropwords_swe);

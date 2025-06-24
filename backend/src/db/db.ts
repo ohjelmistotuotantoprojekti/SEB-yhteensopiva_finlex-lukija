@@ -1,11 +1,14 @@
 
 import { Pool, QueryResult } from 'pg';
 import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment, getCommonNames } from './load.js';
-import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsByYear, setCommonName } from './akoma.js';
-import { CommonName, LawKey } from '../types/akoma.js';
+import { setCommonName } from './commonName.js';
+import { getLawCountByYear, getLawsByYear } from './models/statute.js';
+import { getJudgmentCountByYear, getJudgmentsByYear } from './models/judgment.js';
+import { CommonName } from '../types/commonName.js';
+import { StatuteKey } from '../types/statute.js';
 import { JudgmentKey } from '../types/judgment.js';
 import { v4 as uuidv4 } from 'uuid';
-import { syncJudgments, syncLanguage } from '../search.js';
+import { syncJudgments, syncStatutes } from '../search.js';
 
 let pool: Pool;
 
@@ -15,7 +18,7 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(laws: LawKey[], judgments: JudgmentKey[]): Promise<void> {
+async function fillDb(laws: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
     let commonNames = await getCommonNames('fin');
@@ -60,8 +63,11 @@ async function dbIsReady(): Promise<boolean> {
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'common_names');")
     const commonNamesExists = result.rows[0].exists;
 
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords');")
+    const keywordsExists = result.rows[0].exists;
+
     client.release();
-    return imagesExists && lawsExists && judgmentsExists && commonNamesExists;
+    return imagesExists && lawsExists && judgmentsExists && commonNamesExists && keywordsExists;
 
 
   } catch (error) {
@@ -70,7 +76,7 @@ async function dbIsReady(): Promise<boolean> {
   }
 }
 
-async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgments: JudgmentKey[]}> {
+async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], judgments: JudgmentKey[]}> {
   console.log('Checking if database is up to date...');
 
   async function compareStatuteCount(year: number): Promise<boolean> {
@@ -111,7 +117,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     return existingCount === expectedCount;
   }
 
-  async function findMissingStatutes(year: number): Promise<LawKey[]> {
+  async function findMissingStatutes(year: number): Promise<StatuteKey[]> {
     const expectedFin = await listStatutesByYear(year, 'fin');
     const expectedSwe = await listStatutesByYear(year, 'swe');
     const expectedLaws = []
@@ -121,16 +127,16 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     }
     const existingLawsFin = await getLawsByYear(year, 'fin');
     const existingLawsSwe = await getLawsByYear(year, 'swe');
-    const existingLaws: LawKey[] = [];
+    const existingLaws: StatuteKey[] = [];
 
     for (const law of existingLawsFin) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'fin', version: law.version });
+      existingLaws.push({ number: law.docNumber, year: law.docYear, language: 'fin', version: law.docVersion });
     }
     for (const law of existingLawsSwe) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'swe', version: law.version });
+      existingLaws.push({ number: law.docNumber, year: law.docYear, language: 'swe', version: law.docVersion });
     }
 
-    const missingLaws: LawKey[] = [];
+    const missingLaws: StatuteKey[] = [];
     for (const law of expectedLaws) {
       if (!existingLaws.some(existing =>
         existing.number === law.number &&
@@ -161,10 +167,10 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const existingJudgmentsSwe = await getJudgmentsByYear(year, 'swe', 'any');
     const existingJudgments: JudgmentKey[] = [];
     for (const judgment of existingJudgmentsFin) {
-      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'fin', level: judgment.level });
+      existingJudgments.push({ number: judgment.docNumber, year: judgment.docYear, language: 'fin', level: judgment.docLevel });
     }
     for (const judgment of existingJudgmentsSwe) {
-      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'swe', level: judgment.level });
+      existingJudgments.push({ number: judgment.docNumber, year: judgment.docYear, language: 'swe', level: judgment.docLevel });
     }
 
     const missingJudgments: JudgmentKey[] = [];
@@ -185,7 +191,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
 
 
   try {
-    const laws: LawKey[] = [];
+    const laws: StatuteKey[] = [];
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
@@ -215,47 +221,57 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
 async function createTables(): Promise<void> {
   try {
     const client = await pool.connect();
-    await client.query("CREATE TABLE IF NOT EXISTS images ("
-      + "uuid UUID PRIMARY KEY,"
-      + "name TEXT NOT NULL UNIQUE,"
-      + "mime_type TEXT NOT NULL,"
-      + "content BYTEA NOT NULL"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS laws ("
-      + "uuid UUID PRIMARY KEY,"
-      + "title TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "version TEXT,"
-      + "content XML NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_act UNIQUE (number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS common_names ("
-      + "uuid UUID PRIMARY KEY,"
-      + "common_name TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "CONSTRAINT unique_name UNIQUE (number, year, language, common_name)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS judgments ("
-      + "uuid UUID PRIMARY KEY,"
-      + "level TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "content TEXT NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS keywords ("
-      + "id TEXT NOT NULL,"
-      + "keyword TEXT NOT NULL,"
-      + "law_uuid UUID,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))"
-      + ")");
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        uuid UUID PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        mime_type TEXT NOT NULL,
+        content BYTEA NOT NULL
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS laws (
+        uuid UUID PRIMARY KEY,
+        title TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        version TEXT,
+        content XML NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_act UNIQUE (number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS common_names (
+        uuid UUID PRIMARY KEY,
+        common_name TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_name UNIQUE (number, year, language, common_name)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS judgments (
+        uuid UUID PRIMARY KEY,
+        level TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        content TEXT NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_judgment UNIQUE (level, number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS keywords (
+        id TEXT NOT NULL,
+        keyword TEXT NOT NULL,
+        law_uuid UUID,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))
+      )
+    `);
     client.release();
   }
   catch (error) {
@@ -316,8 +332,8 @@ async function setupTestDatabase(): Promise<void> {
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1990/10")
   await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1975/II-16")
-  await syncLanguage('fin');
-  await syncLanguage('swe');
+  await syncStatutes('fin');
+  await syncStatutes('swe');
   await syncJudgments('fin');
   await syncJudgments('swe');
   console.log('Test database setup complete');
