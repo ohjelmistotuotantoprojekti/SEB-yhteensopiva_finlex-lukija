@@ -12,7 +12,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
   const [laws, setLaws] = useState<LawByKey[]>([])
   const [lan, setLan] = useState<string>(language)
   const path = `/api/statute/keyword/${lan}/${keyword_id}`
-  const title: string = language === "fin" ? "Asiasanat" : "Ämnesord"
+  const title = lan === "fin" ? "Asiasanat" : "Ämnesord"
 
   const topStyle: React.CSSProperties = {
     display: 'flex',
@@ -53,8 +53,10 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
     const resp = await axios.get(path)
     setLaws([])
     setLaws(resp.data)
+
   }
-  getLaws(path)
+  if (laws.length === 0) {
+    getLaws(path)}
 
   function prepareLink(law: LawByKey): string {
     return `/lainsaadanto/${law.year}/${law.number}`;
@@ -64,7 +66,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
     const currentValue = (event.target as HTMLInputElement).value
     setLan(currentValue)
     localStorage.setItem("language", currentValue)
-    getLaws(path)
+    setLaws([])
 
   }
 
@@ -80,12 +82,11 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
       </div>
       <div style={contentStyle} id="contentdiv">
         <div id="contentDiv" style={contentContainerStyle}>
-          <h1>{title}</h1>
-
+          <h1>{title} - {laws.length > 0 && ` ${laws[0].keyword}`}</h1>
           {laws.map(law =>
             <div style={listStyle} key={law.number}>
               <a href={prepareLink(law)}>
-                {law.number}/{law.year} - {law.title}
+                <b>{law.number}/{law.year}</b> - {law.title}
               </a>
             </div>
           )}

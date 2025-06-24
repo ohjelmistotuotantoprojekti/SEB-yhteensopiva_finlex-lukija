@@ -12,7 +12,7 @@ const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChang
     border: '1px solid #0C6FC0',
     borderBottom: '4px solid #0C6FC0',
     marginTop: '70px',
-    marginBottom: '50px',
+    marginBottom: '10px',
   }
 
   const buttonStyle = {
