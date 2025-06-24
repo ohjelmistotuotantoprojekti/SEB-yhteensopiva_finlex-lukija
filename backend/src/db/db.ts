@@ -268,7 +268,7 @@ async function createTables(): Promise<void> {
       CREATE TABLE IF NOT EXISTS keywords (
         id TEXT NOT NULL,
         keyword TEXT NOT NULL,
-        law_uuid UUID,
+        law_uuid UUID references laws(uuid) ON DELETE CASCADE,
         language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))
       )
     `);
