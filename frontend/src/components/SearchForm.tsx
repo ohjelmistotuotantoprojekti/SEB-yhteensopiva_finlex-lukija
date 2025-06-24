@@ -27,18 +27,18 @@ const SearchForm = ({buttontext, placeholdertext, search, handleSearchInputChang
   }
 
   return (
-       <div key="searchdiv" style={inputBoxStyle}>
-        <form key="searchForm" onSubmit={handleSearchEvent}>
-          <input type="text" size={55} key="searchField" 
-         onChange={handleSearchInputChange}
+    <div key="searchdiv" style={inputBoxStyle}>
+      <form key="searchForm" onSubmit={handleSearchEvent}>
+        <input type="text" size={55} key="searchField"
+          onChange={handleSearchInputChange}
           value={search}
           style={inputStyle}
           placeholder={placeholdertext}
           maxLength={60}/>
         &nbsp; <button style={buttonStyle} type="submit">{buttontext}</button>
-        </form>
-      </div>
-   )
+      </form>
+    </div>
+  )
 }
 
 export default SearchForm

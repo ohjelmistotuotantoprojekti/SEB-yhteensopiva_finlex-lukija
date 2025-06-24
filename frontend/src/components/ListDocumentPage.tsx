@@ -26,7 +26,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   let lan: string = language
 
 
-   const topStyle: React.CSSProperties = {
+  const topStyle: React.CSSProperties = {
     display: 'flex',
     position: 'fixed',
     top: '0px',
@@ -86,8 +86,8 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     setLaws([])
     const loadingScreen = document.getElementById("loadingScreen")
     if (loadingScreen) {
-        loadingScreen.style.display = "inline";
-      }
+      loadingScreen.style.display = "inline";
+    }
 
     try {
       const response = await axios.get(`/api/${apisection}/search`,
@@ -104,7 +104,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
         if (loadingScreen) {
           loadingScreen.style.display = "none";
         }
-        window.location.href = `/${frontsection}/${year}/${number}${level ? '/'+level : ''}`
+        window.location.href = `/${frontsection}/${year}/${number}${level ? '/' + level : ''}`
       }
     } catch (error) {
       if (loadingScreen) {
@@ -129,59 +129,59 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
         }
         logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
       }
-      
+
     }
   }
 
   function showError(errorMessage: string) {
     setErrorMessage(
-          errorMessage
-        )
-        setLaws([])
-        setTimeout(() => {
-          setErrorMessage("")
-        }, 2500)
+      errorMessage
+    )
+    setLaws([])
+    setTimeout(() => {
+      setErrorMessage("")
+    }, 2500)
   }
 
 
   const handleSelect = (event: React.SyntheticEvent) => {
-      const currentValue = (event.target as HTMLInputElement).value
-      localStorage.setItem("language", currentValue)
-      setLanguage(currentValue)
-      lan = currentValue
-      doSearch()
+    const currentValue = (event.target as HTMLInputElement).value
+    localStorage.setItem("language", currentValue)
+    setLanguage(currentValue)
+    lan = currentValue
+    doSearch()
   }
 
-    return (
-      <div id="lawpagediv">
-          <div style={topStyle} id="topdiv">
-              <TopMenu language={language} handleSelect={handleSelect} />
-            
-          </div>
-          <div style={contentStyle} id="contentdiv">
-              <div id="ccDiv" style={contentContainerStyle}>
+  return (
+    <div id="lawpagediv">
+      <div style={topStyle} id="topdiv">
+        <TopMenu language={language} handleSelect={handleSelect} />
 
-                  <SearchForm search={search}
-                              buttontext={buttonetext}  
-                              placeholdertext={placeholdertext}
-                              handleSearchInputChange={handleSearchInputChange}
-                              handleSearchEvent={handleSearchEvent} 
-                  />
-                  <a href="/lainsaadanto/asiasanat">Asiasanahaku</a>
-    
-                  <div id="errorblock">
-                      <Notification message={errorMessage} />
-                  </div>
-                  <div style={loadingStyle} id="loadingScreen">
-                    <ThreeDot color="#0c6fc0" size="medium" text="" textColor="" />
-                  </div>
-    
-                  <DocumentList laws={laws} frontsection={frontsection} language={language} />
-              </div>
-          </div>
       </div>
-    )
- 
+      <div style={contentStyle} id="contentdiv">
+        <div id="ccDiv" style={contentContainerStyle}>
+
+          <SearchForm search={search}
+            buttontext={buttonetext}
+            placeholdertext={placeholdertext}
+            handleSearchInputChange={handleSearchInputChange}
+            handleSearchEvent={handleSearchEvent}
+          />
+          <a href="/lainsaadanto/asiasanat">Asiasanahaku</a>
+
+          <div id="errorblock">
+            <Notification message={errorMessage} />
+          </div>
+          <div style={loadingStyle} id="loadingScreen">
+            <ThreeDot color="#0c6fc0" size="medium" text="" textColor="" />
+          </div>
+
+          <DocumentList laws={laws} frontsection={frontsection} language={language} />
+        </div>
+      </div>
+    </div>
+  )
+
 }
 
 export default ListDocumentPage

@@ -1,22 +1,22 @@
- 
- export interface Law {
+
+export interface Law {
   docYear:  string,
   docNumber: string,
   docTitle: string
 }
 
- export interface Judgment {
+export interface Judgment {
   docYear:  string,
   docNumber: string,
   docLevel: string
 }
 
- export interface TopMenuProps {
+export interface TopMenuProps {
   language:  string,
   handleSelect: (event: React.SyntheticEvent) => void,
 }
 
- export interface Document {
+export interface Document {
   docYear:  string,
   docNumber: string,
   docLevel?: string,
@@ -49,7 +49,7 @@ export interface Props {
   handleSearchInputChange: (event: React.SyntheticEvent) => void,
   handleSearchEvent: (event: React.SyntheticEvent) => void,
   buttontext: string
-  placeholdertext: string 
+  placeholdertext: string
 }
 
 export interface Server {
