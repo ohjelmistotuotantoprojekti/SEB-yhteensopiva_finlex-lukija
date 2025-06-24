@@ -55,7 +55,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
     setLaws(resp.data)
 
   }
-if (laws.length === 0) {
+  if (laws.length === 0) {
     getLaws(path)}
 
   function prepareLink(law: LawByKey): string {
