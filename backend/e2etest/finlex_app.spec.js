@@ -9,19 +9,21 @@ playwright.describe("Main page", () => {
 
 
   playwright.test('front page can be opened', async ({ page }) => {
-    const locator = await page.getByText("Lainsäädäntö")
-    await playwright.expect(locator).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lainsäädäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Oikeuskäytäntö"})).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai numero/vuosi")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Asiasanahaku"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
   playwright.test('language can be changed to swedish', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    const locator = await page.getByText("Lagstiftning")
-    await playwright.expect(locator).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Rättspraxis"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lagstiftning"})).toBeVisible()
     await playwright.expect(page.getByPlaceholder("År eller nummer/år")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Sök"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Sök med ämnesord"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
   })
 
@@ -84,6 +86,12 @@ playwright.describe("Main page", () => {
     await playwright.expect(page.getByText("Metadata")).toBeVisible()
   })
 
+  playwright.test('keyword view can be opened', async ({ page }) => {
+    await page.getByRole("link", {name: "Asiasanahaku"}).click()
+    await playwright.expect(page.getByText("Virheellinen haku")).toBeVisible()
+    await page.getByRole("heading", {name: "Asiasanat"}).toBeVisible()
+  })
+
 })
 
 
@@ -92,16 +100,59 @@ playwright.describe("Single law page", () => {
     await page.goto(`${BASE_URL}/lainsaadanto/2023/9`)
   })
 
-  playwright.test('language can be changed to swedish', async () => {
-    ///await page.getByRole("combobox").selectOption("Svenska")
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('page can be opened', async ({ page }) => {
+    await playwright.expect(page.getByRole("link", {name: "Lainsäädäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Oikeuskäytäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("combobox")).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "9/2023 – Luonnonsuojelulaki"})).toBeVisible()
   })
 
-  playwright.test('language stays after back button is pressed', async () => {
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('language can be changed to swedish', async ({ page }) => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    await playwright.expect(page.getByRole("link", {name: "Rättspraxis"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lagstiftning"})).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "9/2023 – Naturvårdslag"})).toBeVisible()
   })
 
 })
+
+
+playwright.describe("Keyword page", () => {
+  playwright.beforeEach(async ({ page }) => {
+    await page.goto(`${BASE_URL}/lainsaadanto/asiasanat`)
+  })
+
+  playwright.test('page can be opened', async ({ page }) => {
+    await playwright.expect(page.getByRole("link", {name: "Lainsäädäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Oikeuskäytäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("combobox")).toBeVisible()
+    await page.getByRole("heading", {name: "Asiasanat"}).toBeVisible()
+  })
+
+  playwright.test('language can be changed to swedish', async () => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    await page.getByRole("heading", {name: "Ämnesord"}).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Rättspraxis"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lagstiftning"})).toBeVisible()
+  })
+
+  playwright.test('keywords laws are visible and can be clicked', async () => {
+    await page.getByRole("link").first().click()
+    await page.getByRole("heading", {name: "Asiasanat -"}).toBeVisible()
+    await page.getByRole("link").first().click()
+    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+  })
+
+  playwright.test('keywords laws are visible and can be clicked (swe)', async () => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    await page.getByRole("link").first().click()
+    await page.getByRole("heading", {name: "Ämnesord - "}).toBeVisible()
+    await page.getByRole("link").first().click()
+    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+  })
+
+})
+
 
 playwright.describe("Case law page", () => {
   playwright.beforeEach(async ({ page }) => {
@@ -109,8 +160,8 @@ playwright.describe("Case law page", () => {
   })
 
   playwright.test('page can be opened', async ({ page }) => {
-    const locator = await page.getByText("Oikeuskäytäntö")
-    await playwright.expect(locator).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lainsäädäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Oikeuskäytäntö"})).toBeVisible()
     await playwright.expect(page.getByPlaceholder("Vuosi tai oikeusaste:vuosi:numero")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Hae"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
@@ -118,8 +169,8 @@ playwright.describe("Case law page", () => {
 
   playwright.test('language can be changed to swedish', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    const locator = await page.getByText("Rättspraxis")
-    await playwright.expect(locator).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Rättspraxis"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lagstiftning"})).toBeVisible()
     await playwright.expect(page.getByPlaceholder("År eller domstol:år:nummer")).toBeVisible()
     await playwright.expect(page.getByRole("button", {name: "Sök"})).toBeVisible()
     await playwright.expect(page.getByRole("combobox")).toBeVisible()
@@ -168,8 +219,7 @@ playwright.describe("Case law page", () => {
   playwright.test('single case can be searched (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("kko:2023:5")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator1 = await page.getByText("Äiti vaati 11.6.2018")
-    await playwright.expect(locator1).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "KKO 5/2023"})).toBeVisible()
   })
 
   playwright.test('single case can be searched (swe)', async ({ page }) => {
@@ -181,19 +231,23 @@ playwright.describe("Case law page", () => {
   })
 })
 
+
 playwright.describe("Single case law page", () => {
   playwright.beforeEach(async ({ page }) => {
     await page.goto(`${BASE_URL}/oikeuskaytanto/2023/5/kko`)
-
   })
 
-  playwright.test('language can be changed to swedish', async () => {
-    ///await page.getByRole("combobox").selectOption("Svenska")
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('page can be opened', async ({ page }) => {
+    await playwright.expect(page.getByRole("link", {name: "Lainsäädäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Oikeuskäytäntö"})).toBeVisible()
+    await playwright.expect(page.getByRole("combobox")).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "KKO 5/2023"})).toBeVisible()
   })
 
-  playwright.test('language stays after back button is pressed', async () => {
-    ///Kielen vaihto ei vielä mahdollista
+  playwright.test('language can be changed to swedish', async ({ page }) => {
+    await page.getByRole("combobox").selectOption("Svenska")
+    await playwright.expect(page.getByRole("heading", {name: "KKO 5/2023"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Rättspraxis"})).toBeVisible()
+    await playwright.expect(page.getByRole("link", {name: "Lagstiftning"})).toBeVisible()
   })
-
 })

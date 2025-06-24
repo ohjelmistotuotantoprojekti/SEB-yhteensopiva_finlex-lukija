@@ -176,7 +176,7 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
 
   // estää sisällysluetteloa lataamasta moneen kertaan silloin kun lista on saatu palvelimelta.
   // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapauksessa.
-  if(headings.length < 1) {
+  if(headings.length < 1 && law.length < 1) {
     getHeadings()
   }
 
