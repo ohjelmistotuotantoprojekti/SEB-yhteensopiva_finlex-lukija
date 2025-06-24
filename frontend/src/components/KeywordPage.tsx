@@ -5,14 +5,12 @@ import {Helmet} from "react-helmet";
 import TopMenu from './TopMenu'
 
 
-
 const KeywordPage = ({language} : KeywordPageType) => {
-  
 
     const [keywords, setKeywords] = useState<KeysType[]>([])
     const [lan, setLan] = useState<string>(language)
     const path = `/api/statute/keywords/${lan}`
-    const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
+    const title = lan ==="fin" ? "Asiasanat" : "Ämnesord"
 
     const topStyle: React.CSSProperties = {
       display: 'flex',
@@ -42,7 +40,6 @@ const KeywordPage = ({language} : KeywordPageType) => {
       marginTop:'50px',
     }
 
-    
     const getKeywords = async (path: string) => {
         const keywords = await axios.get(path)
         setKeywords(keywords.data)

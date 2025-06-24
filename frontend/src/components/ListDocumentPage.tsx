@@ -24,6 +24,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
   const [laws, setLaws] = useState<Document[]>(defaultLaws)
   const [errorMessage, setErrorMessage] = useState<string>("")
   let lan: string = language
+  const keybutton = lan ==="fin" ? "Asiasanat" : "Ämnesord"
 
 
    const topStyle: React.CSSProperties = {
@@ -167,7 +168,7 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
                               handleSearchInputChange={handleSearchInputChange}
                               handleSearchEvent={handleSearchEvent} 
                   />
-                  <a href="/lainsaadanto/asiasanat">Asiasanahaku</a>
+                  <a href="/lainsaadanto/asiasanat">{keybutton}</a>
     
                   <div id="errorblock">
                       <Notification message={errorMessage} />
