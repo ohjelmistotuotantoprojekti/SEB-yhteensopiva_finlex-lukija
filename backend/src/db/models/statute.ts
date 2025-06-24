@@ -3,8 +3,17 @@ import { query } from '../db.js';
 import { Statute, StatuteListItem } from '../../types/statute.js';
 
 export async function setLaw(law: Statute) {
-  const sql = 'INSERT INTO laws (uuid, title, number, year, language, version, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (number, year, language) DO NOTHING';
-  await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
+  const existingLaw = 'SELECT uuid, version FROM laws WHERE number = $1 AND year = $2 AND language = $3';
+  const existingResult = await query(existingLaw, [law.number, law.year, law.language]);
+  if (!(existingResult.rows.length > 0 && existingResult.rows[0].version === law.version)) {
+    const deleteExisting = 'DELETE FROM laws WHERE number = $1 AND year = $2 AND language = $3';
+    await query(deleteExisting, [law.number, law.year, law.language]);
+    const sql = 'INSERT INTO laws (uuid, title, number, year, language, version, content, is_empty) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (number, year, language) DO NOTHING';
+    await query(sql, [law.uuid, law.title, law.number, law.year, law.language, law.version, law.content, law.is_empty]);
+    return law.uuid;
+  } else {
+    return existingResult.rows[0].uuid;
+  }
 }
 
 export async function getLawCountByYear(year: number): Promise<number> {
