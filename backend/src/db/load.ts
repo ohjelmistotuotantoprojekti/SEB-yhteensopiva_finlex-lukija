@@ -4,11 +4,13 @@ import { Statute, StatuteKey, KeyWord } from '../types/statute.js';
 import { Judgment, JudgmentKey } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
+import { CommonName } from '../types/commonName.js';
 import { v4 as uuidv4 } from 'uuid';
 import { setLaw } from './models/statute.js';
 import { setJudgment } from './models/judgment.js';
 import { setImage } from './models/image.js';
 import { setKeyword } from './models/keyword.js';
+import { setCommonName } from './models/commonName.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
@@ -129,6 +131,25 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
   });
 
   return imageLinks
+}
+
+async function parseCommonNamesFromXML(result: AxiosResponse<unknown>): Promise<string[]> {
+  // Parsi XML data
+  const xmlData = await result.data as string;
+  const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
+
+  // Poimi elementit
+  const nodes = doc.getElementsByTagNameNS('*', 'finlex:commonName');
+  const names: string[] = [];
+
+  // Hae sisältö
+  Array.from(nodes).forEach((node: xmldom.Element) => {
+    if (node.textContent) {
+      names.push(node.textContent);
+    }
+  });
+
+  return names
 }
 
 async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[string, string][]> {
@@ -277,10 +298,7 @@ async function setSingleStatute(uri: string) {
   const docTitle = await parseTitlefromXML(result)
   const imageLinks = await parseImagesfromXML(result)
   const keywordList = await parseKeywordsfromXML(result)
-  if (imageLinks.length > 0) {
-    console.log(imageLinks.length)
-    console.log(imageLinks)
-  }
+  const commonNames = await parseCommonNamesFromXML(result)
 
   const xmlContent = result.data as string;
   const is_empty = await checkIsXMLEmpty(xmlContent);
@@ -308,6 +326,17 @@ async function setSingleStatute(uri: string) {
       language: docLanguage
     }
     await setKeyword(key)
+  }
+
+  for (const commonName of commonNames) {
+    const commonNameObj: CommonName = {
+      uuid: uuidv4(),
+      commonName: commonName,
+      number: docNumber,
+      year: docYear,
+      language: docLanguage
+    }
+    await setCommonName(commonNameObj)
   }
 
   setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
@@ -448,55 +477,6 @@ async function listJudgmentsByYear(year: number, language: string, level: string
     judgmentURLsSet.add(url);
   }
   return Array.from(judgmentURLsSet);
-}
-
-
-export async function getCommonNames(language: string): Promise<StatuteKey[]> {
-  console.log(`Fetching common names for language: ${language}`);
-  let url: string;
-  if (language == 'fin') {
-    url = "https://finlex.fi/fi/lainsaadanto/arkinimet"
-  } else if (language == 'swe') {
-    url = "https://finlex.fi/sv/lagstiftning/vardagliga-namn"
-  } else {
-    throw new Error(`Unsupported language: ${language}`);
-  }
-
-  const response = await axios.get<string>(url, { responseType: 'text' });
-  const html     = response.data;
-
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
-
-  const tables = doc.querySelectorAll('table');
-  if (tables.length === 0) {
-    throw new Error('No table found in the document');
-  }
-  const entries: StatuteKey[] = [];
-  for (const table of tables) {
-
-    const rows    = table.querySelectorAll('tbody tr');
-
-    rows.forEach(tr => {
-      const nameDiv = tr.querySelector('th > div');
-      const link    = tr.querySelector<HTMLAnchorElement>('td a');
-
-      if (!nameDiv || !link) return;
-
-      const name = nameDiv.textContent?.trim() ?? '';
-      const href = link.getAttribute('href')     ?? '';
-      const parts = href.split('/').filter(p => p);
-
-      if (parts.length >= 4) {
-        const [ , , yearPart, numberPart ] = parts;
-        const yearNum = parseInt(yearPart, 10);
-        if (!isNaN(yearNum)) {
-          entries.push({ commonName: name, language: language, year: yearNum, number: numberPart, version: null });
-        }
-      }
-    });
-  }
-  return entries;
 }
 
 export { listStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }
