@@ -7,11 +7,9 @@ import { parseStringPromise } from "xml2js";
 import xmldom from '@xmldom/xmldom';
 import { parseXmlHeadings, parseHtmlHeadings } from './util/parse.js';
 import { query } from "./db/db.js"
-import { dropWords, dropwords_fin, dropwords_swe } from "./util/dropwords.js";
+import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropwords.js";
 import { JSDOM } from "jsdom";
-import dotenv from "dotenv";
-
-dotenv.config();
+import './util/config.js';
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -27,8 +25,7 @@ const tsClient = new Typesense.Client({
     },
   ],
   apiKey: process.env.TYPESENSE_API_KEY,
-  connectionTimeoutSeconds: 2,
-  logLevel: "debug"
+  connectionTimeoutSeconds: 2
 });
 
 function flattenHeadings(headings: Heading[]) {
@@ -48,7 +45,7 @@ function flattenHeadings(headings: Heading[]) {
 function normalizeText(input: string[], lang: "fin" | "swe"): string[];
 function normalizeText(input: string, lang: "fin" | "swe"): string;
 function normalizeText(input: string | string[], lang: "fin" | "swe"): string | string[] {
-  const dropwords = lang === "fin" ? dropwords_fin : dropwords_swe;
+  const dropwords_set = lang === "fin" ? dropwords_set_fin : dropwords_set_swe;
   const process = (str: string): string => {
     const words = str
       .toLowerCase()
@@ -59,7 +56,7 @@ function normalizeText(input: string | string[], lang: "fin" | "swe"): string | 
       .map(word => word.trim())
       .filter(word => word.length > 3);
 
-    const cleaned = dropWords(dropwords, filtered);
+    const cleaned = dropWords(dropwords_set, filtered);
 
     return cleaned.join(' ').trim();
   };
@@ -75,10 +72,7 @@ function normalizeText(input: string | string[], lang: "fin" | "swe"): string | 
 export function extractParagraphs(xmlString: string): string[] {
   const doc = new xmldom.DOMParser().parseFromString(xmlString, "application/xml");
   const pNodes = doc.getElementsByTagName("p");
-  return Array.from(pNodes).map((node) => {
-    if (!(node?.textContent)) return ""
-    return node.textContent
-  });
+  return Array.from(pNodes, p => (p.textContent || '').trim()).filter(t => t);
 }
 
 export function extractParagraphsHtml(html: string): string[] {
@@ -100,7 +94,7 @@ function localeLevel(level: string, lang: string): string {
   } else throw new Error(`Unsupported language: ${lang}`);
 }
 
-export async function syncLanguage(lang: string) {
+export async function syncStatutes(lang: string) {
   let lang_short
   if (lang === "fin") {
     lang_short = "fi";
@@ -170,32 +164,29 @@ export async function syncLanguage(lang: string) {
     )
     if (rows.length === 0) continue
 
-    const tsDocs = [];
-    for (const row of rows) {
+    while (rows.length > 0) {
+      const row = rows.pop()
       const parsed_xml = await parseStringPromise(row.content, { explicitArray: false })
       const headingTree: Heading[] = parseXmlHeadings(parsed_xml) ?? [];
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphs(row.content);
 
-      tsDocs.push({
-        id: row.id,
-        title: row.title,
-        year: String(row.year),
-        year_num: parseInt(row.year, 10),
-        number: row.number,
-        has_content: row.is_empty ? 0 : 1,
-        common_names: row.common_names,
-        headings: normalizeText(headings, lang),
-        paragraphs: normalizeText(paragraphs, lang),
-      });
+      await tsClient
+        .collections(collectionName)
+        .documents()
+        .upsert({
+          id: row.id,
+          title: row.title,
+          year: String(row.year),
+          year_num: parseInt(row.year, 10),
+          number: row.number,
+          has_content: row.is_empty ? 0 : 1,
+          common_names: row.common_names,
+          headings: normalizeText(headings, lang),
+          paragraphs: normalizeText(paragraphs, lang),
+        });
     }
 
-    const importResult = await tsClient
-      .collections(collectionName)
-      .documents()
-      .import(tsDocs, { action: "upsert" });
-
-    console.log(importResult);
   }
 }
 
@@ -253,30 +244,27 @@ export async function syncJudgments(lang: string) {
     )
     if (rows.length === 0) continue
 
-    const tsDocs = [];
-    for (const row of rows) {
+    while (rows.length > 0) {
+      const row = rows.pop()
       const headingTree: Heading[] = parseHtmlHeadings(row.content) ?? [];
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphsHtml(row.content);
 
-      tsDocs.push({
-        id: row.id,
-        year: String(row.year),
-        year_num: parseInt(row.year, 10),
-        level: localeLevel(row.level, lang),
-        number: row.number,
-        headings: normalizeText(headings, lang),
-        paragraphs: normalizeText(paragraphs, lang),
-        has_content: row.is_empty ? 0 : 1,
-      });
+      await tsClient
+        .collections(collectionName)
+        .documents()
+        .upsert({
+          id: row.id,
+          year: String(row.year),
+          year_num: parseInt(row.year, 10),
+          level: localeLevel(row.level, lang),
+          number: row.number,
+          headings: normalizeText(headings, lang),
+          paragraphs: normalizeText(paragraphs, lang),
+          has_content: row.is_empty ? 0 : 1,
+        });
     }
 
-    const importResult = await tsClient
-      .collections(collectionName)
-      .documents()
-      .import(tsDocs, { action: "upsert" });
-
-    console.log(importResult);
   }
 }
 

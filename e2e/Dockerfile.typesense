@@ -21,3 +21,4 @@ RUN apt update && apt install -y curl
 
 ## 5. Käyttö
 # TYPESENSE_HOST=localhost
+# TYPESENSE_PORT=8108

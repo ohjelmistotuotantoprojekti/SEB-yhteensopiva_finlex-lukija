@@ -11,7 +11,7 @@ const KeywordPage = ({language} : KeywordPageType) => {
 
     const [keywords, setKeywords] = useState<KeysType[]>([])
     const [lan, setLan] = useState<string>(language)
-    const path = `/api/statute/keywords/${lan}`
+    const path = `/api/statute/keyword/${lan}`
     const title: string = language==="fin" ? "Asiasanat" : "Ämnesord"
 
     const topStyle: React.CSSProperties = {
