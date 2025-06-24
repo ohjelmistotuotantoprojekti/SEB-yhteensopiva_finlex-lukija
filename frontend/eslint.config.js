@@ -23,6 +23,23 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // Ei välilyöntiä ja tabia sekaisin
+      "no-mixed-spaces-and-tabs": "error",
+
+      // Kahden välilyönnin sisennys
+      "indent": ["error", 2],
+
+      // Ei tyhjää rivin lopussa
+      "no-trailing-spaces": "error",
+
+      // Rivinvaihto lopussa
+      "eol-last": ["error", "always"],
+
+      // Ei tyhjää väliä ennen ja jälkeen sulkujen
+      "space-in-parens": ["error", "never"],
+
+      // Välilyönnit operaattoreiden ympärillä
+      "space-infix-ops": "error"
     },
   },
 )
