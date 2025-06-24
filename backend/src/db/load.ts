@@ -286,7 +286,7 @@ async function setSingleStatute(uri: string) {
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
-  const lawUuid = uuidv4()
+  let lawUuid = uuidv4()
   const law: Statute = {
     uuid: lawUuid,
     title: docTitle,
@@ -297,6 +297,8 @@ async function setSingleStatute(uri: string) {
     content: result.data as string,
     is_empty: is_empty
   }
+
+  lawUuid = await setLaw(law)
 
   for (const keyword of keywordList) {
     const key: KeyWord = {
@@ -309,7 +311,6 @@ async function setSingleStatute(uri: string) {
   }
 
   setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
-  await setLaw(law)
 }
 
 async function setSingleJudgment(uri: string) {
