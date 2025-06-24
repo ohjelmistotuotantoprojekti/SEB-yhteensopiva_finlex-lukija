@@ -41,8 +41,8 @@ spec:
                   key: TYPESENSE_API_KEY
           resources:
             limits:
-              memory: "1250Mi"
-              cpu: "500m"
+              memory: "3800Mi"
+              cpu: "1000m"
             requests:
-              memory: "1150Mi"
-              cpu: "250m"
+              memory: "1000Mi"
+              cpu: "500m"
