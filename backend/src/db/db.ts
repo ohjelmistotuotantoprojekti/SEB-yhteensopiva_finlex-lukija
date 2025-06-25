@@ -18,12 +18,24 @@ async function setPool(uri: string) {
 async function fillDb(laws: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
+    let i = 0;
     for (const key of laws) {
+      ++i;
       await setSingleStatute(buildFinlexUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} statutes`);
+      }
     }
+    console.log(`Finshed inserting ${i} statutes`);
+    i = 0;
     for (const key of judgments) {
+      ++i;
       await setSingleJudgment(buildJudgmentUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} judgments`);
+      }
     }
+    console.log(`Finshed inserting ${i} judgments`);
 
     console.log("Database is filled")
   } catch (error) {

@@ -139,7 +139,7 @@ async function parseCommonNamesFromXML(result: AxiosResponse<unknown>): Promise<
   const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
 
   // Poimi elementit
-  const nodes = doc.getElementsByTagNameNS('*', 'finlex:commonName');
+  const nodes = doc.getElementsByTagNameNS('*', 'commonName');
   const names: string[] = [];
 
   // Hae sisältö
