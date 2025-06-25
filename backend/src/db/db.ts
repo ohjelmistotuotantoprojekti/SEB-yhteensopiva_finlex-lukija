@@ -1,13 +1,10 @@
 
 import { Pool, QueryResult } from 'pg';
-import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment, getCommonNames } from './load.js';
-import { setCommonName } from './commonName.js';
+import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment } from './load.js';
 import { getLawCountByYear, getLawsByYear } from './models/statute.js';
 import { getJudgmentCountByYear, getJudgmentsByYear } from './models/judgment.js';
-import { CommonName } from '../types/commonName.js';
 import { StatuteKey } from '../types/statute.js';
 import { JudgmentKey } from '../types/judgment.js';
-import { v4 as uuidv4 } from 'uuid';
 import { syncJudgments, syncStatutes } from '../search.js';
 
 let pool: Pool;
@@ -21,25 +18,24 @@ async function setPool(uri: string) {
 async function fillDb(laws: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
-    let commonNames = await getCommonNames('fin');
-    for (const commonName of commonNames) {
-      const uuid = uuidv4();
-      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
-      setCommonName(commonNameObj);
-    }
-    commonNames = await getCommonNames('swe');
-    for (const commonName of commonNames) {
-      const uuid = uuidv4();
-      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
-      setCommonName(commonNameObj);
-    }
-
+    let i = 0;
     for (const key of laws) {
+      ++i;
       await setSingleStatute(buildFinlexUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} statutes`);
+      }
     }
+    console.log(`Finshed inserting ${i} statutes`);
+    i = 0;
     for (const key of judgments) {
+      ++i;
       await setSingleJudgment(buildJudgmentUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} judgments`);
+      }
     }
+    console.log(`Finshed inserting ${i} judgments`);
 
     console.log("Database is filled")
   } catch (error) {
