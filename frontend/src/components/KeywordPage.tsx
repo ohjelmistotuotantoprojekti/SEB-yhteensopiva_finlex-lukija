@@ -74,7 +74,7 @@ const KeywordPage = ({language} : KeywordPageType) => {
       <div style={contentStyle} id="contentdiv">
         <div id="contentDiv" style={contentContainerStyle}>
           <h1>{title}</h1>
-          {keywords.map(keyword => {
+          {Array.isArray(keywords) && keywords.map(keyword => {
             const firstLetter = keyword.keyword.charAt(0).toUpperCase()
             const letterChanged = firstLetter !== letter
             letter = firstLetter

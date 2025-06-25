@@ -83,7 +83,7 @@ const KeywordLawPage = ({language} : KeywordPageType) => {
       <div style={contentStyle} id="contentdiv">
         <div id="contentDiv" style={contentContainerStyle}>
           <h1>{title} - {laws.length > 0 && ` ${laws[0].keyword}`}</h1>
-          {laws.map(law =>
+          {Array.isArray(laws) && laws.map(law =>
             <div style={listStyle} key={law.number}>
               <a href={prepareLink(law)}>
                 <b>{law.number}/{law.year}</b> - {law.title}

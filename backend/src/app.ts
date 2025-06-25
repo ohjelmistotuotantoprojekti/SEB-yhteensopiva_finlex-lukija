@@ -5,6 +5,8 @@ import statuteRouter from './controllers/statute.js';
 import judgmentRouter from './controllers/judgment.js';
 import keywordRouter from './controllers/keyword.js';
 import { fileURLToPath } from 'url';
+import { getLawsByKeywordID } from './db/models/keyword.js';
+
 
 const app = express()
 const __filename = fileURLToPath(import.meta.url);
@@ -43,10 +45,28 @@ app.get('/favicon.ico', (request: express.Request, response: express.Response): 
 
 app.use(express.static(path.join(__dirname, 'frontend')))
 app.use('/media', mediaRouter)
-app.use('/api/statute/keyword', keywordRouter);
+app.use('/api/statute/keywords', keywordRouter);
 app.use('/api/statute', statuteRouter)
 app.use('/api/judgment', judgmentRouter);
 
+// Hae tiettyyn avainsanaan liittyvien lakien numero, vuosi ja otsikko
+app.get('/api/statute/keyword/:language/:keyword_id', async (request: express.Request, response: express.Response): Promise<void> => {
+  const keyword_id = request.params.keyword_id
+  const language = request.params.language
+  let laws;
+  try {
+    laws = await getLawsByKeywordID(language, keyword_id)
+  } catch (error) {
+    console.error("Error finding laws", error)
+    return;
+  }
+  if (laws === null) {
+    response.status(404).json({ error: 'Not found' });
+    return;
+  } else {
+    response.json(laws)
+  }
+})
 
 // Kaikki muut ohjataan frontendille
 app.get("*params", async (request: express.Request, response: express.Response): Promise<void> => {
