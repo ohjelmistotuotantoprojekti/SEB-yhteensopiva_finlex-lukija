@@ -1,4 +1,3 @@
-//import { useEffect } from 'react'
 import type {Lang} from "../types"
 
 const LanguageSelection = ({language, handleSelect} : Lang) => {

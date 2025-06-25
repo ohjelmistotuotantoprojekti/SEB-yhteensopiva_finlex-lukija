@@ -16,7 +16,6 @@ test('renders content', () => {
     return
   }
 
-  // Testaa että hakukenttä renderöidään.
   render(<SearchForm
     search={search}
     buttontext={buttonetext}
@@ -45,7 +44,6 @@ test('call handleInput', () => {
   />)
   const searchInput = screen.getByPlaceholderText(placeholdertext)
 
-  // Testaa hakukentän toimintaa.
   fireEvent.change(searchInput, { target: {value: "Test"}})
   expect(handleInput).toHaveBeenCalled()
 
@@ -68,7 +66,6 @@ test('call handleInput', async () => {
   const searchInput = screen.getByPlaceholderText(placeholdertext)
   const button = screen.getByText(buttonetext)
 
-  // Testaa että hakukentän toimintaa.
   await user.type(searchInput, "Testi")
   await user.click(button)
   console.log(handleSubmit.mock.calls[0][0].target)

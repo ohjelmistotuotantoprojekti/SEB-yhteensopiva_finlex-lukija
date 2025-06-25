@@ -79,11 +79,9 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     throw new Error("Unexpected error: Missing docyear")
   }
 
-  // Hakee backendiltä dataa
   const getHtml = async (path: string) => {
 
     try {
-      // Hae HTML (APIsta)
       const htmlResp = await axios.get(path)
       const htmlText: string = `<h1>${doclevel} ${docnumber}/${docyear} </h1> ${htmlResp.data}`
       setLaw(htmlText)
@@ -93,38 +91,30 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     }
   }
 
-  // Hakee backendiltä dataa
   const getLawHtml = async (path: string) => {
 
     try {
-      // Hae XML (APIsta)
       const xmlResp = await axios.get(path)
       const xmlText: string = xmlResp.data
 
-      // Hae XSLT (tiedostosta)
       const xsltResp = await axios.get('/akomo_ntoso.xsl')
       const xsltText: string = xsltResp.data
 
-      // Parsi XML ja XSLT
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
       const xsltDoc = parser.parseFromString(xsltText, 'text/xml')
 
-      // Muunna XML HTML:ksi
       const xsltProcessor = new XSLTProcessor()
       xsltProcessor.importStylesheet(xsltDoc)
       const resultDocumentFragment = xsltProcessor.transformToFragment(xmlDoc, document)
       const container = document.createElement('div')
       container.appendChild(resultDocumentFragment)
 
-      // poimi lain otsikko
       setDocTitle(xmlDoc.querySelector("docTitle")?.textContent || "Lain otsikko puuttuu")
 
-      // poimitaan vain se mitä on <article> -tagien sisällä.
       const bodyarr = Array.from (container.querySelectorAll("article"))
       if(bodyarr.length >= 1) {
         const body = bodyarr[0].innerHTML
-        // Tallenna HTML tilaan
         setLaw(body)
       }
     }
@@ -158,7 +148,6 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     getHeadings()
   }
 
-  // Hakee backendiltä sisällysluettelon
   const getHeadings = async () => {
 
     try {
@@ -169,13 +158,10 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     }
   }
 
-  // estää sivua lataamasta usemapaan kertaan.
   if (law === '') {
     updateHTML()
   }
 
-  // estää sisällysluetteloa lataamasta moneen kertaan silloin kun lista on saatu palvelimelta.
-  // Muussa tapauksessa se koittaa ladata sitä uudestaan joka tapauksessa.
   if(headings.length < 1) {
     getHeadings()
   }

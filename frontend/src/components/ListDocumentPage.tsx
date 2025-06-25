@@ -10,7 +10,6 @@ import TopMenu from './TopMenu'
 
 const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, apisection, frontsection} : ListDocumentPageProps) => {
 
-  // Tallentaa hakukentän (komponentilta SearchForm) tilan.
   const defaultSearch = localStorage.getItem(`query_${apisection}`) || ""
   let defaultLaws: Document[] = [];
   try {
@@ -80,16 +79,13 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
     showError(msg)
   }
 
-  // Käsittelee SearchForm-komponentin submit-aktionia.
   const handleSearchEvent = async (event: React.SyntheticEvent) => {
     event.preventDefault()
 
-    // lisää haku localStorageen
     localStorage.setItem(`query_${apisection}`, search)
     doSearch()
   }
 
-  // Tallentaa SearchForm-komponentin hakukentän tilan (tekstin).
   const handleSearchInputChange = (event: React.SyntheticEvent) => {
     setSearch((event.target as HTMLInputElement).value)
   }
@@ -123,19 +119,15 @@ const ListDocumentPage = ({language, setLanguage, buttonetext, placeholdertext, 
         loadingScreen.style.display = "none";
       }
       if (axios.isAxiosError(error) && error.response) {
-        // Axios virhe, joka sisältää vastauksen
         console.error("Axios error:", error.response.data);
         if (error.response.status === 404) {
-          // Ei löytynyt tuloksia
           logError(error, language === "fin" ? "Haulla ei löytynyt hakutuloksia" : "Inga sökresultat")
         } else if (error.response.status === 400) {
-          // Virheellinen pyyntö, esim. väärä kieli tai puuttuva kysely
           logError(error, language === "fin" ? "Virheellinen haku" : "Ogiltig sökning")
         } else {
           logError(error, language === "fin" ? "Odottamaton virhe, yritä myöhemmin uudestaan" : "Okänt fel, försök igen senare")
         }
       } else {
-        // Muu virhe, esim verkko-ongelma
         if (loadingScreen) {
           loadingScreen.style.display = "none";
         }
