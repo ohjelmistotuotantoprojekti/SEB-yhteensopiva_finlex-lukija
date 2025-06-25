@@ -9,7 +9,7 @@ import { parseXmlHeadings, parseHtmlHeadings } from './util/parse.js';
 import { query } from "./db/db.js"
 import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropwords.js";
 import { JSDOM } from "jsdom";
-import './util/config.js';
+import { START_YEAR } from  './util/config.js';
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -103,8 +103,8 @@ export async function syncStatutes(lang: string) {
   } else {
     throw new Error(`Unsupported language: ${lang}`);
   }
-  const collectionName = `laws_${lang}`;
-  console.log(`\n=== Syncing language: ${lang} → ${collectionName}`);
+  const collectionName = `statutes_${lang}`;
+  console.log(`Indexing: ${lang} -> ${collectionName}`);
 
   const schema: CollectionCreateSchema = {
     name: collectionName,
@@ -131,7 +131,7 @@ export async function syncStatutes(lang: string) {
     console.log(`Collection ${collectionName} already exists`);
   }
 
-  for (let year = 1700; year <= new Date().getFullYear(); year++) {
+  for (let year = START_YEAR; year <= new Date().getFullYear(); year++) {
     const { rows } = await query(
       `
       WITH cn AS (
@@ -152,7 +152,7 @@ export async function syncStatutes(lang: string) {
           l.is_empty AS is_empty,
           l.content::text AS content,
           COALESCE(cn.common_names, '{}') AS common_names
-      FROM laws l
+      FROM statutes l
       LEFT JOIN cn
           ON cn.number   = l.number
       AND cn.year     = l.year
@@ -200,7 +200,7 @@ export async function syncJudgments(lang: string) {
     throw new Error(`Unsupported language: ${lang}`);
   }
   const collectionName = `judgments_${lang}`;
-  console.log(`\n=== Syncing language: ${lang} → ${collectionName}`);
+  console.log(`\n=== Indexing: ${lang} -> ${collectionName}`);
 
   const schema: CollectionCreateSchema = {
     name: collectionName,
@@ -226,7 +226,7 @@ export async function syncJudgments(lang: string) {
     console.log(`Collection ${collectionName} already exists`);
   }
 
-  for (let year = 1700; year <= new Date().getFullYear(); year++) {
+  for (let year = START_YEAR; year <= new Date().getFullYear(); year++) {
     const { rows } = await query(
       `
       SELECT
@@ -283,7 +283,7 @@ export async function deleteCollection(name: string, lang: string) {
 }
 
 
-export async function searchLaws(lang: string, queryStr: string) {
+export async function searchStatutes(lang: string, queryStr: string) {
   const searchParameters: SearchParams = {
     q: queryStr,
     query_by: "title,common_names,headings,year,number,paragraphs",
@@ -296,7 +296,7 @@ export async function searchLaws(lang: string, queryStr: string) {
   };
 
   const searchResults = await tsClient
-    .collections(`laws_${lang}`)
+    .collections(`statutes_${lang}`)
     .documents()
     .search(searchParameters);
 

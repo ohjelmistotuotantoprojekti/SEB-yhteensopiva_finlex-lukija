@@ -2,8 +2,8 @@ import { query } from '../db.js';
 import { KeyWord } from '../../types/statute.js';
 
 export async function setKeyword(key: KeyWord) {
-  const sql = 'INSERT INTO keywords (id, keyword, law_uuid, language) VALUES ($1, $2, $3, $4)';
-  await query(sql, [key.id, key.keyword, key.law_uuid, key.language]);
+  const sql = 'INSERT INTO keywords (id, keyword, statute_uuid, language) VALUES ($1, $2, $3, $4)';
+  await query(sql, [key.id, key.keyword, key.statute_uuid, key.language]);
 }
 
 export async function getKeywords(language: string) {
@@ -12,8 +12,8 @@ export async function getKeywords(language: string) {
   return result.rows;
 }
 
-export async function getLawsByKeywordID(language: string, keyword_id: string) {
-  const sql = 'SELECT laws.number, laws.year, laws.title, keywords.keyword FROM laws JOIN keywords ON laws.uuid=keywords.law_uuid WHERE keywords.language=$1 AND keywords.id=$2';
+export async function getStatutesByKeywordID(language: string, keyword_id: string) {
+  const sql = 'SELECT statutes.number, statutes.year, statutes.title, keywords.keyword FROM statutes JOIN keywords ON statutes.uuid=keywords.statute_uuid WHERE keywords.language=$1 AND keywords.id=$2';
   const result = await query(sql, [language, keyword_id]);
   return result.rows;
 }

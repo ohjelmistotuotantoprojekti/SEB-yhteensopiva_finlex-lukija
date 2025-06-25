@@ -28,6 +28,6 @@ export interface StatuteListItem {
 export interface KeyWord {
     id: string;
     keyword: string;
-    law_uuid: string;
+    statute_uuid: string;
     language: string;
 }

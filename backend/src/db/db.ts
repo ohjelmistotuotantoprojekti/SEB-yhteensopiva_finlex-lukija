@@ -1,11 +1,12 @@
 
 import { Pool, QueryResult } from 'pg';
 import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment } from './load.js';
-import { getLawCountByYear, getLawsByYear } from './models/statute.js';
+import { getStatuteCountByYear, getStatutesByYear } from './models/statute.js';
 import { getJudgmentCountByYear, getJudgmentsByYear } from './models/judgment.js';
 import { StatuteKey } from '../types/statute.js';
 import { JudgmentKey } from '../types/judgment.js';
 import { syncJudgments, syncStatutes } from '../search.js';
+import { START_YEAR } from '../util/config.js';
 
 let pool: Pool;
 
@@ -15,11 +16,11 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(laws: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
+async function fillDb(statutes: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
     let i = 0;
-    for (const key of laws) {
+    for (const key of statutes) {
       ++i;
       await setSingleStatute(buildFinlexUrl(key));
       if (i % 100 === 0) {
@@ -50,8 +51,8 @@ async function dbIsReady(): Promise<boolean> {
     let result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'images');")
     const imagesExists = result.rows[0].exists;
 
-    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'laws');")
-    const lawsExists = result.rows[0].exists;
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'statutes');")
+    const statutesExists = result.rows[0].exists;
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'judgments');")
     const judgmentsExists = result.rows[0].exists;
@@ -62,8 +63,11 @@ async function dbIsReady(): Promise<boolean> {
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords');")
     const keywordsExists = result.rows[0].exists;
 
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'map_image_statute');")
+    const mapImageStatuteExists = result.rows[0].exists;
+
     client.release();
-    return imagesExists && lawsExists && judgmentsExists && commonNamesExists && keywordsExists;
+    return imagesExists && statutesExists && judgmentsExists && commonNamesExists && keywordsExists && mapImageStatuteExists;
 
 
   } catch (error) {
@@ -72,7 +76,7 @@ async function dbIsReady(): Promise<boolean> {
   }
 }
 
-async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], judgments: JudgmentKey[]}> {
+async function dbIsUpToDate(): Promise<{upToDate: boolean, statutes: StatuteKey[], judgments: JudgmentKey[]}> {
   console.log('Checking if database is up to date...');
 
   async function compareStatuteCount(year: number): Promise<boolean> {
@@ -82,13 +86,13 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], j
     if (expectedCount === 0) {
       return true;
     }
-    const existingCount = await getLawCountByYear(year);
+    const existingCount = await getStatuteCountByYear(year);
     if (existingCount > expectedCount) {
-      console.warn(`Found too many laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+      console.warn(`Found too many statutes for year ${year}: ${existingCount}, expected ${expectedCount}.`);
     } else if (existingCount < expectedCount) {
-      console.log(`Found too few laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+      console.log(`Found too few statutes for year ${year}: ${existingCount}, expected ${expectedCount}.`);
     } else {
-      console.debug(`Correct number of laws for year ${year}: ${existingCount}`);
+      console.debug(`Correct number of statutes for year ${year}: ${existingCount}`);
     }
     return existingCount === expectedCount;
   }
@@ -116,34 +120,34 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], j
   async function findMissingStatutes(year: number): Promise<StatuteKey[]> {
     const expectedFin = await listStatutesByYear(year, 'fin');
     const expectedSwe = await listStatutesByYear(year, 'swe');
-    const expectedLaws = []
-    for (const lawUrl of [...expectedFin, ...expectedSwe]) {
-      const law = parseFinlexUrl(lawUrl);
-      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage, version: law.docVersion });
+    const expectedStatutes = []
+    for (const statuteUrl of [...expectedFin, ...expectedSwe]) {
+      const statute = parseFinlexUrl(statuteUrl);
+      expectedStatutes.push({ number: statute.docNumber, year: statute.docYear, language: statute.docLanguage, version: statute.docVersion });
     }
-    const existingLawsFin = await getLawsByYear(year, 'fin');
-    const existingLawsSwe = await getLawsByYear(year, 'swe');
-    const existingLaws: StatuteKey[] = [];
+    const existingStatutesFin = await getStatutesByYear(year, 'fin');
+    const existingStatutesSwe = await getStatutesByYear(year, 'swe');
+    const existingStatutes: StatuteKey[] = [];
 
-    for (const law of existingLawsFin) {
-      existingLaws.push({ number: law.docNumber, year: law.docYear, language: 'fin', version: law.docVersion });
+    for (const statute of existingStatutesFin) {
+      existingStatutes.push({ number: statute.docNumber, year: statute.docYear, language: 'fin', version: statute.docVersion });
     }
-    for (const law of existingLawsSwe) {
-      existingLaws.push({ number: law.docNumber, year: law.docYear, language: 'swe', version: law.docVersion });
+    for (const statute of existingStatutesSwe) {
+      existingStatutes.push({ number: statute.docNumber, year: statute.docYear, language: 'swe', version: statute.docVersion });
     }
 
-    const missingLaws: StatuteKey[] = [];
-    for (const law of expectedLaws) {
-      if (!existingLaws.some(existing =>
-        existing.number === law.number &&
-        existing.year === law.year &&
-        existing.language === law.language &&
-        existing.version === law.version
+    const missingStatutes: StatuteKey[] = [];
+    for (const statute of expectedStatutes) {
+      if (!existingStatutes.some(existing =>
+        existing.number === statute.number &&
+        existing.year === statute.year &&
+        existing.language === statute.language &&
+        existing.version === statute.version
       )) {
-        missingLaws.push(law);
+        missingStatutes.push(statute);
       }
     }
-    return missingLaws;
+    return missingStatutes;
   }
 
 
@@ -187,16 +191,14 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], j
 
 
   try {
-    const laws: StatuteKey[] = [];
+    const statutes: StatuteKey[] = [];
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
-
-    for (let year = startYear; year <= currentYear + 1; year++) {
+    for (let year = START_YEAR; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
-        console.log(`Laws for year ${year} are not up to date`);
-        laws.push(...await findMissingStatutes(year));
+        console.log(`Statutes for year ${year} are not up to date`);
+        statutes.push(...await findMissingStatutes(year));
         upToDate = false;
       }
 
@@ -206,7 +208,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: StatuteKey[], j
         upToDate = false;
       }
     }
-    return { upToDate, laws, judgments };
+    return { upToDate, statutes, judgments };
 
   } catch (error) {
     console.error('Error checking if database is up to date:', error);
@@ -226,7 +228,7 @@ async function createTables(): Promise<void> {
       )
     `);
     await client.query(`
-      CREATE TABLE IF NOT EXISTS laws (
+      CREATE TABLE IF NOT EXISTS statutes (
         uuid UUID PRIMARY KEY,
         title TEXT NOT NULL,
         number TEXT NOT NULL,
@@ -264,10 +266,16 @@ async function createTables(): Promise<void> {
       CREATE TABLE IF NOT EXISTS keywords (
         id TEXT NOT NULL,
         keyword TEXT NOT NULL,
-        law_uuid UUID references laws(uuid) ON DELETE CASCADE,
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
         language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))
       )
     `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS map_image_statute (
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
+        image_uuid UUID references images(uuid) ON DELETE RESTRICT,
+        PRIMARY KEY (statute_uuid, image_uuid)
+      )`)
     client.release();
   }
   catch (error) {
@@ -280,10 +288,11 @@ async function dropTables(): Promise<void> {
   try {
     const client = await pool.connect();
     await client.query("DROP TABLE IF EXISTS images");
-    await client.query("DROP TABLE IF EXISTS laws");
+    await client.query("DROP TABLE IF EXISTS statutes");
     await client.query("DROP TABLE IF EXISTS judgments");
     await client.query("DROP TABLE IF EXISTS common_names");
     await client.query("DROP TABLE IF EXISTS keywords");
+    await client.query("DROP TABLE IF EXISTS map_image_statute");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);
