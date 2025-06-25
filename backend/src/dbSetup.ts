@@ -5,7 +5,6 @@ import { syncStatutes, deleteCollection, syncJudgments } from "./search.js";
 
 setPool(process.env.PG_URI ?? '');
 
-// Alusta tietokanta
 async function initDatabase() {
   try {
     if (!await dbIsReady()) {

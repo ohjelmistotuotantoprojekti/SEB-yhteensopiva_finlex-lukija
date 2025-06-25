@@ -1,4 +1,3 @@
-// poistaa tietyt sanat joko yhdestä stringistä tai listasta stringejä
 export function dropWords(dropWords: Set<string>, input: string): string;
 export function dropWords(dropWords: Set<string>, input: string[]): string[];
 export function dropWords(

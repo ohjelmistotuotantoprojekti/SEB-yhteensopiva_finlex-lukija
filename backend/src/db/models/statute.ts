@@ -34,7 +34,6 @@ export async function getLawsByYear(year: number, language: string): Promise<Sta
   return result.rows;
 }
 
-// Hae lakien sisällöstä
 export async function searchLawsByKeywordAndLanguage(keyword: string, language: string) {
   const preparedResults = [];
   const results_uuid = await searchLaws(language, keyword);
