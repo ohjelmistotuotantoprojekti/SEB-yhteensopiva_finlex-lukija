@@ -24,6 +24,7 @@ keywordRouter.get('/:language/:keyword_id', async (request: express.Request, res
 
 // Hae valitun kielen kaikki avainsanat
 keywordRouter.get('/:language', async (request: express.Request, response: express.Response): Promise<void> => {
+  console.log("HEU")
   const language = request.params.language
   let words;
   try {

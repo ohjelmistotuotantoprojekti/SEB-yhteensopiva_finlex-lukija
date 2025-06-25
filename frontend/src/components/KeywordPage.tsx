@@ -42,8 +42,9 @@ const KeywordPage = ({language} : KeywordPageType) => {
   }
 
   const getKeywords = async (path: string) => {
-    const keywords = await axios.get(path)
-    setKeywords(keywords.data)
+    const keywordss = await axios.get(path)
+    setKeywords(keywordss.data)
+    console.log(keywords)
   }
   if (keywords.length === 0) {
     getKeywords(path)}

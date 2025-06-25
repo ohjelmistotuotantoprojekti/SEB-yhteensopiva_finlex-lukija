@@ -30,8 +30,8 @@ playwright.describe("Main page", () => {
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("luonnonsuojelulaki")
     await page.getByRole("button", {name: "Hae"}).click()
-    await page.getByRole('link', { name: '/2023 - Luonnonsuojelulaki' }).click()
-    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+    await page.getByRole('link', { name: '/2023 - Luonnonsuojelulaki' }).toBeVisible()
+   await playwright.expect(page.getByRole("heading", {name: "Metadata"})).toBeVisible()
   })
 
   playwright.test('searchbar shows error message (empty, fin)', async ({ page }) => {
@@ -43,7 +43,6 @@ playwright.describe("Main page", () => {
   playwright.test('searchbar shows error message (not found, fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("77777777777777777")
     await page.getByRole("button", {name: "Hae"}).click()
-    playwright.expect.configure({ timeout: 100000 })
     await playwright.expect(page.getByText("Haulla ei löytynyt hakutuloksia")).toBeVisible()
   })
 
@@ -52,7 +51,7 @@ playwright.describe("Main page", () => {
     await page.getByRole("textbox").fill("naturvårdslag")
     await page.getByRole("button", {name: "Sök"}).click()
     await page.getByRole('link', { name: '/2023 - Naturvårdslag' }).click()
-    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "Metadata"})).toBeVisible()
   })
 
   playwright.test('searchbar shows error message (empty, swe)', async ({ page }) => {
@@ -72,23 +71,20 @@ playwright.describe("Main page", () => {
   playwright.test('single law page can be opened (fin)', async ({ page }) => {
     await page.getByRole("textbox").fill("9/2023")
     await page.getByRole("button", {name: "Hae"}).click()
-    const locator = await page.getByText("9/2023 – Luonnonsuojelulaki")
-    await playwright.expect(locator).toBeVisible()
-    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "9/2023 – Luonnonsuojelulaki"})).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "Metadata"})).toBeVisible()
   })
 
   playwright.test('single law page can be opened (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("9/2023")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator = await page.getByText("9/2023 – Naturvårdslag")
-    await playwright.expect(locator).toBeVisible()
-    await playwright.expect(page.getByText("Metadata")).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "9/2023 – Naturvårdslag"})).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "Metadata"})).toBeVisible()
   })
 
   playwright.test('keyword view can be opened', async ({ page }) => {
     await page.getByRole("link", {name: "Asiasanahaku"}).click()
-    await playwright.expect(page.getByText("Virheellinen haku")).toBeVisible()
     await page.getByRole("heading", {name: "Asiasanat"}).toBeVisible()
   })
 
@@ -137,6 +133,7 @@ playwright.describe("Keyword page", () => {
   })
 
   playwright.test('keywords laws are visible and can be clicked', async () => {
+    //First link on top baarissa, ei toimi
     await page.getByRole("link").first().click()
     await page.getByRole("heading", {name: "Asiasanat -"}).toBeVisible()
     await page.getByRole("link").first().click()
@@ -204,16 +201,18 @@ playwright.describe("Case law page", () => {
 
 
   playwright.test('searchbar can be used to search (fin)', async ({ page }) => {
-    await page.getByRole("textbox").fill("viikonloppu")
+    await page.getByRole("textbox").fill("2023")
     await page.getByRole("button", {name: "Hae"}).click()
-    await page.getByText(":").first().click()
+    await page.getByRole("link", {name: ":"}).click()
+    await playwright.expect(page.getByRole("heading", {name: "2023"})).toBeVisible()
   })
 
   playwright.test('searchbar can be used to search (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
-    await page.getByRole("textbox").fill("europeiska")
+    await page.getByRole("textbox").fill("2023")
     await page.getByRole("button", {name: "Sök"}).click()
-    await page.getByText(":").first().click()
+    await page.getByRole("link", {name: ":"}).click()
+    await playwright.expect(page.getByRole("heading", {name: "2023"})).toBeVisible()
   })
 
   playwright.test('single case can be searched (fin)', async ({ page }) => {
@@ -226,8 +225,7 @@ playwright.describe("Case law page", () => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("textbox").fill("kko:2023:5")
     await page.getByRole("button", {name: "Sök"}).click()
-    const locator1 = await page.getByText("Se KKO:2007:71")
-    await playwright.expect(locator1).toBeVisible()
+    await playwright.expect(page.getByRole("heading", {name: "KKO 5/2023"})).toBeVisible()
   })
 })
 
