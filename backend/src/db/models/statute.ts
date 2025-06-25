@@ -34,7 +34,6 @@ export async function getStatutesByYear(year: number, language: string): Promise
   return result.rows;
 }
 
-// Hae lakien sisällöstä
 export async function searchStatutesByKeywordAndLanguage(keyword: string, language: string) {
   const preparedResults = [];
   const results_uuid = await searchStatutes(language, keyword);

@@ -2,7 +2,6 @@ import { JSDOM } from 'jsdom';
 import { Heading, Chapter, hContainer } from '../types/structure.js';
 import { StatuteVersion } from '../types/versions.js';
 
-// Pakota input taulukkoon, jossei se jo ole
 export function toArray<T>(input: T | T[]): T[] {
   return Array.isArray(input) ? input : [input];
 }
@@ -114,7 +113,6 @@ function parseXmlSubSections(obj: Chapter) {
 }
 
 function parseStatuteVersion(uri: string): StatuteVersion {
-  // Match pattern: base/year/number/language@[year][number]
   const match = uri.match(/^(.+\/\d+\/\d+\/(fin|swe))@(.+)?$/);
   if (!match) {
     return {
@@ -139,7 +137,6 @@ function parseStatuteVersion(uri: string): StatuteVersion {
 }
 
 export function getLatestStatuteVersions(uris: string[]): string[] {
-  // Group URIs by their base (without version) and language
   const groups = new Map<string, StatuteVersion[]>();
 
   uris.forEach(uri => {
@@ -151,14 +148,11 @@ export function getLatestStatuteVersions(uris: string[]): string[] {
     groups.get(key)!.push(version);
   });
 
-  // Process each group to find latest version
   return Array.from(groups.values()).map(versions => {
-    // If only one version with no designator, use that
     if (versions.length === 1 && !versions[0].year && !versions[0].number) {
       return versions[0].fullUri;
     }
 
-    // Sort versions by year and number (descending)
     const sorted = versions.sort((a, b) => {
       if (a.year !== b.year) {
         return (b.year || '0').localeCompare(a.year || '0');

@@ -5,7 +5,6 @@ import * as config from '../util/config.js';
 import { getStatuteByNumberYear, getStatutesByYear, searchStatutesByKeywordAndLanguage } from '../db/models/statute.js';
 const statuteRouter = express.Router();
 
-// Hae tietyn lain struktuurin eli otsikot ja otsikkojen alaotsikot
 statuteRouter.get('/structure/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
 
   const year = parseInt(request.params.year)
@@ -35,7 +34,6 @@ statuteRouter.get('/structure/id/:year/:number/:language', async (request: expre
   }
 })
 
-// Hae tietty laki vuodella ja numerolla
 statuteRouter.get('/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
   const year = parseInt(request.params.year)
   const language = request.params.language
@@ -53,19 +51,16 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
   const query = request.query.q as string
   const language = request.query.language as string
 
-  // Tarkista kieli
   if (!config.VALID_LANGUAGES.includes(language)) {
     response.status(400).json({ error: 'Invalid language parameter' });
     return;
   }
 
-  // Tarkista kysely
   if (!query) {
     response.status(400).json({ error: 'Query parameter "q" is required' });
     return;
   }
 
-  // Haku id:llä
   if (query.match(/^\d+(-\d+)?\/(19|20)\d\d$/)) {
     const [docNumber, docYear] = query.split('/');
     let results
@@ -86,7 +81,6 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
     }
   }
 
-  // Haku vuodella
   if (query.match(/^\d{4}$/)) {
     const year = parseInt(query);
     let results;
@@ -105,7 +99,6 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
     }
   }
 
-  // Haku sisällöllä
   let results;
   try {
     results = await searchStatutesByKeywordAndLanguage(query, language);

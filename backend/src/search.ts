@@ -290,7 +290,7 @@ export async function searchStatutes(lang: string, queryStr: string) {
     query_by_weights: "50,49,20,15,10,1",
     prefix: "true",
     num_typos: 2,
-    text_match_type: "max_weight", // sum_score olisi ehkä parempi, mutta tämä client ei tue sitä
+    text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
     per_page: 20
   };
@@ -311,7 +311,7 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     query_by_weights: "50,49,48,10,1",
     prefix: "true",
     num_typos: 2,
-    text_match_type: "max_weight", // sum_score olisi ehkä parempi, mutta tämä client ei tue sitä
+    text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
     per_page: 20
   };

@@ -27,7 +27,6 @@ export async function getJudgmentByUuid(uuid: string): Promise<JudgmentListItem 
   return result.rows[0] || null;
 }
 
-// Hae oikeuskäytäntöpäätösten sisällöstä
 export async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: string, level: string) {
   const preparedResults = [];
   const results_uuid = await searchJudgments(language, keyword, level);

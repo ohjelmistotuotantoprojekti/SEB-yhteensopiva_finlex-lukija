@@ -4,7 +4,6 @@ import { getJudgmentByNumberYear, getJudgmentsByYear, searchJudgmentsByKeywordAn
 import { parseHtmlHeadings } from '../util/parse.js';
 const judgmentRouter = express.Router();
 
-// Hae tietyn oikeuskäytännön struktuurin eli otsikot ja otsikkojen alaotsikot
 judgmentRouter.get('/structure/id/:year/:number/:language/:level', async (request: express.Request, response: express.Response): Promise<void> => {
 
   const year = parseInt(request.params.year)
@@ -34,7 +33,6 @@ judgmentRouter.get('/structure/id/:year/:number/:language/:level', async (reques
   }
 })
 
-// Hae tietty oikeuskäytäntöpäätös vuodella, numerolla ja tasolla
 judgmentRouter.get('/id/:year/:number/:language/:level', async (request: express.Request, response: express.Response): Promise<void> => {
   const year = parseInt(request.params.year)
   const language = request.params.language
@@ -54,26 +52,22 @@ judgmentRouter.get('/search', async (request: express.Request, response: express
   const language = request.query.language as string
   let level = request.query.level as string
 
-  // Tarkista kieli
   if (!config.VALID_LANGUAGES.includes(language)) {
     response.status(400).json({ error: 'Invalid language parameter' });
     return;
   }
 
-  // Tarkista kysely
   if (!query) {
     response.status(400).json({ error: 'Query parameter "q" is required' });
     return;
   }
 
-  // Tarkista oikeuskäytäntöpäätösten taso
   if (!level) level = 'any'
   if (!config.VALID_LEVELS.includes(level)) {
     response.status(400).send('Invalid level parameter');
     return;
   }
 
-  // Haku id:llä
   if (query.match(/^(KKO|KHO):(19|20)\d\d:\d+$/i)) {
     const [docLevel, docYear, docNumber] = query.split(':');
     let result;
@@ -97,7 +91,6 @@ judgmentRouter.get('/search', async (request: express.Request, response: express
     }
   }
 
-  // Haku vuodella
   if (query.match(/^\d{4}$/)) {
     const year = parseInt(query);
     let results;
@@ -116,7 +109,6 @@ judgmentRouter.get('/search', async (request: express.Request, response: express
     }
   }
 
-  // Haku sisällöllä
   let results;
   try {
     results = await searchJudgmentsByKeywordAndLanguage(query, language, level);
