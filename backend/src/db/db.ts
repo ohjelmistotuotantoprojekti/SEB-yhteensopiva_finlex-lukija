@@ -287,12 +287,12 @@ async function createTables(): Promise<void> {
 async function dropTables(): Promise<void> {
   try {
     const client = await pool.connect();
+    await client.query("DROP TABLE IF EXISTS map_image_statute");
     await client.query("DROP TABLE IF EXISTS images");
-    await client.query("DROP TABLE IF EXISTS statutes");
-    await client.query("DROP TABLE IF EXISTS judgments");
     await client.query("DROP TABLE IF EXISTS common_names");
     await client.query("DROP TABLE IF EXISTS keywords");
-    await client.query("DROP TABLE IF EXISTS map_image_statute");
+    await client.query("DROP TABLE IF EXISTS judgments");
+    await client.query("DROP TABLE IF EXISTS statutes");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);
