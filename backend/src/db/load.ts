@@ -20,24 +20,17 @@ import { getLatestStatuteVersions } from '../util/parse.js';
 function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string; docVersion: string | null } {
   try {
     const urlObj = new URL(url);
-
-    // Split URL into parts before and after @
     const [basePath, version] = urlObj.pathname.split('@');
-
-    // Split base path and filter empty segments
     const segments = basePath.split('/').filter(Boolean);
 
-    // Check for valid URL format
     if (segments.length < 9) {
       throw new Error("Invalid URL format: Not enough segments");
     }
 
-    // Extract year, number and language
     const docYear = parseInt(segments[7]);
     const docNumber = segments[8];
     const docLanguage = segments[9];
 
-    // Handle version - null if no version specified
     const docVersion = version ? version : null;
 
     return { docYear, docNumber, docLanguage, docVersion };
@@ -96,17 +89,14 @@ function buildJudgmentUrl(judgment: JudgmentKey): string {
 
 
 async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string> {
-  // Parsi XML data JSON-muotoon
   const xmlData = result.data as Promise<string>;
   const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
 
-  // Poimi results-lista akomantoso-elementistä
   const resultNode = parsedXmlData?.akomaNtoso
   if (!resultNode) {
     throw new Error('Result node not found in XML')
   }
 
-  // Poimi docTitle preface-elementistä
   const docTitle = resultNode?.act?.preface?.p?.docTitle ||
     resultNode?.decree?.preface?.p?.docTitle;
   if (!docTitle) {
@@ -117,15 +107,12 @@ async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string
 }
 
 async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<string[]> {
-  // Parsi XML data
   const xmlData = await result.data as string;
   const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
 
-  // Poimi image-elementit
   const imageNodes = doc.getElementsByTagNameNS('*', 'img');
   const imageLinks: string[] = [];
 
-  // Hae src-attribuutit
   Array.from(imageNodes).forEach((node: xmldom.Element) => {
     imageLinks.push(node.getAttribute('src') || '');
   });
@@ -134,15 +121,12 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
 }
 
 async function parseCommonNamesFromXML(result: AxiosResponse<unknown>): Promise<string[]> {
-  // Parsi XML data
   const xmlData = await result.data as string;
   const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
 
-  // Poimi elementit
   const nodes = doc.getElementsByTagNameNS('*', 'commonName');
   const names: string[] = [];
 
-  // Hae sisältö
   Array.from(nodes).forEach((node: xmldom.Element) => {
     if (node.textContent) {
       names.push(node.textContent);
@@ -155,16 +139,13 @@ async function parseCommonNamesFromXML(result: AxiosResponse<unknown>): Promise<
 async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[string, string][]> {
   const keyword_list: [string, string][] = [];
 
-  // Parsi XML data JSON-muotoon
   const xmlData = result.data as Promise<string>;
   const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
 
-  // Poimi results-lista akomantoso-elementistä
   const resultNode = parsedXmlData?.akomaNtoso
   if (!resultNode) {
     throw new Error('Result node not found in XML')
   }
-  // Poimi keywordit ja id:t jos classification-elementti löytyy
   const classificationNode = resultNode?.act?.meta?.classification
   const keywords = classificationNode?.keyword
   if (keywords) {
@@ -409,7 +390,7 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
         uris.push(...newUris);
 
         if (result.data.length < queryParams.limit) {
-          break; // No more pages to fetch
+          break;
         }
 
         queryParams.page += 1;
@@ -427,7 +408,6 @@ async function listStatutesByYear(year: number, language: string): Promise<strin
     }
   }
 
-  // Get latest versions and filter by language
   const latestVersions = getLatestStatuteVersions(uris)
     .filter(uri => uri.includes(`/${language}@`));
 

@@ -48,7 +48,6 @@ app.use('/api/statute', statuteRouter)
 app.use('/api/judgment', judgmentRouter);
 
 
-// Kaikki muut ohjataan frontendille
 app.get("*params", async (request: express.Request, response: express.Response): Promise<void> => {
   response.sendFile(path.join(__dirname, 'frontend', 'index.html'))
 })

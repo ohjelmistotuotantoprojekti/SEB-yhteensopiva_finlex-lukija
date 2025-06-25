@@ -25,7 +25,6 @@ function checkNodeEnv(envs: string[]) {
 
 export async function sendStatusUpdate(success: boolean) {
   console.log(`Sending status update: ${success ? 'db-ready' : 'db-notready'}`);
-  // Lähetä status päivitys palvelimelle
   const status = success ? 'db-ready' : 'db-notready';
   for (const workerId in WORKERS) {
     if (WORKERS[workerId].role === 'app') {
