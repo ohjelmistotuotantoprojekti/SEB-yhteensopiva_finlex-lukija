@@ -3,7 +3,8 @@
 <xsl:stylesheet version="1.0"
       xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
       xmlns:akn="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
-      exclude-result-prefixes="akn">
+      xmlns:finlex="http://data.finlex.fi/schema/finlex"
+      exclude-result-prefixes="akn finlex">
 
   <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 
@@ -125,7 +126,9 @@
   </xsl:template>
 
   <xsl:template match="akn:subsection">
-    <div class="subsection"><xsl:apply-templates/></div>
+    <div class="subsection">
+      <xsl:apply-templates/>
+    </div>
   </xsl:template>
 
   <!-- paragraphs -->
@@ -134,7 +137,14 @@
   </xsl:template>
 
   <xsl:template match="akn:p">
-    <p><xsl:apply-templates/></p>
+    <p>
+      <xsl:apply-templates/>
+      <xsl:if test="ancestor::akn:subsection/@finlex:originalVersionLabel and not(following-sibling::akn:p)">
+        <span class="version-label">
+          (<xsl:value-of select="ancestor::akn:subsection/@finlex:originalVersionLabel"/>)
+        </span>
+      </xsl:if>
+    </p>
   </xsl:template>
 
   <xsl:template match="akn:content">
