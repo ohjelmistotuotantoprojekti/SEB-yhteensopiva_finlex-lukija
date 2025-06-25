@@ -14,28 +14,22 @@ export async function setJudgment(judgment: Judgment) {
   await query(sql, [judgment.uuid, judgment.level, judgment.number, judgment.year, judgment.language, judgment.content, judgment.is_empty]);
 }
 
-
 export async function getJudgmentCountByYear(year: number): Promise<number> {
   const sql = 'SELECT COUNT(*) FROM judgments where year = $1';
   const result = await query(sql, [year]);
   return parseInt(result.rows[0].count, 10);
 }
 
-export async function getJudgmentByUuid(uuid: string): Promise<JudgmentListItem | null> {
-  const sql = 'SELECT level as "docLevel", year as "docYear", number as "docNumber", is_empty as "isEmpty" FROM judgments WHERE uuid = $1';
-  const result = await query(sql, [uuid]);
-  return result.rows[0] || null;
-}
-
-export async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: string, level: string) {
-  const preparedResults = [];
-  const results_uuid = await searchJudgments(language, keyword, level);
-  for (const result of results_uuid) {
-    const judgment = await getJudgmentByUuid(result);
-    if (judgment === null) continue;
-    preparedResults.push(judgment);
-  }
-  return preparedResults;
+export async function searchJudgmentsByKeywordAndLanguage(keyword: string, language: string, level: string): Promise<JudgmentListItem[]> {
+  const results = await searchJudgments(language, keyword, level);
+  return results.map((result) => {
+    return {
+      docYear: result.year_num,
+      docNumber: result.number,
+      docLevel: result.level,
+      isEmpty: result.has_content === 0,
+    }
+  })
 }
 
 export async function getJudgmentByNumberYear(number: string, year: number, language: string, level: string): Promise<string | null> {

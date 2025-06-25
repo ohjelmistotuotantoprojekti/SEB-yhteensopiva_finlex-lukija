@@ -315,9 +315,7 @@ async function setSingleStatute(uri: string) {
     const commonNameObj: CommonName = {
       uuid: uuidv4(),
       commonName: commonName,
-      number: docNumber,
-      year: docYear,
-      language: docLanguage
+      statuteUuid: statuteUuid,
     }
     await setCommonName(commonNameObj)
   }

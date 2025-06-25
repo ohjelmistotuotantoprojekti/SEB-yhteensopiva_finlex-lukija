@@ -8,7 +8,6 @@ export interface Judgment {
     is_empty: boolean;
   }
 
-
 export interface JudgmentKey {
     level: string;
     number: string;

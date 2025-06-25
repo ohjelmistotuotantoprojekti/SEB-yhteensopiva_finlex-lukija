@@ -10,6 +10,7 @@ import { query } from "./db/db.js"
 import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropwords.js";
 import { JSDOM } from "jsdom";
 import { START_YEAR } from  './util/config.js';
+import { getCommonNamesByStatuteUuid } from "./db/models/commonName.js";
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -115,6 +116,7 @@ export async function syncStatutes(lang: string) {
       { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "common_names", type: "string[]", locale: lang_short },
+      { name: "version", type: "string", index: false },
       { name: "headings", type: "string[]", locale: lang_short },
       { name: "paragraphs", type: "string[]", locale: lang_short },
       { name: "has_content", type: "int32" },
@@ -134,31 +136,17 @@ export async function syncStatutes(lang: string) {
   for (let year = START_YEAR; year <= new Date().getFullYear(); year++) {
     const { rows } = await query(
       `
-      WITH cn AS (
-          SELECT
-          number,
-          year,
-          language,
-          ARRAY_AGG(common_name) AS common_names
-          FROM common_names
-          WHERE language = $1 AND year = $2
-          GROUP BY number, year, language
-      )
       SELECT
-          l.uuid   AS id,
-          l.number AS number,
-          l.year   AS year,
-          l.title  AS title,
-          l.is_empty AS is_empty,
-          l.content::text AS content,
-          COALESCE(cn.common_names, '{}') AS common_names
-      FROM statutes l
-      LEFT JOIN cn
-          ON cn.number   = l.number
-      AND cn.year     = l.year
-      AND cn.language = l.language
-      WHERE l.language = $1 AND l.year = $2
-      ORDER BY l.uuid
+          uuid   AS id,
+          title  AS title,
+          number AS number,
+          year   AS year,
+          is_empty AS is_empty,
+          version AS version,
+          content::text AS content
+      FROM statutes
+      WHERE language = $1 AND year = $2
+      ORDER BY uuid
       `,
       [lang, year]
     )
@@ -170,6 +158,7 @@ export async function syncStatutes(lang: string) {
       const headingTree: Heading[] = parseXmlHeadings(parsed_xml) ?? [];
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphs(row.content);
+      const commonNames = await getCommonNamesByStatuteUuid(row.id);
 
       await tsClient
         .collections(collectionName)
@@ -181,7 +170,8 @@ export async function syncStatutes(lang: string) {
           year_num: parseInt(row.year, 10),
           number: row.number,
           has_content: row.is_empty ? 0 : 1,
-          common_names: row.common_names,
+          common_names: commonNames,
+          version: row.version ?? '',
           headings: normalizeText(headings, lang),
           paragraphs: normalizeText(paragraphs, lang),
         });
@@ -300,7 +290,7 @@ export async function searchStatutes(lang: string, queryStr: string) {
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document as { id: string }).id) || [];
+  return searchResults.hits?.map((hit) => (hit.document)) || [];
 }
 
 
@@ -324,5 +314,5 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document as { id: string }).id) || [];
+  return searchResults.hits?.map((hit) => (hit.document)) || [];
 }

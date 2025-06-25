@@ -22,27 +22,23 @@ export async function getStatuteCountByYear(year: number): Promise<number> {
   return parseInt(result.rows[0].count, 10);
 }
 
-export async function getStatuteByUuid(uuid: string): Promise<StatuteListItem | null> {
-  const sql = 'SELECT title as "docTitle", year as "docYear", number as "docNumber", is_empty as "isEmpty" FROM statutes WHERE uuid = $1';
-  const result = await query(sql, [uuid]);
-  return result.rows[0] || null;
-}
-
 export async function getStatutesByYear(year: number, language: string): Promise<StatuteListItem[]> {
   const sql = 'SELECT title as "docTitle", number as "docNumber", year as "docYear", is_empty as "isEmpty", version as "docVersion" FROM statutes WHERE year = $1 AND language = $2 ORDER BY is_empty ASC, number ASC';
   const result = await query(sql, [year, language]);
   return result.rows;
 }
 
-export async function searchStatutesByKeywordAndLanguage(keyword: string, language: string) {
-  const preparedResults = [];
-  const results_uuid = await searchStatutes(language, keyword);
-  for (const result of results_uuid) {
-    const statute = await getStatuteByUuid(result);
-    if (statute === null) continue;
-    preparedResults.push(statute);
-  }
-  return preparedResults;
+export async function searchStatutesByKeywordAndLanguage(keyword: string, language: string): Promise<StatuteListItem[]> {
+  const results = await searchStatutes(language, keyword);
+  return results.map((result) => {
+    return {
+      docYear: result.year_num,
+      docNumber: result.number,
+      docTitle: result.title,
+      isEmpty: result.has_content === 0,
+      docVersion: result.version
+    }
+  })
 }
 
 export async function getStatuteByNumberYear(number: string, year: number, language: string): Promise<string | null> {

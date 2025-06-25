@@ -244,10 +244,8 @@ async function createTables(): Promise<void> {
       CREATE TABLE IF NOT EXISTS common_names (
         uuid UUID PRIMARY KEY,
         common_name TEXT NOT NULL,
-        number TEXT NOT NULL,
-        year INTEGER NOT NULL,
-        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
-        CONSTRAINT unique_name UNIQUE (number, year, language, common_name)
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
+        CONSTRAINT unique_name UNIQUE (statute_uuid, common_name)
       )
     `);
     await client.query(`
