@@ -1,4 +1,6 @@
 import { Heading } from "./types/structure.js";
+import { StatuteSearchResult } from "./types/statute.js";
+import { JudgmentSearchResult } from "./types/judgment.js";
 import Typesense from "typesense";
 import { Errors } from "typesense";
 import { CollectionCreateSchema } from "typesense/lib/Typesense/Collections.js";
@@ -273,7 +275,7 @@ export async function deleteCollection(name: string, lang: string) {
 }
 
 
-export async function searchStatutes(lang: string, queryStr: string) {
+export async function searchStatutes(lang: string, queryStr: string): Promise<StatuteSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
     query_by: "title,common_names,headings,year,number,paragraphs",
@@ -291,11 +293,11 @@ export async function searchStatutes(lang: string, queryStr: string) {
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document)) || [];
+  return searchResults.hits?.map((hit) => (hit.document as StatuteSearchResult)) || [];
 }
 
 
-export async function searchJudgments(lang: string, queryStr: string, level: string) {
+export async function searchJudgments(lang: string, queryStr: string, level: string): Promise<JudgmentSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
     query_by: "level,year,number,headings,paragraphs",
@@ -316,5 +318,5 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document)) || [];
+  return searchResults.hits?.map((hit) => (hit.document as JudgmentSearchResult)) || [];
 }

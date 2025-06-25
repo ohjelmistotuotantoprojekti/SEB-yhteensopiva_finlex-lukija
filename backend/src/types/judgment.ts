@@ -21,3 +21,10 @@ export interface JudgmentListItem {
     docLevel: string;
     isEmpty: boolean;
 }
+
+export interface JudgmentSearchResult {
+    year_num: number;
+    number: string;
+    level: string;
+    has_content: number;
+}

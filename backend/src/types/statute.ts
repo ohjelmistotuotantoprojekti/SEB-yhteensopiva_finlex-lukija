@@ -31,3 +31,11 @@ export interface KeyWord {
     statute_uuid: string;
     language: string;
 }
+
+export interface StatuteSearchResult {
+    year_num: number;
+    number: string;
+    title: string;
+    has_content: number;
+    version: string | null;
+}
