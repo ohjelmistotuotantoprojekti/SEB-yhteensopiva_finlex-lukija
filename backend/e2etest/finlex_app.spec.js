@@ -143,8 +143,8 @@ playwright.describe("Keyword page", () => {
   playwright.test('keywords laws are visible and can be clicked (swe)', async ({ page }) => {
     await page.getByRole("combobox").selectOption("Svenska")
     await page.getByRole("link", {name: "Naturvård"}).click()
-    await playwright.expect(page.getByRole("heading", {name: "Asiasanat - "})).toBeVisible()
-    await page.getByRole('link', { name: '2023 – Naturvårdslag' }).click()
+    await playwright.expect(page.getByRole("heading", {name: "Ämnesord - "})).toBeVisible()
+    await page.getByRole('link', { name: '/2023 - Naturvårdslag' }).click()
     await playwright.expect(page.getByRole("heading", {name: "9/2023 – Naturvårdslag"})).toBeVisible()
     await playwright.expect(page.getByRole("heading", {name: "Metadata"})).toBeVisible()
   })
