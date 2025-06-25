@@ -282,7 +282,8 @@ export async function searchStatutes(lang: string, queryStr: string) {
     num_typos: 2,
     text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
-    per_page: 20
+    per_page: 20,
+    include_fields: "year_num,number,title,has_content,version",
   };
 
   const searchResults = await tsClient
@@ -303,7 +304,8 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     num_typos: 2,
     text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
-    per_page: 20
+    per_page: 20,
+    include_fields: "year_num,number,level,has_content",
   };
   if (level !== "any") {
     searchParameters.filter_by = `level:0${localeLevel(level, lang)}`;
