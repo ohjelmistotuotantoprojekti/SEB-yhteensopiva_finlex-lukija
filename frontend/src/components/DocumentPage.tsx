@@ -162,7 +162,7 @@ const DocumentPage = ({language, apipath} : DocumentPageProps) => {
     updateHTML()
   }
 
-  if(headings.length < 1) {
+  if(headings.length < 1 && law.length < 1) {
     getHeadings()
   }
 
