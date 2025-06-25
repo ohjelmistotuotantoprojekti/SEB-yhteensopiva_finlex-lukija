@@ -97,6 +97,12 @@ function localeLevel(level: string, lang: string): string {
   } else throw new Error(`Unsupported language: ${lang}`);
 }
 
+function localeLevelInverse(level: string): string {
+  if (level === "KHO" || level === "HD") return "kho";
+  if (level === "KKO" || level === "HFD") return "kko";
+  throw new Error(`Unsupported level: ${level}`);
+}
+
 export async function syncStatutes(lang: string) {
   let lang_short
   if (lang === "fin") {
@@ -318,5 +324,9 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document as JudgmentSearchResult)) || [];
+  return searchResults.hits?.map((hit) => {
+    const doc = hit.document as JudgmentSearchResult;
+    doc.level = localeLevelInverse(doc.level);
+    return hit.document as JudgmentSearchResult
+  }) || [];
 }

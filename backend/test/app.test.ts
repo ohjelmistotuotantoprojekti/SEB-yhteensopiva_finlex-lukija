@@ -58,6 +58,7 @@ const validateJudgmentContent = (response) => {
   }
   if (typeof resultList[0].docLevel !== 'string' ||
       !config.VALID_LEVELS.includes(resultList[0].docLevel)) {
+    console.error(`Invalid docLevel: ${resultList[0].docLevel}`);
     throw new Error('Response docLevel is not a valid level')
   }
 }
