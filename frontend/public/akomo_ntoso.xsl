@@ -4,7 +4,7 @@
       xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
       xmlns:akn="http://docs.oasis-open.org/legaldocml/ns/akn/3.0"
       xmlns:finlex="http://data.finlex.fi/schema/finlex"
-      exclude-result-prefixes="akn">
+      exclude-result-prefixes="akn finlex">
 
   <xsl:output method="html" indent="yes" encoding="UTF-8"/>
 
