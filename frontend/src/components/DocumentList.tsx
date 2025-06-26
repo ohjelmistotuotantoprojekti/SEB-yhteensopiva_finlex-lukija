@@ -30,6 +30,18 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
     whiteSpace: 'normal'
   }
 
+  const keywordStyle = {
+    display: 'inline-block',
+    padding: '1px 5px',
+    marginRight: '5px',
+    color: 'rgb(51, 51, 51)',
+    fontSize: '12px',
+    backgroundColor: 'rgb(207, 207, 207)',
+    border: '1px solid rgb(136, 136, 136)',
+    borderRadius: '2px',
+    whiteSpace: 'normal'
+  }
+
   function prepareLink(doc: Document): string {
     return `/${frontsection}/${doc.docYear}/${doc.docNumber}${doc.docLevel ? `/${doc.docLevel}` : ""}`;
   }
@@ -57,6 +69,13 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
           <a href={prepareLink(law)}>
             <b>{prepareLabel(law)}</b> {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
+          {law.keywords && law.keywords.length > 0 && (
+            <div>
+              {law.keywords.map((keyword) => (
+                <span key={keyword} style={keywordStyle}>{keyword}</span>
+              ))}
+            </div>
+          )}
         </div>
       )
       }

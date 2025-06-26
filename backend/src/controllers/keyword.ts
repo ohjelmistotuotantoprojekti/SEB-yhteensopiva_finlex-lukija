@@ -1,6 +1,6 @@
 import express from 'express';
 import '../util/config.js';
-import { getKeywords, getStatutesByKeywordID } from '../db/models/keyword.js';
+import { getStatuteKeywords, getStatutesByKeywordID } from '../db/models/keyword.js';
 const keywordRouter = express.Router();
 
 keywordRouter.get('/:language/:keyword_id', async (request: express.Request, response: express.Response): Promise<void> => {
@@ -25,7 +25,7 @@ keywordRouter.get('/:language', async (request: express.Request, response: expre
   const language = request.params.language
   let words;
   try {
-    words = await getKeywords(language)
+    words = await getStatuteKeywords(language)
   } catch (error) {
     console.error("Error finding keywords", error)
     return;

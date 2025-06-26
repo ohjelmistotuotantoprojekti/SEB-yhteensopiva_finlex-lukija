@@ -22,6 +22,7 @@ export interface Document {
   docLevel?: string,
   docTitle?: string
   isEmpty?: boolean,
+  keywords?: string[]
 }
 
 export interface DocumentPageProps {

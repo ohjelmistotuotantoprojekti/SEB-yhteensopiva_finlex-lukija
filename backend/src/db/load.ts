@@ -1,7 +1,7 @@
 import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
-import { Statute, StatuteKey, KeyWord } from '../types/statute.js';
-import { Judgment, JudgmentKey } from '../types/judgment.js';
+import { Statute, StatuteKey, StatuteKeyWord } from '../types/statute.js';
+import { Judgment, JudgmentKey, JudgmentKeyWord } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
 import { CommonName } from '../types/commonName.js';
@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { setStatute } from './models/statute.js';
 import { setJudgment } from './models/judgment.js';
 import { setImage, mapImageToStatute } from './models/image.js';
-import { setKeyword } from './models/keyword.js';
+import { setJudgmentKeyword, setStatuteKeyword } from './models/keyword.js';
 import { setCommonName } from './models/commonName.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
@@ -164,6 +164,52 @@ async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[st
   return keyword_list
 }
 
+export function parseKeywordsfromHTML(html: string, lang: string): string[] {
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+
+  const keywordTag = lang === 'fin' ? 'Asiasanat' : 'Ämnesord';
+
+  const dt = Array.from(doc.querySelectorAll('dt'))
+    .find(el => el.textContent?.trim() === keywordTag);
+  if (!dt) {
+    return [];
+  }
+
+  const dd = dt.nextElementSibling;
+  if (!dd || dd.tagName.toLowerCase() !== 'dd') {
+    return [];
+  }
+
+  const wrapper = Array.from(dd.children)
+    .find(el => el.tagName.toLowerCase() === 'div') as HTMLElement | undefined;
+  if (!wrapper) {
+    return [];
+  }
+
+  const children = Array.from(wrapper.children);
+  const lines: string[] = [];
+
+  const divChildren = children.filter(c => c.tagName.toLowerCase() === 'div');
+  if (divChildren.length > 0) {
+    for (const div of divChildren) {
+      const raw = div.textContent || '';
+      const clean = raw.trim().replace(/\s+/g, ' ');
+      if (clean) lines.push(clean);
+    }
+    return lines;
+  }
+
+  const spanChildren = children.filter(c => c.tagName.toLowerCase() === 'span');
+  for (const span of spanChildren) {
+    const firstInner = span.querySelector('span');
+    const txt = firstInner?.textContent?.trim();
+    if (txt) lines.push(txt);
+  }
+
+  return lines;
+}
+
 function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
   const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
   const courtID = language === 'fin' ? courtLevel.fin : courtLevel.swe;
@@ -197,11 +243,12 @@ function parseURLfromJudgmentID(judgmentID: string): string {
   }
 }
 
-async function parseAkomafromURL(inputURL: string): Promise<{ content: string; is_empty: boolean }> {
+async function parseAkomafromURL(inputURL: string, lang: string): Promise<{ content: string; is_empty: boolean, keywords: string[] }> {
   const result = await axios.get(inputURL, {
     headers: { 'Accept': 'text/html', 'Accept-Encoding': 'gzip' }
   });
   const inputHTML = result.data as string;
+  const keywords = parseKeywordsfromHTML(inputHTML, lang);
   const dom = new JSDOM(inputHTML);
   const doc = dom.window.document;
   const section = doc.querySelector('section[class*="akomaNtoso"]');
@@ -215,7 +262,7 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
 
   const content = section ? section.outerHTML : '';
 
-  return { content, is_empty };
+  return { content, is_empty, keywords };
 }
 
 async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
@@ -302,13 +349,13 @@ async function setSingleStatute(uri: string) {
   statuteUuid = await setStatute(statute)
 
   for (const keyword of keywordList) {
-    const key: KeyWord = {
+    const key: StatuteKeyWord = {
       id: keyword[1],
       keyword: keyword[0],
       statute_uuid: statuteUuid,
       language: docLanguage
     }
-    await setKeyword(key)
+    await setStatuteKeyword(key)
   }
 
   for (const commonName of commonNames) {
@@ -338,9 +385,9 @@ async function setSingleJudgment(uri: string) {
     language = 'swe'
   }
 
-  let html: { content: string; is_empty: boolean }
+  let html: { content: string; is_empty: boolean, keywords: string[] }
   try {
-    html = await parseAkomafromURL(uri)
+    html = await parseAkomafromURL(uri, language)
   } catch {
     console.error(`Failed to set judgment for URL: ${uri}`);
     return;
@@ -355,7 +402,19 @@ async function setSingleJudgment(uri: string) {
     content: html.content,
     is_empty: html.is_empty,
   }
-  await setJudgment(judgment)
+  const judgmentUuid = await setJudgment(judgment)
+
+  let i = 0
+  for (const keyword of html.keywords) {
+    ++i;
+    const key: JudgmentKeyWord = {
+      id: `${judgment.level}:${judgment.year}:${judgment.number}-${i}`,
+      keyword: keyword,
+      judgment_uuid: judgmentUuid,
+      language: language
+    }
+    await setJudgmentKeyword(key)
+  }
 }
 
 
