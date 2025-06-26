@@ -6,7 +6,7 @@ import { defineConfig } from "eslint/config";
 
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts}"], plugins: { js }, extends: ["js/recommended"], languageOptions: { globals: globals.node } },
-  { ignores: ["dist/**", "src/frontend/**"] },
+  { ignores: ["dist/**", "src/frontend/**", "playwright-report/**", "test-results/**", "e2etest/**"] },
   tseslint.configs.recommended,
   { "rules": {
     // Ei välilyöntiä ja tabia sekaisin

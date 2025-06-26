@@ -1,8 +1,15 @@
 import type {DocumentListProps, Document} from "../types"
 
+function getCourtName(level: string, language: string): string {
+  if (language === 'swe') {
+    return level.toLowerCase() === 'kko' ? 'HD' : 'HFD';
+  }
+  return level.toUpperCase();
+}
+
 
 const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
- 
+
 
   const listStyle = {
     width: "500px",
@@ -13,13 +20,25 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
 
   const tagStyle = {
     display: 'inline-block',
-    padding: '0.6em 0.6em',
-    fontSize: '0.9em',
+    padding: '1px 5px',
+    marginRight: '5px',
     color: '#721c24',
+    fontSize: '12px',
     backgroundColor: '#f8d7da',
     border: '1px solid #f5c6cb',
-    borderRadius: '0.25rem',
-    lineHeight: 1,
+    borderRadius: '2px',
+    whiteSpace: 'normal'
+  }
+
+  const keywordStyle = {
+    display: 'inline-block',
+    padding: '1px 5px',
+    marginRight: '5px',
+    color: 'rgb(51, 51, 51)',
+    fontSize: '12px',
+    backgroundColor: 'rgb(207, 207, 207)',
+    border: '1px solid rgb(136, 136, 136)',
+    borderRadius: '2px',
     whiteSpace: 'normal'
   }
 
@@ -29,7 +48,8 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
 
   function prepareLabel(doc: Document): string {
     if (doc.docLevel) {
-      return `${doc.docLevel.toUpperCase()}:${doc.docYear}:${doc.docNumber}`;
+      const courtName = getCourtName(doc.docLevel, language);
+      return `${courtName}:${doc.docYear}:${doc.docNumber}`;
     }
     else {
       return `${doc.docNumber}/${doc.docYear}`;
@@ -39,19 +59,26 @@ const DocumentList = ({laws, frontsection, language}: DocumentListProps) => {
   function prepareKey(doc: Document): string {
     return `${doc.docLevel ? doc.docLevel : ""}${doc.docYear}${doc.docNumber}${language}`;
   }
-  
-  const emptyTagName = language === 'fin' ? 'Tyhjä': 'Tom'
+
+  const emptyTagName = language === 'fin' ? 'Tyhjä' : 'Tom'
   return (
     <>
-    { laws.map((law) => 
+      { laws.map((law) =>
         <div style={listStyle} key={prepareKey(law)} >
-          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span>: ""}
+          {law.isEmpty ? <span style={tagStyle}>{emptyTagName}</span> : ""}
           <a href={prepareLink(law)}>
-            {prepareLabel(law)} {law.docTitle ? `- ${law.docTitle}` : ""}
+            <b>{prepareLabel(law)}</b> {law.docTitle ? `- ${law.docTitle}` : ""}
           </a>
+          {law.keywords && law.keywords.length > 0 && (
+            <div>
+              {law.keywords.map((keyword) => (
+                <span key={keyword} style={keywordStyle}>{keyword}</span>
+              ))}
+            </div>
+          )}
         </div>
       )
-    }
+      }
     </>
   )
 }

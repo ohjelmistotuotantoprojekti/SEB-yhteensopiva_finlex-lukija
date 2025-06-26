@@ -2,7 +2,6 @@ import { JSDOM } from 'jsdom';
 import { Heading, Chapter, hContainer } from '../types/structure.js';
 import { StatuteVersion } from '../types/versions.js';
 
-// Pakota input taulukkoon, jossei se jo ole
 export function toArray<T>(input: T | T[]): T[] {
   return Array.isArray(input) ? input : [input];
 }
@@ -39,45 +38,51 @@ export function parseHtmlHeadings(html: string): Heading[] {
 }
 
 export function parseXmlHeadings(parsed_xml : hContainer) {
-  const headings: Heading[] = []
+  try {
+    const headings: Heading[] = []
 
-  const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
-  if (!obj) return;
+    const obj = parsed_xml.akomaNtoso.act.body.hcontainer[0]
+    if (!obj) return;
 
-  if ('chapter' in obj) {
-    const chapters = toArray(obj.chapter)
-    for (const chap of chapters) {
-      let sub_headings: Heading[]
+    if ('chapter' in obj) {
+      const chapters = toArray(obj.chapter)
+      for (const chap of chapters) {
+        let sub_headings: Heading[]
 
-      if (chap.section) {
-        sub_headings = parseXmlSubSections(chap)
-      } else {
-        sub_headings = []
+        if (chap.section) {
+          sub_headings = parseXmlSubSections(chap)
+        } else {
+          sub_headings = []
+        }
+
+        let chap_name
+        if (typeof chap.heading === 'object') {
+          chap_name = chap.heading._.trim()
+        } else if (typeof chap.heading === 'string') {
+          chap_name = chap.heading.trim()
+        }
+
+        const chap_id = chap['$'].eId
+        let chap_key
+        const chapter_num = chap.num.trim()
+        if (chap_name === undefined) {
+          chap_name = ""
+          chap_key = chapter_num
+        }
+        else {
+          chap_key = chapter_num + " - " + chap_name
+        }
+
+        headings.push({name: chap_key, id: chap_id, content: sub_headings})
       }
-
-      let chap_name
-      if (typeof chap.heading === 'object') {
-        chap_name = chap.heading._.trim()
-      } else if (typeof chap.heading === 'string') {
-        chap_name = chap.heading.trim()
-      }
-
-      const chap_id = chap['$'].eId
-      let chap_key
-      const chapter_num = chap.num.trim()
-      if (chap_name === undefined) {
-        chap_name = ""
-        chap_key = chapter_num
-      }
-      else {
-        chap_key = chapter_num + " - " + chap_name
-      }
-
-      headings.push({name: chap_key, id: chap_id, content: sub_headings})
+      return headings
+    } else {
+      return parseXmlSubSections(obj as Chapter)
     }
-    return headings
-  } else {
-    return parseXmlSubSections(obj as Chapter)
+  }
+  catch (error) {
+    console.error("Error parsing XML headings:", error);
+    return [];
   }
 }
 
@@ -108,7 +113,6 @@ function parseXmlSubSections(obj: Chapter) {
 }
 
 function parseStatuteVersion(uri: string): StatuteVersion {
-  // Match pattern: base/year/number/language@[year][number]
   const match = uri.match(/^(.+\/\d+\/\d+\/(fin|swe))@(.+)?$/);
   if (!match) {
     return {
@@ -133,7 +137,6 @@ function parseStatuteVersion(uri: string): StatuteVersion {
 }
 
 export function getLatestStatuteVersions(uris: string[]): string[] {
-  // Group URIs by their base (without version) and language
   const groups = new Map<string, StatuteVersion[]>();
 
   uris.forEach(uri => {
@@ -145,14 +148,11 @@ export function getLatestStatuteVersions(uris: string[]): string[] {
     groups.get(key)!.push(version);
   });
 
-  // Process each group to find latest version
   return Array.from(groups.values()).map(versions => {
-    // If only one version with no designator, use that
     if (versions.length === 1 && !versions[0].year && !versions[0].number) {
       return versions[0].fullUri;
     }
 
-    // Sort versions by year and number (descending)
     const sorted = versions.sort((a, b) => {
       if (a.year !== b.year) {
         return (b.year || '0').localeCompare(a.year || '0');

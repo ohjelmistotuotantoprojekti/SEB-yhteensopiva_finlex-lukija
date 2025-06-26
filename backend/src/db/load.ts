@@ -1,12 +1,16 @@
 import { parseStringPromise } from 'xml2js';
 import axios, { AxiosResponse } from 'axios'
-import { Akoma, LawKey } from '../types/akoma.js';
-import { Judgment, JudgmentKey } from '../types/judgment.js';
+import { Statute, StatuteKey, StatuteKeyWord } from '../types/statute.js';
+import { Judgment, JudgmentKey, JudgmentKeyWord } from '../types/judgment.js';
 import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
+import { CommonName } from '../types/commonName.js';
 import { v4 as uuidv4 } from 'uuid';
-import { setJudgment, setLaw } from './akoma.js';
-import { setImage } from './image.js';
+import { setStatute } from './models/statute.js';
+import { setJudgment } from './models/judgment.js';
+import { setImage, mapImageToStatute } from './models/image.js';
+import { setJudgmentKeyword, setStatuteKeyword } from './models/keyword.js';
+import { setCommonName } from './models/commonName.js';
 import xmldom from '@xmldom/xmldom';
 import { JSDOM } from 'jsdom';
 import { XMLParser } from 'fast-xml-parser';
@@ -16,24 +20,17 @@ import { getLatestStatuteVersions } from '../util/parse.js';
 function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docLanguage: string; docVersion: string | null } {
   try {
     const urlObj = new URL(url);
-
-    // Split URL into parts before and after @
     const [basePath, version] = urlObj.pathname.split('@');
-
-    // Split base path and filter empty segments
     const segments = basePath.split('/').filter(Boolean);
 
-    // Check for valid URL format
     if (segments.length < 9) {
       throw new Error("Invalid URL format: Not enough segments");
     }
 
-    // Extract year, number and language
     const docYear = parseInt(segments[7]);
     const docNumber = segments[8];
     const docLanguage = segments[9];
 
-    // Handle version - null if no version specified
     const docVersion = version ? version : null;
 
     return { docYear, docNumber, docLanguage, docVersion };
@@ -43,9 +40,9 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
   }
 }
 
-function buildFinlexUrl(law: LawKey): string {
+function buildFinlexUrl(statute: StatuteKey): string {
   const baseUrl = 'https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated';
-  return `${baseUrl}/${law.year}/${law.number}/${law.language}@${law.version ? law.version : ''}`;
+  return `${baseUrl}/${statute.year}/${statute.number}/${statute.language}@${statute.version ? statute.version : ''}`;
 }
 
 function parseJudgmentUrl(url: string): JudgmentKey {
@@ -74,7 +71,7 @@ function parseJudgmentUrl(url: string): JudgmentKey {
 }
 
 function buildJudgmentUrl(judgment: JudgmentKey): string {
-  const caselaw = judgment.language === 'fin' ? 'fi/oikeuskaytanto' : 'sv/rattspraxis';
+  const casestatute = judgment.language === 'fin' ? 'fi/oikeuskaytanto' : 'sv/rattspraxis';
   const baseUrl = 'https://finlex.fi';
   const path = `${judgment.year}/${judgment.number}`;
   let prefix
@@ -85,25 +82,23 @@ function buildJudgmentUrl(judgment: JudgmentKey): string {
   } else {
     throw new Error(`Unknown court level: ${judgment.level}`);
   }
-  return `${baseUrl}/${caselaw}/${prefix}/${path}`;
+  return `${baseUrl}/${casestatute}/${prefix}/${path}`;
 }
 
 
 
 
 async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string> {
-  // Parsi XML data JSON-muotoon
   const xmlData = result.data as Promise<string>;
   const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
 
-  // Poimi results-lista akomantoso-elementistä
   const resultNode = parsedXmlData?.akomaNtoso
   if (!resultNode) {
     throw new Error('Result node not found in XML')
   }
 
-  // Poimi docTitle preface-elementistä
-  const docTitle = resultNode?.act?.preface?.p?.docTitle
+  const docTitle = resultNode?.act?.preface?.p?.docTitle ||
+    resultNode?.decree?.preface?.p?.docTitle;
   if (!docTitle) {
     throw new Error('docTitle not found')
   }
@@ -112,15 +107,12 @@ async function parseTitlefromXML(result: AxiosResponse<unknown>): Promise<string
 }
 
 async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<string[]> {
-  // Parsi XML data
   const xmlData = await result.data as string;
   const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
 
-  // Poimi image-elementit
   const imageNodes = doc.getElementsByTagNameNS('*', 'img');
   const imageLinks: string[] = [];
 
-  // Hae src-attribuutit
   Array.from(imageNodes).forEach((node: xmldom.Element) => {
     imageLinks.push(node.getAttribute('src') || '');
   });
@@ -128,6 +120,95 @@ async function parseImagesfromXML(result: AxiosResponse<unknown>): Promise<strin
   return imageLinks
 }
 
+async function parseCommonNamesFromXML(result: AxiosResponse<unknown>): Promise<string[]> {
+  const xmlData = await result.data as string;
+  const doc = new xmldom.DOMParser().parseFromString(xmlData, 'text/xml');
+
+  const nodes = doc.getElementsByTagNameNS('*', 'commonName');
+  const names: string[] = [];
+
+  Array.from(nodes).forEach((node: xmldom.Element) => {
+    if (node.textContent) {
+      names.push(node.textContent);
+    }
+  });
+
+  return names
+}
+
+async function parseKeywordsfromXML(result: AxiosResponse<unknown>): Promise<[string, string][]> {
+  const keyword_list: [string, string][] = [];
+
+  const xmlData = result.data as Promise<string>;
+  const parsedXmlData = await parseStringPromise(xmlData, { explicitArray: false })
+
+  const resultNode = parsedXmlData?.akomaNtoso
+  if (!resultNode) {
+    throw new Error('Result node not found in XML')
+  }
+  const classificationNode = resultNode?.act?.meta?.classification
+  const keywords = classificationNode?.keyword
+  if (keywords) {
+    if (Array.isArray(keywords)) {
+      for (const word of keywords) {
+        if (word?.$ && word?.$?.showAs && word?.$?.value) {
+          const id = word?.$?.value.substr(word?.$?.value.length - 4)
+          keyword_list.push([word?.$?.showAs, id])
+        }
+      }
+    } else if (classificationNode?.keyword?.$?.showAs && classificationNode?.keyword?.$?.value) {
+      const id = classificationNode?.keyword?.$?.value.substr(classificationNode?.keyword?.$?.value.length - 4)
+      keyword_list.push([classificationNode?.keyword?.$?.showAs, id])
+    }
+  }
+  return keyword_list
+}
+
+export function parseKeywordsfromHTML(html: string, lang: string): string[] {
+  const dom = new JSDOM(html);
+  const doc = dom.window.document;
+
+  const keywordTag = lang === 'fin' ? 'Asiasanat' : 'Ämnesord';
+
+  const dt = Array.from(doc.querySelectorAll('dt'))
+    .find(el => el.textContent?.trim() === keywordTag);
+  if (!dt) {
+    return [];
+  }
+
+  const dd = dt.nextElementSibling;
+  if (!dd || dd.tagName.toLowerCase() !== 'dd') {
+    return [];
+  }
+
+  const wrapper = Array.from(dd.children)
+    .find(el => el.tagName.toLowerCase() === 'div') as HTMLElement | undefined;
+  if (!wrapper) {
+    return [];
+  }
+
+  const children = Array.from(wrapper.children);
+  const lines: string[] = [];
+
+  const divChildren = children.filter(c => c.tagName.toLowerCase() === 'div');
+  if (divChildren.length > 0) {
+    for (const div of divChildren) {
+      const raw = div.textContent || '';
+      const clean = raw.trim().replace(/\s+/g, ' ');
+      if (clean) lines.push(clean);
+    }
+    return lines;
+  }
+
+  const spanChildren = children.filter(c => c.tagName.toLowerCase() === 'span');
+  for (const span of spanChildren) {
+    const firstInner = span.querySelector('span');
+    const txt = firstInner?.textContent?.trim();
+    if (txt) lines.push(txt);
+  }
+
+  return lines;
+}
 
 function parseJudgmentList(inputHTML: string, language: string, level: string): string[] {
   const courtLevel = {fin: level === 'kho' ? 'KHO' : 'KKO', swe: level === 'kho' ? 'HFD' : 'HD'};
@@ -162,11 +243,12 @@ function parseURLfromJudgmentID(judgmentID: string): string {
   }
 }
 
-async function parseAkomafromURL(inputURL: string): Promise<{ content: string; is_empty: boolean }> {
+async function parseAkomafromURL(inputURL: string, lang: string): Promise<{ content: string; is_empty: boolean, keywords: string[] }> {
   const result = await axios.get(inputURL, {
     headers: { 'Accept': 'text/html', 'Accept-Encoding': 'gzip' }
   });
   const inputHTML = result.data as string;
+  const keywords = parseKeywordsfromHTML(inputHTML, lang);
   const dom = new JSDOM(inputHTML);
   const doc = dom.window.document;
   const section = doc.querySelector('section[class*="akomaNtoso"]');
@@ -180,7 +262,7 @@ async function parseAkomafromURL(inputURL: string): Promise<{ content: string; i
 
   const content = section ? section.outerHTML : '';
 
-  return { content, is_empty };
+  return { content, is_empty, keywords };
 }
 
 async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
@@ -207,9 +289,9 @@ async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
-async function setImages(docYear: number, docNumber: string, language: string, uris: string[]) {
+async function setImages(statuteUuid: string, docYear: number, docNumber: string, language: string, version: string | null, uris: string[]) {
   for (const uri of uris) {
-    const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@/${uri}`
+    const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@${version ?? ''}/${uri}`
     const url = `${baseURL}${path}`
     try {
       const result = await axios.get(url, {
@@ -222,14 +304,16 @@ async function setImages(docYear: number, docNumber: string, language: string, u
         console.error(`Failed to extract name from URI: ${uri}`);
         continue;
       }
+      let imageUuid = uuidv4();
       const image: Image = {
-        uuid: uuidv4(),
+        uuid: imageUuid,
         name: name,
         mime_type: result.headers['content-type'],
         content: result.data as Buffer,
       }
 
-      setImage(image)
+      imageUuid = await setImage(image)
+      mapImageToStatute(statuteUuid, imageUuid)
     }
     catch {
       console.error(`Failed to fetch image from ${url}:`);
@@ -243,18 +327,16 @@ async function setSingleStatute(uri: string) {
   })
   const docTitle = await parseTitlefromXML(result)
   const imageLinks = await parseImagesfromXML(result)
-  if (imageLinks.length > 0) {
-    console.log(imageLinks.length)
-    console.log(imageLinks)
-  }
+  const keywordList = await parseKeywordsfromXML(result)
+  const commonNames = await parseCommonNamesFromXML(result)
 
   const xmlContent = result.data as string;
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
-  const lawUuid = uuidv4()
-  const law: Akoma = {
-    uuid: lawUuid,
+  let statuteUuid = uuidv4()
+  const statute: Statute = {
+    uuid: statuteUuid,
     title: docTitle,
     number: docNumber,
     year: docYear,
@@ -264,8 +346,28 @@ async function setSingleStatute(uri: string) {
     is_empty: is_empty
   }
 
-  setImages(docYear, docNumber, docLanguage, imageLinks)
-  await setLaw(law)
+  statuteUuid = await setStatute(statute)
+
+  for (const keyword of keywordList) {
+    const key: StatuteKeyWord = {
+      id: keyword[1],
+      keyword: keyword[0],
+      statute_uuid: statuteUuid,
+      language: docLanguage
+    }
+    await setStatuteKeyword(key)
+  }
+
+  for (const commonName of commonNames) {
+    const commonNameObj: CommonName = {
+      uuid: uuidv4(),
+      commonName: commonName,
+      statuteUuid: statuteUuid,
+    }
+    await setCommonName(commonNameObj)
+  }
+
+  setImages(statuteUuid, docYear, docNumber, docLanguage, docVersion, imageLinks)
 }
 
 async function setSingleJudgment(uri: string) {
@@ -283,9 +385,9 @@ async function setSingleJudgment(uri: string) {
     language = 'swe'
   }
 
-  let html: { content: string; is_empty: boolean }
+  let html: { content: string; is_empty: boolean, keywords: string[] }
   try {
-    html = await parseAkomafromURL(uri)
+    html = await parseAkomafromURL(uri, language)
   } catch {
     console.error(`Failed to set judgment for URL: ${uri}`);
     return;
@@ -300,66 +402,78 @@ async function setSingleJudgment(uri: string) {
     content: html.content,
     is_empty: html.is_empty,
   }
-  await setJudgment(judgment)
+  const judgmentUuid = await setJudgment(judgment)
+
+  let i = 0
+  for (const keyword of html.keywords) {
+    ++i;
+    const key: JudgmentKeyWord = {
+      id: `${judgment.level}:${judgment.year}:${judgment.number}-${i}`,
+      keyword: keyword,
+      judgment_uuid: judgmentUuid,
+      language: language
+    }
+    await setJudgmentKeyword(key)
+  }
 }
 
 
 async function listStatutesByYear(year: number, language: string): Promise<string[]> {
   const path = '/akn/fi/act/statute-consolidated/list';
-  const queryParams = {
-    format: 'json',
-    page: 1,
-    limit: 10,
-    startYear: year,
-    endYear: year,
-  };
-
   const uris: string[] = [];
-
-  try {
-    while (true) {
-      const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
-        params: queryParams,
-        headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip'
-        }
-      });
-
-      if (!Array.isArray(result.data)) {
-        throw new Error('Invalid response format: expected an array');
-      }
-
-      const newUris = result.data.map(item => item.akn_uri);
-      uris.push(...newUris);
-
-      if (result.data.length < queryParams.limit) {
-        break; // No more pages to fetch
-      }
-
-      queryParams.page += 1;
+  for (const typeStatute of ['act', 'decree']) {
+    const queryParams = {
+      format: 'json',
+      page: 1,
+      limit: 10,
+      startYear: year,
+      endYear: year,
+      typeStatute
     };
 
-    // Get latest versions and filter by language
-    const latestVersions = getLatestStatuteVersions(uris)
-      .filter(uri => uri.includes(`/${language}@`));
+    try {
+      while (true) {
+        const result = await axios.get<StatuteVersionResponse[]>(`${baseURL}${path}`, {
+          params: queryParams,
+          headers: {
+            Accept: 'application/json',
+            'Accept-Encoding': 'gzip'
+          }
+        });
 
-    console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+        if (!Array.isArray(result.data)) {
+          throw new Error('Invalid response format: expected an array');
+        }
 
-    return latestVersions;
+        const newUris = result.data.map(item => item.akn_uri);
+        uris.push(...newUris);
 
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error(`Failed to fetch statute versions for year ${year}: ${error.message}`);
-      if (error.response) {
-        console.error('Response status:', error.response.status);
-        console.error('Response data:', error.response.data);
+        if (result.data.length < queryParams.limit) {
+          break;
+        }
+
+        queryParams.page += 1;
       }
-    } else {
-      console.error(`Unexpected error while fetching statute versions: ${error}`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(`Failed to fetch statute versions for year ${year}, type ${typeStatute}: ${error.message}`);
+        if (error.response) {
+          console.error('Response status:', error.response.status);
+          console.error('Response data:', error.response.data);
+        }
+      } else {
+        console.error(`Unexpected error while fetching statute versions: ${error}`);
+      }
     }
-    return [];
   }
+
+  const latestVersions = getLatestStatuteVersions(uris)
+    .filter(uri => uri.includes(`/${language}@`));
+
+  console.log(`Filtered to ${latestVersions.length} latest versions in ${language}`);
+
+  return latestVersions;
+
 }
 
 
@@ -402,55 +516,6 @@ async function listJudgmentsByYear(year: number, language: string, level: string
     judgmentURLsSet.add(url);
   }
   return Array.from(judgmentURLsSet);
-}
-
-
-export async function getCommonNames(language: string): Promise<LawKey[]> {
-  console.log(`Fetching common names for language: ${language}`);
-  let url: string;
-  if (language == 'fin') {
-    url = "https://finlex.fi/fi/lainsaadanto/arkinimet"
-  } else if (language == 'swe') {
-    url = "https://finlex.fi/sv/lagstiftning/vardagliga-namn"
-  } else {
-    throw new Error(`Unsupported language: ${language}`);
-  }
-
-  const response = await axios.get<string>(url, { responseType: 'text' });
-  const html     = response.data;
-
-  const dom = new JSDOM(html);
-  const doc = dom.window.document;
-
-  const tables = doc.querySelectorAll('table');
-  if (tables.length === 0) {
-    throw new Error('No table found in the document');
-  }
-  const entries: LawKey[] = [];
-  for (const table of tables) {
-
-    const rows    = table.querySelectorAll('tbody tr');
-
-    rows.forEach(tr => {
-      const nameDiv = tr.querySelector('th > div');
-      const link    = tr.querySelector<HTMLAnchorElement>('td a');
-
-      if (!nameDiv || !link) return;
-
-      const name = nameDiv.textContent?.trim() ?? '';
-      const href = link.getAttribute('href')     ?? '';
-      const parts = href.split('/').filter(p => p);
-
-      if (parts.length >= 4) {
-        const [ , , yearPart, numberPart ] = parts;
-        const yearNum = parseInt(yearPart, 10);
-        if (!isNaN(yearNum)) {
-          entries.push({ commonName: name, language: language, year: yearNum, number: numberPart, version: null });
-        }
-      }
-    });
-  }
-  return entries;
 }
 
 export { listStatutesByYear, setSingleStatute, listJudgmentNumbersByYear, listJudgmentsByYear, parseURLfromJudgmentID, setSingleJudgment, parseAkomafromURL, parseFinlexUrl, parseJudgmentUrl, buildFinlexUrl, buildJudgmentUrl }

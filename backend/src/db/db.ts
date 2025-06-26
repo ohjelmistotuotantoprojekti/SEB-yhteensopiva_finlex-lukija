@@ -1,10 +1,12 @@
 
 import { Pool, QueryResult } from 'pg';
-import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment, getCommonNames } from './load.js';
-import { getLawCountByYear, getJudgmentCountByYear, getLawsByYear, getJudgmentsByYear, setCommonName } from './akoma.js';
-import { CommonName, LawKey } from '../types/akoma.js';
+import { listStatutesByYear, listJudgmentsByYear, parseFinlexUrl, parseJudgmentUrl, setSingleStatute, buildFinlexUrl, buildJudgmentUrl, setSingleJudgment } from './load.js';
+import { getStatuteCountByYear, getStatutesByYear } from './models/statute.js';
+import { getJudgmentCountByYear, getJudgmentsByYear } from './models/judgment.js';
+import { StatuteKey } from '../types/statute.js';
 import { JudgmentKey } from '../types/judgment.js';
-import { v4 as uuidv4 } from 'uuid';
+import { syncJudgments, syncStatutes } from '../search.js';
+import { START_YEAR } from '../util/config.js';
 
 let pool: Pool;
 
@@ -14,28 +16,27 @@ async function setPool(uri: string) {
   });
 }
 
-async function fillDb(laws: LawKey[], judgments: JudgmentKey[]): Promise<void> {
+async function fillDb(statutes: StatuteKey[], judgments: JudgmentKey[]): Promise<void> {
   try {
 
-    let commonNames = await getCommonNames('fin');
-    for (const commonName of commonNames) {
-      const uuid = uuidv4();
-      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
-      setCommonName(commonNameObj);
-    }
-    commonNames = await getCommonNames('swe');
-    for (const commonName of commonNames) {
-      const uuid = uuidv4();
-      const commonNameObj = { uuid, commonName: commonName.commonName, number: commonName.number, year: commonName.year, language: commonName.language } as CommonName;
-      setCommonName(commonNameObj);
-    }
-
-    for (const key of laws) {
+    let i = 0;
+    for (const key of statutes) {
+      ++i;
       await setSingleStatute(buildFinlexUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} statutes`);
+      }
     }
+    console.log(`Finshed inserting ${i} statutes`);
+    i = 0;
     for (const key of judgments) {
+      ++i;
       await setSingleJudgment(buildJudgmentUrl(key));
+      if (i % 100 === 0) {
+        console.log(`Inserted ${i} judgments`);
+      }
     }
+    console.log(`Finshed inserting ${i} judgments`);
 
     console.log("Database is filled")
   } catch (error) {
@@ -50,8 +51,8 @@ async function dbIsReady(): Promise<boolean> {
     let result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'images');")
     const imagesExists = result.rows[0].exists;
 
-    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'laws');")
-    const lawsExists = result.rows[0].exists;
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'statutes');")
+    const statutesExists = result.rows[0].exists;
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'judgments');")
     const judgmentsExists = result.rows[0].exists;
@@ -59,8 +60,17 @@ async function dbIsReady(): Promise<boolean> {
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'common_names');")
     const commonNamesExists = result.rows[0].exists;
 
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords_statute');")
+    const keywordsStatuteExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords_judgment');")
+    const keywordsJudgmentExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'map_image_statute');")
+    const mapImageStatuteExists = result.rows[0].exists;
+
     client.release();
-    return imagesExists && lawsExists && judgmentsExists && commonNamesExists;
+    return imagesExists && statutesExists && judgmentsExists && commonNamesExists && keywordsStatuteExists && keywordsJudgmentExists && mapImageStatuteExists;
 
 
   } catch (error) {
@@ -69,7 +79,7 @@ async function dbIsReady(): Promise<boolean> {
   }
 }
 
-async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgments: JudgmentKey[]}> {
+async function dbIsUpToDate(): Promise<{upToDate: boolean, statutes: StatuteKey[], judgments: JudgmentKey[]}> {
   console.log('Checking if database is up to date...');
 
   async function compareStatuteCount(year: number): Promise<boolean> {
@@ -79,13 +89,13 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     if (expectedCount === 0) {
       return true;
     }
-    const existingCount = await getLawCountByYear(year);
+    const existingCount = await getStatuteCountByYear(year);
     if (existingCount > expectedCount) {
-      console.warn(`Found too many laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+      console.warn(`Found too many statutes for year ${year}: ${existingCount}, expected ${expectedCount}.`);
     } else if (existingCount < expectedCount) {
-      console.log(`Found too few laws for year ${year}: ${existingCount}, expected ${expectedCount}.`);
+      console.log(`Found too few statutes for year ${year}: ${existingCount}, expected ${expectedCount}.`);
     } else {
-      console.debug(`Correct number of laws for year ${year}: ${existingCount}`);
+      console.debug(`Correct number of statutes for year ${year}: ${existingCount}`);
     }
     return existingCount === expectedCount;
   }
@@ -110,37 +120,37 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     return existingCount === expectedCount;
   }
 
-  async function findMissingStatutes(year: number): Promise<LawKey[]> {
+  async function findMissingStatutes(year: number): Promise<StatuteKey[]> {
     const expectedFin = await listStatutesByYear(year, 'fin');
     const expectedSwe = await listStatutesByYear(year, 'swe');
-    const expectedLaws = []
-    for (const lawUrl of [...expectedFin, ...expectedSwe]) {
-      const law = parseFinlexUrl(lawUrl);
-      expectedLaws.push({ number: law.docNumber, year: law.docYear, language: law.docLanguage, version: law.docVersion });
+    const expectedStatutes = []
+    for (const statuteUrl of [...expectedFin, ...expectedSwe]) {
+      const statute = parseFinlexUrl(statuteUrl);
+      expectedStatutes.push({ number: statute.docNumber, year: statute.docYear, language: statute.docLanguage, version: statute.docVersion });
     }
-    const existingLawsFin = await getLawsByYear(year, 'fin');
-    const existingLawsSwe = await getLawsByYear(year, 'swe');
-    const existingLaws: LawKey[] = [];
+    const existingStatutesFin = await getStatutesByYear(year, 'fin');
+    const existingStatutesSwe = await getStatutesByYear(year, 'swe');
+    const existingStatutes: StatuteKey[] = [];
 
-    for (const law of existingLawsFin) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'fin', version: law.version });
+    for (const statute of existingStatutesFin) {
+      existingStatutes.push({ number: statute.docNumber, year: statute.docYear, language: 'fin', version: statute.docVersion });
     }
-    for (const law of existingLawsSwe) {
-      existingLaws.push({ number: law.number, year: law.year, language: 'swe', version: law.version });
+    for (const statute of existingStatutesSwe) {
+      existingStatutes.push({ number: statute.docNumber, year: statute.docYear, language: 'swe', version: statute.docVersion });
     }
 
-    const missingLaws: LawKey[] = [];
-    for (const law of expectedLaws) {
-      if (!existingLaws.some(existing =>
-        existing.number === law.number &&
-        existing.year === law.year &&
-        existing.language === law.language &&
-        existing.version === law.version
+    const missingStatutes: StatuteKey[] = [];
+    for (const statute of expectedStatutes) {
+      if (!existingStatutes.some(existing =>
+        existing.number === statute.number &&
+        existing.year === statute.year &&
+        existing.language === statute.language &&
+        existing.version === statute.version
       )) {
-        missingLaws.push(law);
+        missingStatutes.push(statute);
       }
     }
-    return missingLaws;
+    return missingStatutes;
   }
 
 
@@ -160,10 +170,10 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
     const existingJudgmentsSwe = await getJudgmentsByYear(year, 'swe', 'any');
     const existingJudgments: JudgmentKey[] = [];
     for (const judgment of existingJudgmentsFin) {
-      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'fin', level: judgment.level });
+      existingJudgments.push({ number: judgment.docNumber, year: judgment.docYear, language: 'fin', level: judgment.docLevel });
     }
     for (const judgment of existingJudgmentsSwe) {
-      existingJudgments.push({ number: judgment.number, year: judgment.year, language: 'swe', level: judgment.level });
+      existingJudgments.push({ number: judgment.docNumber, year: judgment.docYear, language: 'swe', level: judgment.docLevel });
     }
 
     const missingJudgments: JudgmentKey[] = [];
@@ -184,16 +194,14 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
 
 
   try {
-    const laws: LawKey[] = [];
+    const statutes: StatuteKey[] = [];
     const judgments: JudgmentKey[] = [];
     let upToDate = true;
     const currentYear = new Date().getFullYear();
-    const startYear = 1700;
-
-    for (let year = startYear; year <= currentYear + 1; year++) {
+    for (let year = START_YEAR; year <= currentYear + 1; year++) {
       if (!await compareStatuteCount(year)) {
-        console.log(`Laws for year ${year} are not up to date`);
-        laws.push(...await findMissingStatutes(year));
+        console.log(`Statutes for year ${year} are not up to date`);
+        statutes.push(...await findMissingStatutes(year));
         upToDate = false;
       }
 
@@ -203,7 +211,7 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
         upToDate = false;
       }
     }
-    return { upToDate, laws, judgments };
+    return { upToDate, statutes, judgments };
 
   } catch (error) {
     console.error('Error checking if database is up to date:', error);
@@ -214,41 +222,71 @@ async function dbIsUpToDate(): Promise<{upToDate: boolean, laws: LawKey[], judgm
 async function createTables(): Promise<void> {
   try {
     const client = await pool.connect();
-    await client.query("CREATE TABLE IF NOT EXISTS images ("
-      + "uuid UUID PRIMARY KEY,"
-      + "name TEXT NOT NULL UNIQUE,"
-      + "mime_type TEXT NOT NULL,"
-      + "content BYTEA NOT NULL"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS laws ("
-      + "uuid UUID PRIMARY KEY,"
-      + "title TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "version TEXT,"
-      + "content XML NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_act UNIQUE (number, year, language)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS common_names ("
-      + "uuid UUID PRIMARY KEY,"
-      + "common_name TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "CONSTRAINT unique_name UNIQUE (number, year, language, common_name)"
-      + ")");
-    await client.query("CREATE TABLE IF NOT EXISTS judgments ("
-      + "uuid UUID PRIMARY KEY,"
-      + "level TEXT NOT NULL,"
-      + "number TEXT NOT NULL,"
-      + "year INTEGER NOT NULL,"
-      + "language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),"
-      + "content TEXT NOT NULL,"
-      + "is_empty BOOLEAN NOT NULL,"
-      + "CONSTRAINT unique_judgment UNIQUE (level, number, year, language)"
-      + ")");
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS images (
+        uuid UUID PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        mime_type TEXT NOT NULL,
+        content BYTEA NOT NULL
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS statutes (
+        uuid UUID PRIMARY KEY,
+        title TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        version TEXT,
+        content XML NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_act UNIQUE (number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS common_names (
+        uuid UUID PRIMARY KEY,
+        common_name TEXT NOT NULL,
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
+        CONSTRAINT unique_name UNIQUE (statute_uuid, common_name)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS judgments (
+        uuid UUID PRIMARY KEY,
+        level TEXT NOT NULL,
+        number TEXT NOT NULL,
+        year INTEGER NOT NULL,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        content TEXT NOT NULL,
+        is_empty BOOLEAN NOT NULL,
+        CONSTRAINT unique_judgment UNIQUE (level, number, year, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS keywords_statute (
+        id TEXT NOT NULL,
+        keyword TEXT NOT NULL,
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_keyword_statute UNIQUE (statute_uuid, keyword, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS keywords_judgment (
+        id TEXT NOT NULL,
+        keyword TEXT NOT NULL,
+        judgment_uuid UUID references judgments(uuid) ON DELETE CASCADE,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_keyword_judgment UNIQUE (judgment_uuid, keyword, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS map_image_statute (
+        statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
+        image_uuid UUID references images(uuid) ON DELETE RESTRICT,
+        PRIMARY KEY (statute_uuid, image_uuid)
+      )`)
     client.release();
   }
   catch (error) {
@@ -260,10 +298,13 @@ async function createTables(): Promise<void> {
 async function dropTables(): Promise<void> {
   try {
     const client = await pool.connect();
+    await client.query("DROP TABLE IF EXISTS map_image_statute");
     await client.query("DROP TABLE IF EXISTS images");
-    await client.query("DROP TABLE IF EXISTS laws");
-    await client.query("DROP TABLE IF EXISTS judgments");
     await client.query("DROP TABLE IF EXISTS common_names");
+    await client.query("DROP TABLE IF EXISTS keywords_statute");
+    await client.query("DROP TABLE IF EXISTS keywords_judgment");
+    await client.query("DROP TABLE IF EXISTS judgments");
+    await client.query("DROP TABLE IF EXISTS statutes");
     client.release();
   } catch (error) {
     console.error('Error dropping tables:', error);
@@ -292,8 +333,7 @@ async function closePool() {
   }
 }
 
-async function setupTestDatabase(uri: string): Promise<void> {
-  await setPool(uri);
+async function setupTestDatabase(): Promise<void> {
   await createTables();
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/fin@")
   await setSingleStatute("https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated/2023/9/swe@")
@@ -309,6 +349,10 @@ async function setupTestDatabase(uri: string): Promise<void> {
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1990/10")
   await setSingleJudgment("https://www.finlex.fi/fi/oikeuskaytanto/korkein-oikeus/ennakkopaatokset/1975/II-16")
   await setSingleJudgment("https://www.finlex.fi/sv/rattspraxis/hogsta-domstolen/prejudikat/1975/II-16")
+  await syncStatutes('fin');
+  await syncStatutes('swe');
+  await syncJudgments('fin');
+  await syncJudgments('swe');
   console.log('Test database setup complete');
 }
 

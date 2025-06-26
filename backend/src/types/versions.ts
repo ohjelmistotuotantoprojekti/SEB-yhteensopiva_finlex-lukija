@@ -1,9 +1,9 @@
 export interface StatuteVersion {
-  baseUri: string;      // URI without version
-  language: string;     // 'fin' or 'swe'
-  year: string;        // year after @, if any
-  number: string;      // number after year, if any
-  fullUri: string;     // complete original URI
+  baseUri: string;
+  language: string;
+  year: string;
+  number: string;
+  fullUri: string;
 }
 
 export interface StatuteVersionResponse {

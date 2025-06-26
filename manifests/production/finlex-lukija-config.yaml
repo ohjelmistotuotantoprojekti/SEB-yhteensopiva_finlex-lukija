@@ -3,6 +3,6 @@ kind: ConfigMap
 metadata:
   name: finlex-lukija-config
 data:
-  PG_URI: SECRET_PG_URI
-  DATABASE_PASSWORD: SECRET_DATABASE_PASSWORD
+  PG_URI: PG_URI
+  TYPESENSE_API_KEY: SECRET_TYPESENSE_API_KEY
 
