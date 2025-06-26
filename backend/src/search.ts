@@ -13,7 +13,7 @@ import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropword
 import { JSDOM } from "jsdom";
 import { START_YEAR } from  './util/config.js';
 import { getCommonNamesByStatuteUuid } from "./db/models/commonName.js";
-import { getKeywordsByStatuteUuid } from "./db/models/keyword.js";
+import { getJudgmentKeywordsByJudgmentUuid, getStatuteKeywordsByStatuteUuid } from "./db/models/keyword.js";
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -169,7 +169,7 @@ export async function syncStatutes(lang: string) {
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphs(row.content);
       const commonNames = await getCommonNamesByStatuteUuid(row.id);
-      const keywords = await getKeywordsByStatuteUuid(row.id);
+      const keywords = await getStatuteKeywordsByStatuteUuid(row.id);
 
       await tsClient
         .collections(collectionName)
@@ -212,6 +212,7 @@ export async function syncJudgments(lang: string) {
       { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "level", type: "string" },
+      { name: "keywords", type: "string[]", locale: lang_short },
       { name: "headings", type: "string[]", locale: lang_short },
       { name: "paragraphs", type: "string[]", locale: lang_short },
       { name: "has_content", type: "int32" },
@@ -251,6 +252,7 @@ export async function syncJudgments(lang: string) {
       const headingTree: Heading[] = parseHtmlHeadings(row.content) ?? [];
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphsHtml(row.content);
+      const keywords = await getJudgmentKeywordsByJudgmentUuid(row.id);
 
       await tsClient
         .collections(collectionName)
@@ -261,6 +263,7 @@ export async function syncJudgments(lang: string) {
           year_num: parseInt(row.year, 10),
           level: localeLevel(row.level, lang),
           number: row.number,
+          keywords: keywords,
           headings: normalizeText(headings, lang),
           paragraphs: normalizeText(paragraphs, lang),
           has_content: row.is_empty ? 0 : 1,
@@ -310,14 +313,14 @@ export async function searchStatutes(lang: string, queryStr: string): Promise<St
 export async function searchJudgments(lang: string, queryStr: string, level: string): Promise<JudgmentSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
-    query_by: "level,year,number,headings,paragraphs",
-    query_by_weights: "50,49,48,10,1",
+    query_by: "keywords,level,year,number,headings,paragraphs",
+    query_by_weights: "60,50,49,48,10,1",
     prefix: "true",
     num_typos: 2,
     text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
     per_page: 20,
-    include_fields: "year_num,number,level,has_content",
+    include_fields: "year_num,number,level,has_content,keywords",
   };
   if (level !== "any") {
     searchParameters.filter_by = `level:0${localeLevel(level, lang)}`;

@@ -60,14 +60,17 @@ async function dbIsReady(): Promise<boolean> {
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'common_names');")
     const commonNamesExists = result.rows[0].exists;
 
-    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords');")
-    const keywordsExists = result.rows[0].exists;
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords_statute');")
+    const keywordsStatuteExists = result.rows[0].exists;
+
+    result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'keywords_judgment');")
+    const keywordsJudgmentExists = result.rows[0].exists;
 
     result = await client.query("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'map_image_statute');")
     const mapImageStatuteExists = result.rows[0].exists;
 
     client.release();
-    return imagesExists && statutesExists && judgmentsExists && commonNamesExists && keywordsExists && mapImageStatuteExists;
+    return imagesExists && statutesExists && judgmentsExists && commonNamesExists && keywordsStatuteExists && keywordsJudgmentExists && mapImageStatuteExists;
 
 
   } catch (error) {
@@ -261,11 +264,21 @@ async function createTables(): Promise<void> {
       )
     `);
     await client.query(`
-      CREATE TABLE IF NOT EXISTS keywords (
+      CREATE TABLE IF NOT EXISTS keywords_statute (
         id TEXT NOT NULL,
         keyword TEXT NOT NULL,
         statute_uuid UUID references statutes(uuid) ON DELETE CASCADE,
-        language TEXT NOT NULL CHECK (language IN ('fin', 'swe'))
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_keyword_statute UNIQUE (statute_uuid, keyword, language)
+      )
+    `);
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS keywords_judgment (
+        id TEXT NOT NULL,
+        keyword TEXT NOT NULL,
+        judgment_uuid UUID references judgments(uuid) ON DELETE CASCADE,
+        language TEXT NOT NULL CHECK (language IN ('fin', 'swe')),
+        CONSTRAINT unique_keyword_judgment UNIQUE (judgment_uuid, keyword, language)
       )
     `);
     await client.query(`
@@ -288,7 +301,8 @@ async function dropTables(): Promise<void> {
     await client.query("DROP TABLE IF EXISTS map_image_statute");
     await client.query("DROP TABLE IF EXISTS images");
     await client.query("DROP TABLE IF EXISTS common_names");
-    await client.query("DROP TABLE IF EXISTS keywords");
+    await client.query("DROP TABLE IF EXISTS keywords_statute");
+    await client.query("DROP TABLE IF EXISTS keywords_judgment");
     await client.query("DROP TABLE IF EXISTS judgments");
     await client.query("DROP TABLE IF EXISTS statutes");
     client.release();

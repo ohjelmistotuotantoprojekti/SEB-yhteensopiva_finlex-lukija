@@ -82,7 +82,7 @@ judgmentRouter.get('/search', async (request: express.Request, response: express
         number: docNumber,
         year: parseInt(docYear),
         level: docLevel.toUpperCase(),
-        language: language
+        language: language,
       }})
       return;
     } else {

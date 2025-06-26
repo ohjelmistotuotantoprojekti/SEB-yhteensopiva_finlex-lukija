@@ -25,7 +25,7 @@ export interface StatuteListItem {
     docVersion: string | null;
 }
 
-export interface KeyWord {
+export interface StatuteKeyWord {
     id: string;
     keyword: string;
     statute_uuid: string;

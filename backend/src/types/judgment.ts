@@ -20,6 +20,7 @@ export interface JudgmentListItem {
     docNumber: string;
     docLevel: string;
     isEmpty: boolean;
+    keywords?: string[];
 }
 
 export interface JudgmentSearchResult {
@@ -27,4 +28,12 @@ export interface JudgmentSearchResult {
     number: string;
     level: string;
     has_content: number;
+    keywords: string[];
+}
+
+export interface JudgmentKeyWord {
+    id: string;
+    keyword: string;
+    judgment_uuid: string;
+    language: string;
 }
