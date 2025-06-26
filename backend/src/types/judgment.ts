@@ -8,7 +8,6 @@ export interface Judgment {
     is_empty: boolean;
   }
 
-
 export interface JudgmentKey {
     level: string;
     number: string;
@@ -21,4 +20,11 @@ export interface JudgmentListItem {
     docNumber: string;
     docLevel: string;
     isEmpty: boolean;
+}
+
+export interface JudgmentSearchResult {
+    year_num: number;
+    number: string;
+    level: string;
+    has_content: number;
 }

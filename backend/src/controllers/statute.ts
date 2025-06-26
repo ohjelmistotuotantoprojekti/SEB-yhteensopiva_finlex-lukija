@@ -2,7 +2,7 @@ import express from 'express';
 import { parseStringPromise } from 'xml2js';
 import { parseXmlHeadings } from '../util/parse.js';
 import * as config from '../util/config.js';
-import { getLawByNumberYear, getLawsByYear, searchLawsByKeywordAndLanguage } from '../db/models/statute.js';
+import { getStatuteByNumberYear, getStatutesByYear, searchStatutesByKeywordAndLanguage } from '../db/models/statute.js';
 const statuteRouter = express.Router();
 
 statuteRouter.get('/structure/id/:year/:number/:language', async (request: express.Request, response: express.Response): Promise<void> => {
@@ -12,7 +12,7 @@ statuteRouter.get('/structure/id/:year/:number/:language', async (request: expre
   const number = request.params.number
   let content;
   try {
-    content = await getLawByNumberYear(number, year, language)
+    content = await getStatuteByNumberYear(number, year, language)
   } catch {
     response.status(500).json({ error: 'Internal server error' });
     return;
@@ -38,7 +38,7 @@ statuteRouter.get('/id/:year/:number/:language', async (request: express.Request
   const year = parseInt(request.params.year)
   const language = request.params.language
   const number = request.params.number
-  const content = await getLawByNumberYear(number, year, language)
+  const content = await getStatuteByNumberYear(number, year, language)
   if (content === null) {
     response.status(404).json({ error: 'Not found' });
     return;
@@ -65,7 +65,7 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
     const [docNumber, docYear] = query.split('/');
     let results
     try {
-      results = await getLawByNumberYear(docNumber, parseInt(docYear), language)
+      results = await getStatuteByNumberYear(docNumber, parseInt(docYear), language)
     }catch {response.status(500).json({ error: 'Internal server error' }); return; }
 
     if (results) {
@@ -85,7 +85,7 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
     const year = parseInt(query);
     let results;
     try {
-      results = await getLawsByYear(year, language);
+      results = await getStatutesByYear(year, language);
     } catch {
       response.status(500).json({ error: 'Internal server error' });
       return;
@@ -101,7 +101,7 @@ statuteRouter.get('/search', async (request: express.Request, response: express.
 
   let results;
   try {
-    results = await searchLawsByKeywordAndLanguage(query, language);
+    results = await searchStatutesByKeywordAndLanguage(query, language);
   } catch (error){
     response.status(500).json({ error: 'Internal server error' });
     console.error("Error during search:", error);

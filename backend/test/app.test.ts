@@ -29,7 +29,7 @@ const validateSearchResponse = (response) => {
   }
 }
 
-const validateLawContent = (response) => {
+const validateStatuteContent = (response) => {
   const resultList = response.body.content;
   if (!resultList[0].docYear || !resultList[0].docNumber || !resultList[0].docTitle) {
     throw new Error('Response object does not contain expected properties')
@@ -58,6 +58,7 @@ const validateJudgmentContent = (response) => {
   }
   if (typeof resultList[0].docLevel !== 'string' ||
       !config.VALID_LEVELS.includes(resultList[0].docLevel)) {
+    console.error(`Invalid docLevel: ${resultList[0].docLevel}`);
     throw new Error('Response docLevel is not a valid level')
   }
 }
@@ -70,26 +71,26 @@ after(async () => {
   await closePool();
 });
 
-test('list of laws per year is returned as valid json', async () => {
+test('list of statutes per year is returned as valid json', async () => {
   await api
     .get('/api/statute/search?q=2023&language=fin')
     .expect(200)
     .expect('Content-Type', /application\/json/)
     .expect(validateSearchResponse)
-    .expect(validateLawContent)
+    .expect(validateStatuteContent)
 })
 
-test('list of laws per keyword is returned as valid json', async () => {
+test('list of statutes per keyword is returned as valid json', async () => {
   await api
     .get('/api/statute/search?q=luonnonsuo&language=fin')
     .expect(200)
     .expect('Content-Type', /application\/json/)
     .expect(validateSearchResponse)
-    .expect(validateLawContent)
+    .expect(validateStatuteContent)
 })
 
 
-test('a single law is returned as xml', async () => {
+test('a single statute is returned as xml', async () => {
   await api
     .get('/api/statute/id/2023/9/fin')
     .expect(200)
@@ -120,7 +121,7 @@ test('list of judgments per keyword is returned as valid json', async () => {
     .expect(validateJudgmentContent)
 })
 
-test('law headings, ids and subheadings are returned', async () => {
+test('statute headings, ids and subheadings are returned', async () => {
   await api
     .get('/api/statute/structure/id/2023/9/fin')
     .expect(200)
@@ -160,7 +161,7 @@ test('judgment headings, ids and subheadings are returned', async () => {
 })
 
 /*
-test('invalid law returns error', async () => {
+test('invalid statute returns error', async () => {
   await api
     .get('/api/statute/id/2100/15/fin')
     .expect(404)

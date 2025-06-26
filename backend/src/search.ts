@@ -1,4 +1,6 @@
 import { Heading } from "./types/structure.js";
+import { StatuteSearchResult } from "./types/statute.js";
+import { JudgmentSearchResult } from "./types/judgment.js";
 import Typesense from "typesense";
 import { Errors } from "typesense";
 import { CollectionCreateSchema } from "typesense/lib/Typesense/Collections.js";
@@ -9,7 +11,8 @@ import { parseXmlHeadings, parseHtmlHeadings } from './util/parse.js';
 import { query } from "./db/db.js"
 import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropwords.js";
 import { JSDOM } from "jsdom";
-import './util/config.js';
+import { START_YEAR } from  './util/config.js';
+import { getCommonNamesByStatuteUuid } from "./db/models/commonName.js";
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -94,6 +97,12 @@ function localeLevel(level: string, lang: string): string {
   } else throw new Error(`Unsupported language: ${lang}`);
 }
 
+function localeLevelInverse(level: string): string {
+  if (level === "KHO" || level === "HD") return "kho";
+  if (level === "KKO" || level === "HFD") return "kko";
+  throw new Error(`Unsupported level: ${level}`);
+}
+
 export async function syncStatutes(lang: string) {
   let lang_short
   if (lang === "fin") {
@@ -103,8 +112,8 @@ export async function syncStatutes(lang: string) {
   } else {
     throw new Error(`Unsupported language: ${lang}`);
   }
-  const collectionName = `laws_${lang}`;
-  console.log(`\n=== Syncing language: ${lang} → ${collectionName}`);
+  const collectionName = `statutes_${lang}`;
+  console.log(`Indexing: ${lang} -> ${collectionName}`);
 
   const schema: CollectionCreateSchema = {
     name: collectionName,
@@ -115,6 +124,7 @@ export async function syncStatutes(lang: string) {
       { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "common_names", type: "string[]", locale: lang_short },
+      { name: "version", type: "string", index: false },
       { name: "headings", type: "string[]", locale: lang_short },
       { name: "paragraphs", type: "string[]", locale: lang_short },
       { name: "has_content", type: "int32" },
@@ -131,34 +141,20 @@ export async function syncStatutes(lang: string) {
     console.log(`Collection ${collectionName} already exists`);
   }
 
-  for (let year = 1700; year <= new Date().getFullYear(); year++) {
+  for (let year = START_YEAR; year <= new Date().getFullYear(); year++) {
     const { rows } = await query(
       `
-      WITH cn AS (
-          SELECT
-          number,
-          year,
-          language,
-          ARRAY_AGG(common_name) AS common_names
-          FROM common_names
-          WHERE language = $1 AND year = $2
-          GROUP BY number, year, language
-      )
       SELECT
-          l.uuid   AS id,
-          l.number AS number,
-          l.year   AS year,
-          l.title  AS title,
-          l.is_empty AS is_empty,
-          l.content::text AS content,
-          COALESCE(cn.common_names, '{}') AS common_names
-      FROM laws l
-      LEFT JOIN cn
-          ON cn.number   = l.number
-      AND cn.year     = l.year
-      AND cn.language = l.language
-      WHERE l.language = $1 AND l.year = $2
-      ORDER BY l.uuid
+          uuid   AS id,
+          title  AS title,
+          number AS number,
+          year   AS year,
+          is_empty AS is_empty,
+          version AS version,
+          content::text AS content
+      FROM statutes
+      WHERE language = $1 AND year = $2
+      ORDER BY uuid
       `,
       [lang, year]
     )
@@ -170,6 +166,7 @@ export async function syncStatutes(lang: string) {
       const headingTree: Heading[] = parseXmlHeadings(parsed_xml) ?? [];
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphs(row.content);
+      const commonNames = await getCommonNamesByStatuteUuid(row.id);
 
       await tsClient
         .collections(collectionName)
@@ -181,7 +178,8 @@ export async function syncStatutes(lang: string) {
           year_num: parseInt(row.year, 10),
           number: row.number,
           has_content: row.is_empty ? 0 : 1,
-          common_names: row.common_names,
+          common_names: commonNames,
+          version: row.version ?? '',
           headings: normalizeText(headings, lang),
           paragraphs: normalizeText(paragraphs, lang),
         });
@@ -200,7 +198,7 @@ export async function syncJudgments(lang: string) {
     throw new Error(`Unsupported language: ${lang}`);
   }
   const collectionName = `judgments_${lang}`;
-  console.log(`\n=== Syncing language: ${lang} → ${collectionName}`);
+  console.log(`\n=== Indexing: ${lang} -> ${collectionName}`);
 
   const schema: CollectionCreateSchema = {
     name: collectionName,
@@ -226,7 +224,7 @@ export async function syncJudgments(lang: string) {
     console.log(`Collection ${collectionName} already exists`);
   }
 
-  for (let year = 1700; year <= new Date().getFullYear(); year++) {
+  for (let year = START_YEAR; year <= new Date().getFullYear(); year++) {
     const { rows } = await query(
       `
       SELECT
@@ -283,7 +281,7 @@ export async function deleteCollection(name: string, lang: string) {
 }
 
 
-export async function searchLaws(lang: string, queryStr: string) {
+export async function searchStatutes(lang: string, queryStr: string): Promise<StatuteSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
     query_by: "title,common_names,headings,year,number,paragraphs",
@@ -292,19 +290,20 @@ export async function searchLaws(lang: string, queryStr: string) {
     num_typos: 2,
     text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
-    per_page: 20
+    per_page: 20,
+    include_fields: "year_num,number,title,has_content,version",
   };
 
   const searchResults = await tsClient
-    .collections(`laws_${lang}`)
+    .collections(`statutes_${lang}`)
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document as { id: string }).id) || [];
+  return searchResults.hits?.map((hit) => (hit.document as StatuteSearchResult)) || [];
 }
 
 
-export async function searchJudgments(lang: string, queryStr: string, level: string) {
+export async function searchJudgments(lang: string, queryStr: string, level: string): Promise<JudgmentSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
     query_by: "level,year,number,headings,paragraphs",
@@ -313,7 +312,8 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     num_typos: 2,
     text_match_type: "max_weight",
     sort_by: "has_content:desc,_text_match:desc,year_num:desc",
-    per_page: 20
+    per_page: 20,
+    include_fields: "year_num,number,level,has_content",
   };
   if (level !== "any") {
     searchParameters.filter_by = `level:0${localeLevel(level, lang)}`;
@@ -324,5 +324,9 @@ export async function searchJudgments(lang: string, queryStr: string, level: str
     .documents()
     .search(searchParameters);
 
-  return searchResults.hits?.map((hit) => (hit.document as { id: string }).id) || [];
+  return searchResults.hits?.map((hit) => {
+    const doc = hit.document as JudgmentSearchResult;
+    doc.level = localeLevelInverse(doc.level);
+    return hit.document as JudgmentSearchResult
+  }) || [];
 }

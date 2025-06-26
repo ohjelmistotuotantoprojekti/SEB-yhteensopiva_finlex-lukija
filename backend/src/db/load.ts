@@ -6,9 +6,9 @@ import { StatuteVersionResponse } from '../types/versions.js';
 import { Image } from '../types/image.js';
 import { CommonName } from '../types/commonName.js';
 import { v4 as uuidv4 } from 'uuid';
-import { setLaw } from './models/statute.js';
+import { setStatute } from './models/statute.js';
 import { setJudgment } from './models/judgment.js';
-import { setImage } from './models/image.js';
+import { setImage, mapImageToStatute } from './models/image.js';
 import { setKeyword } from './models/keyword.js';
 import { setCommonName } from './models/commonName.js';
 import xmldom from '@xmldom/xmldom';
@@ -40,9 +40,9 @@ function parseFinlexUrl(url: string): { docYear: number; docNumber: string; docL
   }
 }
 
-function buildFinlexUrl(law: StatuteKey): string {
+function buildFinlexUrl(statute: StatuteKey): string {
   const baseUrl = 'https://opendata.finlex.fi/finlex/avoindata/v1/akn/fi/act/statute-consolidated';
-  return `${baseUrl}/${law.year}/${law.number}/${law.language}@${law.version ? law.version : ''}`;
+  return `${baseUrl}/${statute.year}/${statute.number}/${statute.language}@${statute.version ? statute.version : ''}`;
 }
 
 function parseJudgmentUrl(url: string): JudgmentKey {
@@ -71,7 +71,7 @@ function parseJudgmentUrl(url: string): JudgmentKey {
 }
 
 function buildJudgmentUrl(judgment: JudgmentKey): string {
-  const caselaw = judgment.language === 'fin' ? 'fi/oikeuskaytanto' : 'sv/rattspraxis';
+  const casestatute = judgment.language === 'fin' ? 'fi/oikeuskaytanto' : 'sv/rattspraxis';
   const baseUrl = 'https://finlex.fi';
   const path = `${judgment.year}/${judgment.number}`;
   let prefix
@@ -82,7 +82,7 @@ function buildJudgmentUrl(judgment: JudgmentKey): string {
   } else {
     throw new Error(`Unknown court level: ${judgment.level}`);
   }
-  return `${baseUrl}/${caselaw}/${prefix}/${path}`;
+  return `${baseUrl}/${casestatute}/${prefix}/${path}`;
 }
 
 
@@ -242,7 +242,7 @@ async function checkIsXMLEmpty(xmlString: string): Promise<boolean> {
 
 const baseURL = 'https://opendata.finlex.fi/finlex/avoindata/v1';
 
-async function setImages(docYear: number, docNumber: string, language: string, version: string | null, uris: string[]) {
+async function setImages(statuteUuid: string, docYear: number, docNumber: string, language: string, version: string | null, uris: string[]) {
   for (const uri of uris) {
     const path = `/akn/fi/act/statute-consolidated/${docYear}/${docNumber}/${language}@${version ?? ''}/${uri}`
     const url = `${baseURL}${path}`
@@ -257,14 +257,16 @@ async function setImages(docYear: number, docNumber: string, language: string, v
         console.error(`Failed to extract name from URI: ${uri}`);
         continue;
       }
+      let imageUuid = uuidv4();
       const image: Image = {
-        uuid: uuidv4(),
+        uuid: imageUuid,
         name: name,
         mime_type: result.headers['content-type'],
         content: result.data as Buffer,
       }
 
-      setImage(image)
+      imageUuid = await setImage(image)
+      mapImageToStatute(statuteUuid, imageUuid)
     }
     catch {
       console.error(`Failed to fetch image from ${url}:`);
@@ -285,9 +287,9 @@ async function setSingleStatute(uri: string) {
   const is_empty = await checkIsXMLEmpty(xmlContent);
 
   const { docYear, docNumber, docLanguage, docVersion } = parseFinlexUrl(uri)
-  let lawUuid = uuidv4()
-  const law: Statute = {
-    uuid: lawUuid,
+  let statuteUuid = uuidv4()
+  const statute: Statute = {
+    uuid: statuteUuid,
     title: docTitle,
     number: docNumber,
     year: docYear,
@@ -297,13 +299,13 @@ async function setSingleStatute(uri: string) {
     is_empty: is_empty
   }
 
-  lawUuid = await setLaw(law)
+  statuteUuid = await setStatute(statute)
 
   for (const keyword of keywordList) {
     const key: KeyWord = {
       id: keyword[1],
       keyword: keyword[0],
-      law_uuid: lawUuid,
+      statute_uuid: statuteUuid,
       language: docLanguage
     }
     await setKeyword(key)
@@ -313,14 +315,12 @@ async function setSingleStatute(uri: string) {
     const commonNameObj: CommonName = {
       uuid: uuidv4(),
       commonName: commonName,
-      number: docNumber,
-      year: docYear,
-      language: docLanguage
+      statuteUuid: statuteUuid,
     }
     await setCommonName(commonNameObj)
   }
 
-  setImages(docYear, docNumber, docLanguage, docVersion, imageLinks)
+  setImages(statuteUuid, docYear, docNumber, docLanguage, docVersion, imageLinks)
 }
 
 async function setSingleJudgment(uri: string) {

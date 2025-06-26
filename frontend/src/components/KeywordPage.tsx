@@ -9,7 +9,7 @@ const KeywordPage = ({language} : KeywordPageType) => {
 
   const [keywords, setKeywords] = useState<KeysType[]>([])
   const [lan, setLan] = useState<string>(language)
-  const path = `/api/statute/keywords/${lan}`
+  const path = `/api/statute/keyword/${lan}`
   const title = lan === "fin" ? "Asiasanat" : "Ämnesord"
   let letter = ""
 
@@ -73,17 +73,17 @@ const KeywordPage = ({language} : KeywordPageType) => {
       <div style={contentStyle} id="contentdiv">
         <div id="contentDiv" style={contentContainerStyle}>
           <h1>{title}</h1>
-          {keywords.map(keyword => {
+          {Array.isArray(keywords) && keywords.map(keyword => {
             const firstLetter = keyword.keyword.charAt(0).toUpperCase()
             const letterChanged = firstLetter !== letter
             letter = firstLetter
             return (
-              <>
+              <div key={`${keyword.id}-upper`}>
                 {letterChanged && <h2>{firstLetter}</h2>}
                 <div key={keyword.id}>
                   <a href={prepareLink(keyword.id)}>{keyword.keyword}</a>
                 </div>
-              </>
+              </div>
             )
           })}
         </div>
