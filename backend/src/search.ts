@@ -13,6 +13,7 @@ import { dropWords, dropwords_set_fin, dropwords_set_swe } from "./util/dropword
 import { JSDOM } from "jsdom";
 import { START_YEAR } from  './util/config.js';
 import { getCommonNamesByStatuteUuid } from "./db/models/commonName.js";
+import { getKeywordsByStatuteUuid } from "./db/models/keyword.js";
 
 if (!process.env.TYPESENSE_API_KEY) {
   console.error("TYPESENSE_API_KEY environment variable is not set.");
@@ -124,6 +125,7 @@ export async function syncStatutes(lang: string) {
       { name: "year", type: "string" },
       { name: "number", type: "string" },
       { name: "common_names", type: "string[]", locale: lang_short },
+      { name: "keywords", type: "string[]", locale: lang_short },
       { name: "version", type: "string", index: false },
       { name: "headings", type: "string[]", locale: lang_short },
       { name: "paragraphs", type: "string[]", locale: lang_short },
@@ -167,6 +169,7 @@ export async function syncStatutes(lang: string) {
       const headings = flattenHeadings(headingTree);
       const paragraphs = extractParagraphs(row.content);
       const commonNames = await getCommonNamesByStatuteUuid(row.id);
+      const keywords = await getKeywordsByStatuteUuid(row.id);
 
       await tsClient
         .collections(collectionName)
@@ -179,6 +182,7 @@ export async function syncStatutes(lang: string) {
           number: row.number,
           has_content: row.is_empty ? 0 : 1,
           common_names: commonNames,
+          keywords: keywords,
           version: row.version ?? '',
           headings: normalizeText(headings, lang),
           paragraphs: normalizeText(paragraphs, lang),
@@ -284,8 +288,8 @@ export async function deleteCollection(name: string, lang: string) {
 export async function searchStatutes(lang: string, queryStr: string): Promise<StatuteSearchResult[]> {
   const searchParameters: SearchParams = {
     q: queryStr,
-    query_by: "title,common_names,headings,year,number,paragraphs",
-    query_by_weights: "50,49,20,15,10,1",
+    query_by: "title,common_names,keywords,headings,year,number,paragraphs",
+    query_by_weights: "50,49,48,20,15,10,1",
     prefix: "true",
     num_typos: 2,
     text_match_type: "max_weight",

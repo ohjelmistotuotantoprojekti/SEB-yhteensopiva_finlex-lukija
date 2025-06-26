@@ -17,3 +17,9 @@ export async function getStatutesByKeywordID(language: string, keyword_id: strin
   const result = await query(sql, [language, keyword_id]);
   return result.rows;
 }
+
+export async function getKeywordsByStatuteUuid(statuteUuid: string) {
+  const sql = 'SELECT keyword FROM keywords WHERE statute_uuid = $1';
+  const result = await query(sql, [statuteUuid]);
+  return result.rows.map(row => row.keyword);
+}
