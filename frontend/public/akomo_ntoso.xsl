@@ -133,7 +133,17 @@
 
   <!-- paragraphs -->
   <xsl:template match="akn:paragraph">
-    <xsl:apply-templates/>
+    <div style="margin-top: 1em;">
+      <xsl:value-of select="akn:num"/><xsl:value-of select="akn:content"/><xsl:value-of select="akn:intro"/>
+      <xsl:apply-templates select="*[not(self::akn:num or self::akn:content or self::akn:intro)]"/>
+    </div>
+  </xsl:template>
+
+  <xsl:template match="akn:subparagraph">
+    <div style="margin-left: 1em; margin-top: 1em;">
+      <xsl:value-of select="akn:num"/><xsl:value-of select="akn:content"/><xsl:value-of select="akn:intro"/>
+      <xsl:apply-templates select="*[not(self::akn:num or self::akn:content or self::akn:intro)]"/>
+    </div>
   </xsl:template>
 
   <xsl:template match="akn:p">
