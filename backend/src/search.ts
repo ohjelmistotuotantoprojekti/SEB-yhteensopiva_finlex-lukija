@@ -104,6 +104,29 @@ function localeLevelInverse(level: string): string {
   throw new Error(`Unsupported level: ${level}`);
 }
 
+async function upsertWithRetry(collectionName: string, document: Record<string, any>, maxRetries = 10) { //eslint-disable-line @typescript-eslint/no-explicit-any
+  let upserted = false;
+  let retries = 0;
+  while (!upserted && retries < maxRetries) {
+    try {
+      await tsClient
+        .collections(collectionName)
+        .documents()
+        .upsert(document);
+      upserted = true;
+    } catch (error: unknown) {
+      if (error instanceof Typesense.Errors.ServerError && error.httpStatus === 503) {
+        retries++;
+        const delay = 1000 * retries;
+        console.warn(`Typesense lagging behind (503), retrying in ${delay}ms... (attempt ${retries})`);
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+}
+
 export async function syncStatutes(lang: string) {
   let lang_short
   if (lang === "fin") {
@@ -171,24 +194,20 @@ export async function syncStatutes(lang: string) {
       const commonNames = await getCommonNamesByStatuteUuid(row.id);
       const keywords = await getStatuteKeywordsByStatuteUuid(row.id);
 
-      await tsClient
-        .collections(collectionName)
-        .documents()
-        .upsert({
-          id: row.id,
-          title: row.title,
-          year: String(row.year),
-          year_num: parseInt(row.year, 10),
-          number: row.number,
-          has_content: row.is_empty ? 0 : 1,
-          common_names: commonNames,
-          keywords: keywords,
-          version: row.version ?? '',
-          headings: normalizeText(headings, lang),
-          paragraphs: normalizeText(paragraphs, lang),
-        });
+      await upsertWithRetry(collectionName, {
+        id: row.id,
+        title: row.title,
+        year: String(row.year),
+        year_num: parseInt(row.year, 10),
+        number: row.number,
+        has_content: row.is_empty ? 0 : 1,
+        common_names: commonNames,
+        keywords: keywords,
+        version: row.version ?? '',
+        headings: normalizeText(headings, lang),
+        paragraphs: normalizeText(paragraphs, lang),
+      });
     }
-
   }
 }
 
@@ -254,22 +273,18 @@ export async function syncJudgments(lang: string) {
       const paragraphs = extractParagraphsHtml(row.content);
       const keywords = await getJudgmentKeywordsByJudgmentUuid(row.id);
 
-      await tsClient
-        .collections(collectionName)
-        .documents()
-        .upsert({
-          id: row.id,
-          year: String(row.year),
-          year_num: parseInt(row.year, 10),
-          level: localeLevel(row.level, lang),
-          number: row.number,
-          keywords: keywords,
-          headings: normalizeText(headings, lang),
-          paragraphs: normalizeText(paragraphs, lang),
-          has_content: row.is_empty ? 0 : 1,
-        });
+      await upsertWithRetry(collectionName, {
+        id: row.id,
+        year: String(row.year),
+        year_num: parseInt(row.year, 10),
+        level: localeLevel(row.level, lang),
+        number: row.number,
+        keywords: keywords,
+        headings: normalizeText(headings, lang),
+        paragraphs: normalizeText(paragraphs, lang),
+        has_content: row.is_empty ? 0 : 1,
+      });
     }
-
   }
 }
 
